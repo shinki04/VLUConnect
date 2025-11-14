@@ -52,7 +52,34 @@ export async function updateSession(request: NextRequest) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+
+    const res = NextResponse.redirect(url);
+    res.cookies.set("access_error", "Bạn không có quyền truy cập", {
+      path: "/",
+      httpOnly: false, // client đọc được
+      sameSite: "lax",
+      maxAge: 10, // 10 giây là đủ
+    });
+    return res;
+  }
+
+  // Check role admin nếu truy cập /admin
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const role = user?.app_metadata?.global_role; // custom claims
+    if (role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard"; // redirect nếu không phải admin
+      const res = NextResponse.redirect(url);
+
+      // Set cookie tạm để gửi message
+      res.cookies.set("access_error", "Bạn không có quyền truy cập", {
+        path: "/",
+        httpOnly: false, // client đọc được
+        sameSite: "lax",
+        maxAge: 10, // 10 giây là đủ
+      });
+      return res;
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
