@@ -6,8 +6,10 @@ import { useUserStore } from "@/stores/userStore";
 import { User } from "@/types/user";
 import { createClient } from "@/lib/supabase/client";
 import { getUserProfile } from "@/app/actions/auth";
+import { useToastFromCookie } from "@/hooks/useToastFromCookies";
 
 export default function Tepm() {
+  const toastCookies = useToastFromCookie();
   const userStore = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
 
