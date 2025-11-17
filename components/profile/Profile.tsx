@@ -1,7 +1,7 @@
 "use client";
 import { useUpdateProfile } from "@/hooks/useAuth";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 
 import { Button } from "../ui/button";
@@ -14,11 +14,13 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { BLANK_AVATAR, User } from "@/types/user";
+import { Avatar, BLANK_AVATAR, User } from "@/types/user";
 import { updateProfileSchema } from "@/lib/validations/updateProfile-schema";
 import supabaseLoader from "@/lib/supabase/supabase-image-loader";
 import { FieldErrors } from "../FieldErrors";
 import { toast } from "sonner";
+import OldAvatars from "./OldAvatars";
+import { getUserAvatars } from "@/app/actions/auth";
 
 interface ProfileProps {
   user: User;
@@ -31,6 +33,8 @@ function Profile({ user, isOwner }: ProfileProps) {
     user?.avatar_url || BLANK_AVATAR
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [avatars, setAvatars] = useState<Avatar[]>([]);
 
   const form = useForm({
     defaultValues: {
@@ -79,6 +83,14 @@ function Profile({ user, isOwner }: ProfileProps) {
     form.setFieldValue("avatar_image", file);
   };
 
+  useEffect(() => {
+    const fetchAvatars = async () => {
+      const data = await getUserAvatars(user.id);
+      setAvatars(data);
+    };
+    fetchAvatars();
+  }, []);
+
   return (
     <div>
       <p>Display name: {user?.display_name}</p>
@@ -95,6 +107,10 @@ function Profile({ user, isOwner }: ProfileProps) {
           alt={`Avatar user ${user?.id}`}
           src={user.avatar_url ?? BLANK_AVATAR}
         />
+      </div>
+      <div>
+        The last change avatar_image
+        <OldAvatars avatars={avatars} />
       </div>
       <p>Des : {user.description}</p>
       {isOwner === true && (

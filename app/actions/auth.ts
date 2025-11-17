@@ -22,6 +22,27 @@ export async function getCurrentUser() {
   return profile;
 }
 
+//* Temp
+export async function getUserAvatars(id: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.storage.from("avatars").list(id, {
+    limit: 5,
+    offset: 0,
+    sortBy: { column: "name", order: "asc" },
+  });
+
+  if (error || !data) throw new Error(`Error: ${error.message}`);
+
+  const avatars = data.map((file) => {
+    return {
+      name: file.name,
+      fullPath: `avatars/${id}/${file.name}`, // Format: bucket/userId/filename
+    };
+  });
+
+  return avatars;
+}
+
 export async function getUserProfile(id: string) {
   const supabase = await createClient();
 
