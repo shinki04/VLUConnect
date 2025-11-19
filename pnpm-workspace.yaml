@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
+  - lefthook
   - msw
   - sharp
   - supabase
