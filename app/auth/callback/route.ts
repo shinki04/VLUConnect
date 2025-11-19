@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { BLANK_AVATAR, Global_Roles } from "@/types/user";
-import { getCache, setCache } from "@/lib/redis/redis";
+import { setCache } from "@/lib/redis/redis";
 
 const COOKIE_CONFIG = {
   path: "/",
