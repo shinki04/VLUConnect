@@ -1,4 +1,4 @@
-import { searchHashtags } from "@/lib/services/hashtagService";
+import { searchHashtags } from "@/services/hashtagService";
 
 /**
  * GET /api/hashtags/search?q=keyword&limit=20

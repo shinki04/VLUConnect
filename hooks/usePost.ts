@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreatePostInput } from "@/lib/services/postService";
+import { CreatePostInput } from "@/services/postService";
 import { useGetCurrentUser } from "./useAuth";
 
 export function useCreatePostMutation() {

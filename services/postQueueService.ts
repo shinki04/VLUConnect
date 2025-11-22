@@ -1,7 +1,7 @@
 import { getRabbitMQClient } from "@/lib/rabbitmq/rabbitmq";
-import { createClient } from "@/lib/supabase/server";
-import { saveHashtagsFromContent } from "@/lib/services/hashtagService";
-import { uploadPostImages } from "@/lib/services/postService";
+import { createClient } from "@/lib/supabase/client";
+import { saveHashtagsFromContent } from "@/services/hashtagService";
+import { uploadPostImages } from "@/services/postService";
 import { privacyPost } from "@/types/post";
 
 interface MediaFile {

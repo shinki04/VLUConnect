@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/client";
 import { extractHashtags } from "@/lib/hashtagUtils";
 import { getRedisClient } from "@/lib/redis/redis";
 

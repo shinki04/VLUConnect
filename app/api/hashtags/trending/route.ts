@@ -1,6 +1,4 @@
-import {
-  getTrendingHashtags,
-} from "@/lib/services/hashtagService";
+import { getTrendingHashtags } from "@/services/hashtagService";
 
 /**
  * GET /api/hashtags/trending

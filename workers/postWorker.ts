@@ -2,7 +2,10 @@ import { getRabbitMQClient } from "@/lib/rabbitmq/rabbitmq";
 import {
   processPostCreation,
   PostCreateJobPayload,
-} from "@/lib/services/postQueueService";
+} from "@/services/postQueueService";
+import { config } from "dotenv";
+import { resolve } from "path";
+config({ path: resolve(process.cwd(), ".env.local") });
 
 /**
  * Worker process that consumes messages from RabbitMQ queue
@@ -12,7 +15,8 @@ export async function startPostWorker() {
 
   try {
     const rabbitMQ = getRabbitMQClient();
-
+    const res = rabbitMQ.isReady();
+    console.log(res);
     // Connect to RabbitMQ
     await rabbitMQ.connect();
 
@@ -46,7 +50,9 @@ export async function startPostWorker() {
   }
 }
 
+console.log("WORKER", process.argv[1]);
 // Start the worker if run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  startPostWorker().catch(console.error);
-}
+// if (import.meta.url === `file://${process.argv[1]}`) {
+//   startPostWorker().catch(console.error);
+// }
+startPostWorker().catch(console.error);

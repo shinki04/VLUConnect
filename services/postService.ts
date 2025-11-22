@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Post } from "@/types/post";
 
-const supabase = createClient();
-
 export interface CreatePostInput {
   content: string;
   privacy_level: "public" | "friends" | "private";
@@ -18,6 +16,8 @@ export async function uploadPostImages(
   files: File[],
   userId: string
 ): Promise<string[]> {
+  const supabase = await createClient();
+
   const uploadedUrls: string[] = [];
 
   for (const file of files) {
@@ -50,6 +50,8 @@ export async function createPost(
   input: CreatePostInput,
   userId: string
 ): Promise<CreatePostResponse> {
+  const supabase = await createClient();
+
   // Upload media files first
   const mediaUrls = await uploadPostImages(input.media, userId);
 
@@ -78,6 +80,8 @@ export async function fetchPosts(
   page: number,
   itemsPerPage: number
 ): Promise<Post[]> {
+  const supabase = await createClient();
+
   const offset = (page - 1) * itemsPerPage;
   const { data, error } = await supabase
     .from("posts")
@@ -93,6 +97,8 @@ export async function fetchPosts(
 }
 
 export async function fetchPostById(postId: string): Promise<Post | null> {
+  const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("posts")
     .select()
@@ -111,6 +117,8 @@ export async function fetchPostById(postId: string): Promise<Post | null> {
 }
 
 export async function deletePost(postId: string): Promise<void> {
+  const supabase = await createClient();
+
   const { error } = await supabase.from("posts").delete().eq("id", postId);
 
   if (error) {
@@ -123,6 +131,8 @@ export async function updatePost(
   content: string,
   privacy_level: "public" | "friends" | "private"
 ): Promise<Post> {
+  const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("posts")
     .update({ content, privacy_level })

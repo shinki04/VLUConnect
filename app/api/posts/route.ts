@@ -1,7 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
-import { queuePostCreation } from "@/lib/services/postQueueService";
+import { queuePostCreation } from "@/services/postQueueService";
+import { fetchPosts } from "@/services/postService";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function GET(
+  request: NextRequest,
+  params: Promise<{ page?: string; itemsPerPage: number }>
+) {
+  try {
+    const { page: pageParam, itemsPerPage } = await params;
+    const page = parseInt(pageParam || "1", 10);
+    const posts = await fetchPosts(page, itemsPerPage || 10);
+
+    return NextResponse.json(posts);
+  } catch (error) {
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : "Internal server error",
+      status: 500,
+    });
+  }
+}
+
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const {
@@ -9,7 +29,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     let formData;
@@ -18,7 +38,7 @@ export async function POST(request: Request) {
       formData = await request.formData();
     } catch (formError) {
       console.error("FormData parse error:", formError);
-      return Response.json(
+      return NextResponse.json(
         {
           error:
             "Failed to parse form data. The files may be too large. Maximum recommended size: 100MB total",
@@ -47,7 +67,10 @@ export async function POST(request: Request) {
     }
 
     if (!content?.trim()) {
-      return Response.json({ error: "Content is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Content is required" },
+        { status: 400 }
+      );
     }
 
     // Queue the post creation with files
@@ -60,7 +83,7 @@ export async function POST(request: Request) {
     );
 
     // Return immediately to client with 202 Accepted status
-    return Response.json(
+    return NextResponse.json(
       {
         message: "Post creation queued successfully",
         filesQueued: mediaFiles.length,
@@ -69,7 +92,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("API error:", error);
-    return Response.json(
+    return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal server error",
       },

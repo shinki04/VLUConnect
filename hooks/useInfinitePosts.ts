@@ -1,7 +1,6 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchPosts } from "@/lib/services/postService";
 import { Post } from "@/types/post";
 
 const ITEMS_PER_PAGE = 10;
@@ -16,7 +15,11 @@ export function useInfinitePostsQuery() {
   return useInfiniteQuery({
     queryKey: ["posts", "infinite"],
     queryFn: async ({ pageParam = 1 }) => {
-      const posts = await fetchPosts(pageParam, ITEMS_PER_PAGE);
+      const res = await fetch(
+        `/api/posts?page=${pageParam}&itemsPerPage=${ITEMS_PER_PAGE}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch posts");
+      const posts = await res.json();
       return {
         posts,
         page: pageParam,

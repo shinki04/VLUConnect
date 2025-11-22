@@ -129,7 +129,7 @@ function AddPost({ currentUser }: AddPostProps) {
           media: mediaPreviews.map((p) => p.file),
         });
 
-        toast.success("Bài viết đã được đăng thành công!");
+        toast.success("Bài viết đã được đưa vào hàng đợi!");
 
         // Reset form
         form.reset();
