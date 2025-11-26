@@ -33,7 +33,6 @@ export default async function DashboardPage() {
       staleTime: 10000,
     }),
   ]);
-
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>

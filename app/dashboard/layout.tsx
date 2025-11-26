@@ -1,4 +1,5 @@
 import LightRays from "@/components/LightRays";
+import { TrendingHashtags } from "@/components/TrendingHashtags";
 import * as React from "react";
 
 interface DashboardLayoutProps {
@@ -22,7 +23,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           className="custom-rays"
         />
       </div>
-      <section className="container mx-auto relative z-1">{children}</section>
+      <section className="container mx-auto relative z-1">
+        <div className="flex flex-row gap-3">
+          <div>
+            <TrendingHashtags className="sticky top-0" />
+          </div>
+          <div> {children}</div>
+        </div>
+      </section>
     </>
   );
 }

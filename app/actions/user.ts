@@ -54,7 +54,7 @@ export async function getCurrentUser(): Promise<User> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
 
-  if (!data.user || error) {
+  if (!data || error) {
     redirect("/login");
   }
 
@@ -74,7 +74,6 @@ export async function getCurrentUser(): Promise<User> {
   if (profileError || !profile) {
     throw new Error(profileError?.message || "Profile not found");
   }
-
   // Set cache asynchronously without waiting
   setUserCache(profile.id, profile).catch(console.error);
 
@@ -146,7 +145,7 @@ async function uploadAvatar(userId: string, image: File): Promise<string> {
   const fileName = `${crypto.randomUUID()}.${fileExt}`;
   const filePath = `${userId}/${fileName}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("avatars")
     .upload(filePath, image, {
       contentType: image.type,
@@ -156,8 +155,12 @@ async function uploadAvatar(userId: string, image: File): Promise<string> {
   if (error) {
     throw new Error(`Avatar upload failed: ${error.message}`);
   }
+  // Get public URL
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-  return data.fullPath;
+  return publicUrl;
 }
 
 // Update functions

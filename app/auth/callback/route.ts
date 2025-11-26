@@ -89,7 +89,6 @@ export async function GET(request: Request) {
 
     // Prepare user profile data
     const fullName = user.user_metadata?.full_name || `User ${user.id}`;
-    const avatarUrl = user.user_metadata?.avatar_url ?? BLANK_AVATAR;
     // Upsert user profile
     const { data: profile, error: upsertError } = await supabase
       .from("profiles")
@@ -97,14 +96,13 @@ export async function GET(request: Request) {
         {
           id: user.id,
           username: fullName,
-          avatar_url: avatarUrl,
           email: user.email,
           global_role: DEFAULT_ROLE,
+          avatar_url: BLANK_AVATAR,
         },
-        { onConflict: "id" }
+        { onConflict: "id", ignoreDuplicates: true }
       )
-      .select()
-      .single();
+      .select();
 
     if (upsertError) {
       console.error("Profile upsert failed:", upsertError);
@@ -116,9 +114,13 @@ export async function GET(request: Request) {
     }
 
     // Cache user profile (non-blocking)
-    redis.setCache(`user:${user.id}`, profile, USER_CACHE_TTL).catch((err) => {
-      console.error("Cache set failed:", err);
-    });
+    if (profile !== null && profile.length > 0) {
+      redis
+        .setCache(`user:${user.id}`, profile, USER_CACHE_TTL)
+        .catch((err) => {
+          console.error("Cache set failed:", err);
+        });
+    }
 
     // Successful login - redirect to intended destination
     const redirectUrl = getRedirectUrl(origin, next, request);
