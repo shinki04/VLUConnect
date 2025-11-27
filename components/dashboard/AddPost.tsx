@@ -7,6 +7,16 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
   X,
   FileText,
   Video,
@@ -17,6 +27,7 @@ import {
 import { useCreatePostMutation } from "@/hooks/usePost";
 import { getFileInfo, isImageType, isVideoType } from "@/lib/mediaUtils";
 import { Card } from "../ui/card";
+import { privacyPost } from "@/types/post";
 
 interface AddPostProps {
   currentUser: User;
@@ -101,7 +112,7 @@ function AddPost({ currentUser }: AddPostProps) {
     defaultValues: {
       content: "",
       media: [] as File[],
-      privacy_level: "public" as const,
+      privacy_level: "public" as privacyPost,
     },
     // validators: {
     //   onSubmit: createPostSchema,
@@ -179,15 +190,16 @@ function AddPost({ currentUser }: AddPostProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nội dung *
               </label>
-              <textarea
+              <Textarea
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full px-3 py-2  resize-none"
                 placeholder="Bạn đang nghĩ gì?..."
               />
+
               <div className="flex justify-between text-sm text-gray-500 mt-1">
                 <div className="text-red-500">
                   {field.state.meta.errors.length > 0 &&
@@ -226,7 +238,7 @@ function AddPost({ currentUser }: AddPostProps) {
             className="block w-full text-sm text-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 50MB/file)
+            Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 10MB/file)
           </p>
         </div>
 
@@ -291,18 +303,36 @@ function AddPost({ currentUser }: AddPostProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Quyền riêng tư
               </label>
-              <select
-                name={field.name}
+
+              <Select
+                // Nhận giá trị từ form
                 value={field.state.value}
-                onBlur={field.handleBlur}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={(e) => field.handleChange(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onOpenChange={(open) => {
+                  if (!open) field.handleBlur();
+                }}
+                onValueChange={(value) =>
+                  field.handleChange(value as privacyPost)
+                }
               >
-                <option value="public">Công khai</option>
-                <option value="friends">Bạn bè</option>
-                <option value="private">Chỉ mình tôi</option>
-              </select>
+                <SelectTrigger id="privacy-level" className="w-full">
+                  <SelectValue placeholder="Chọn quyền riêng tư" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Chọn quyền riêng tư cho bài viết</SelectLabel>
+                    <SelectItem value="public">Công khai</SelectItem>
+                    <SelectItem value="friends">Bạn bè</SelectItem>
+                    <SelectItem value="private">Chỉ mình tôi</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+
+              {/* Hiển thị lỗi nếu cần */}
+              {field.state.meta.errors && field.state.meta.isTouched && (
+                <p className="text-red-500 text-sm mt-1">
+                  {field.state.meta.errors}
+                </p>
+              )}
             </div>
           )}
         </form.Field>
