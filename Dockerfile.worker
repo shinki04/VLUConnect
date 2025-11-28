@@ -1,0 +1,40 @@
+# Build stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy node modules and source from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/workers ./workers
+
+# Create environment file placeholder
+ENV NODE_ENV=production
+
+CMD ["pnpm", "exec", "tsx", "workers/postWorker.ts"]

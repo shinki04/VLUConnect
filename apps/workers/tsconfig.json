@@ -1,0 +1,16 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "moduleResolution": "NodeNext",
+    "baseUrl": ".", // baseUrl của app web
+    "paths": {
+      "@/*": ["./src/*"] // Cho phép import từ apps/web
+    }
+  },
+  "watch": true,
+  "include": ["src/**/*"],
+
+  "exclude": ["node_modules", "dist"]
+}

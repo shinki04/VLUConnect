@@ -5,6 +5,3 @@ onlyBuiltDependencies:
   - sharp
   - supabase
   - unrs-resolver
-packages:
-  - "apps/*"
-  - "packages/*"
