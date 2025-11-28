@@ -46,3 +46,7 @@ temp/*
 sequence-diagram/*
 .idea
 .turbo
+<<<<<<< HEAD
+=======
+*.tsbuildinfo
+>>>>>>> feat/post
