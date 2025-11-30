@@ -1,7 +1,8 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Post } from "@/types/post";
+
+import { Post } from "@repo/shared/types/post";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -20,7 +21,7 @@ export function useInfinitePostsQuery() {
       );
       if (!res.ok) throw new Error("Failed to fetch posts");
       const data = await res.json();
-      
+
       // API now returns { posts, hasMore, total, currentPage }
       return {
         posts: data.posts || [],

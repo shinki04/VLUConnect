@@ -1,0 +1,17 @@
+{
+    "name": "@repo/utils",
+    "version": "0.0.0",
+    "private": true,
+    "publishConfig": {
+        "access": "public"
+    },
+    "exports": {
+        "./*": "./src/*.ts"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@repo/shared": "workspace:*"
+    }
+}

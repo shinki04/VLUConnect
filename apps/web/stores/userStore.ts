@@ -1,5 +1,6 @@
-import { User } from "@/types/user";
 import { create } from "zustand";
+
+import { User } from "@/types/user";
 
 // Define types for state & actions
 interface UserState {

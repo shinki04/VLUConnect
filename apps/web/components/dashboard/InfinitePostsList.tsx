@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
-import { useInfinitePostsQuery } from "@/hooks/useInfinitePosts";
+import React, { useCallback,useEffect, useRef } from "react";
+
 import PostCard from "@/components/dashboard/PostCard";
-import { Skeleton } from "../ui/skeleton";
+import { useInfinitePostsQuery } from "@/hooks/useInfinitePosts";
 import { PostResponse } from "@/types/post";
+
+import { Skeleton } from "../ui/skeleton";
 import PendingPost from "./PendingPost";
 
 export function InfinitePostsList() {

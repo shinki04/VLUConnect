@@ -1,5 +1,6 @@
-import { getPostsByHashtag } from "@/services/hashtagService";
 import { NextRequest } from "next/server";
+
+import { getPostsByHashtag } from "@/services/hashtagService";
 
 /**
  * GET /api/hashtags/[name]/posts

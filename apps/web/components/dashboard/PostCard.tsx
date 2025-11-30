@@ -1,17 +1,19 @@
 "use client";
 
-import React from "react";
-import { PostResponse } from "@/types/post";
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
-import { Card } from "../ui/card";
+import Image from "next/image";
+import React from "react";
+
 import { getFileInfo, isImageType, isVideoType } from "@/lib/mediaUtils";
+import { PostResponse } from "@/types/post";
+
+import { Card } from "../ui/card";
 import MediaGalleryModal from "./MediaGalleryModal";
 import MediaLightbox from "./MediaLightbox";
 import ReadMore from "./ReadMore";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 
 interface PostCardProps {
   post: PostResponse;

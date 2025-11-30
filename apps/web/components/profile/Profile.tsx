@@ -1,27 +1,28 @@
 "use client";
-import { useGetCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { Button } from "../ui/button";
+import { getUserAvatars } from "@/app/actions/user";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { Avatar, BLANK_AVATAR, User } from "@/types/user";
-import { FieldErrors } from "../FieldErrors";
-import { toast } from "sonner";
-import OldAvatars from "./OldAvatars";
-import { getUserAvatars } from "@/app/actions/user";
-import { useRouter } from "next/navigation";
+import { useGetCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { updateProfileSchema } from "@/lib/validations/updateProfile-schema";
+import { Avatar, BLANK_AVATAR, User } from "@/types/user";
+
+import { FieldErrors } from "../FieldErrors";
+import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import OldAvatars from "./OldAvatars";
 
 interface ProfileProps {
   user: User;

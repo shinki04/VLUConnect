@@ -1,4 +1,4 @@
-import { Enums, Tables } from "@/types/database.types";
+import { Enums, Tables } from "./database.types.js";
 
 export type User = Tables<"profiles">;
 export type Global_Roles = Enums<"global_roles">;

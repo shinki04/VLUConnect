@@ -7,7 +7,7 @@ import globals from "globals";
 import pluginNext from "@next/eslint-plugin-next";
 import { config as baseConfig } from "./base.js";
 import { globalIgnores } from "eslint/config";
-
+import unusedImports from "eslint-plugin-unused-imports";
 /**
  * A custom ESLint configuration for libraries that use Next.js.
  *
@@ -72,4 +72,29 @@ export const nextJsConfig = [
     "next-env.d.ts",
     "types/database.types.ts",
   ]),
+  {
+    settings: {
+      "import/resolver": {
+        node: {
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
+        },
+      },
+      "simple-import-sort": {
+        groups: [
+          // Node.js built-in modules
+          ["^node:"],
+          // Các module từ node_modules (bao gồm React)
+          ["^react", "^@?\\w"],
+          // Các module nội bộ dự án
+          ["^@/"],
+          // Các import có side effect
+          ["^\\u0000"],
+          // Các import khác
+          ["^\\.\\/"],
+          // Các import style
+          ["^\\.\\.\\/"],
+        ],
+      },
+    },
+  },
 ];

@@ -4,13 +4,12 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "moduleResolution": "NodeNext",
-    "baseUrl": ".", // baseUrl của app web
     "paths": {
       "@/*": ["./src/*"] // Cho phép import từ apps/web
     }
   },
   "watch": true,
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
 
   "exclude": ["node_modules", "dist"]
 }

@@ -1,7 +1,8 @@
+import Link from "next/link";
 import * as React from "react";
 
+import { NavUser } from "@/components/nav-user";
 import { SearchForm } from "@/components/search-form";
-import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -15,9 +16,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { VersionSwitcher } from "@/components/version-switcher";
 import { AdminSidebarData } from "@/constants/admin-sidebar";
-import Link from "next/link";
-import { NavUser } from "@/components/nav-user";
 import { User } from "@/types/user";
 
 // Định nghĩa interface riêng

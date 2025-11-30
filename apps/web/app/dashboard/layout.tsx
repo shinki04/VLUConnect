@@ -1,6 +1,7 @@
+import * as React from "react";
+
 import LightRays from "@/components/LightRays";
 import { TrendingHashtags } from "@/components/TrendingHashtags";
-import * as React from "react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

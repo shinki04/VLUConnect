@@ -1,0 +1,17 @@
+{
+    "name": "@repo/redis",
+    "version": "0.0.0",
+    "private": true,
+    "publishConfig": {
+        "access": "public"
+    },
+    "exports": {
+        "./*": "./src/*.ts"
+    },
+    "dependencies": {
+        "ioredis": "^5.8.2"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "workspace:*"
+    }
+}

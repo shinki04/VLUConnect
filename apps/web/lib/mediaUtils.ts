@@ -131,7 +131,7 @@ export function getFileInfo(url: string, mimeType?: string): FileInfo {
 
   // Nếu không, guess từ URL extension
   const urlWithoutQuery = url.split("?")[0];
-  const extension = urlWithoutQuery.split(".").pop()?.toLowerCase() || "";
+  const extension = urlWithoutQuery!.split(".").pop()?.toLowerCase() || "";
 
   const extensionMap: Record<string, FileInfo> = {
     jpg: { type: "image", icon: "🖼️", label: "JPEG Image", extension: ".jpg" },

@@ -1,12 +1,13 @@
-import { getUserProfile } from "@/app/actions/user";
-import Profile from "@/components/profile/Profile";
-import { User } from "@/types/user";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
 import React from "react";
+
+import { getUserProfile } from "@/app/actions/user";
+import Profile from "@/components/profile/Profile";
+import { User } from "@repo/shared/types/user";
 
 interface ProfileIdPageProps {
   params: Promise<{ id: string }>;

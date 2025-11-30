@@ -1,11 +1,18 @@
 "use client";
-import { createPostSchema } from "@/lib/validations/addPost-schema";
-import type { User } from "@/types/user";
+import { privacyPost } from "@repo/shared/types/post";
 import { useForm } from "@tanstack/react-form";
+import {
+  File,
+  FileText,
+  Image as ImageIcon,
+  Sheet,
+  Video,
+  X,
+} from "lucide-react";
+import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import Image from "next/image";
+
 import {
   Select,
   SelectContent,
@@ -16,18 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  X,
-  FileText,
-  Video,
-  Image as ImageIcon,
-  File,
-  Sheet,
-} from "lucide-react";
 import { useCreatePostMutation } from "@/hooks/usePost";
 import { getFileInfo, isImageType, isVideoType } from "@/lib/mediaUtils";
+import { createPostSchema } from "@/lib/validations/addPost-schema";
+import type { User } from "@repo/shared/types/user";
+
+import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { privacyPost } from "@/types/post";
 
 interface AddPostProps {
   currentUser: User;

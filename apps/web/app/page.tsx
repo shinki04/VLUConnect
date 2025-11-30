@@ -1,5 +1,6 @@
-import Threads from "@/components/Threads";
 import Image from "next/image";
+
+import Threads from "@/components/Threads";
 
 export default function Home() {
   return (

@@ -1,13 +1,13 @@
 "use client";
 
-import { getQueryClient } from "@/lib/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
+// import { SessionProvider } from 'next-auth/react'
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
-// import { SessionProvider } from 'next-auth/react'
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useToastFromCookie } from "@/hooks/useToastFromCookies";
+import { getQueryClient } from "@/lib/react-query";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // NOTE: Avoid useState when initializing the query client if you don't

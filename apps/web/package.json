@@ -60,6 +60,9 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/shared": "workspace:*",
+    "@repo/rabbitmq": "workspace:*",
+    "@repo/redis": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/amqplib": "^0.10.8",
     "@types/node": "^20",

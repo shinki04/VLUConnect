@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useRef, useEffect, useState } from "react";
-import { Renderer, Program, Triangle, Mesh } from "ogl";
+import { Mesh,Program, Renderer, Triangle } from "ogl";
+import { useEffect, useRef, useState } from "react";
 
 export type RaysOrigin =
   | "top-center"

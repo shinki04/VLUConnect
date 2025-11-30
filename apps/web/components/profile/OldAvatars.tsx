@@ -1,7 +1,8 @@
-import supabaseLoader from "@/lib/supabase/supabase-image-loader";
-import type { Avatar } from "@/types/user";
 import Image from "next/image";
 import React from "react";
+
+import supabaseLoader from "@/lib/supabase/supabase-image-loader";
+import type { Avatar } from "@/types/user";
 
 interface OldAvatarsProps {
   avatars: Avatar[];
