@@ -1,6 +1,7 @@
-import { Database } from "@/types/database.types";
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+
+import { Database } from "@repo/shared/types/database.types";
 
 export async function updateSession(request: NextRequest) {
   const publicPaths = ["/", "/login", "/auth/callback"];

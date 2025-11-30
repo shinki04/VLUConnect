@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { BLANK_AVATAR, Global_Roles } from "@/types/user";
+
 import { getRedisClient } from "@/lib/redis/redis";
+import { createClient } from "@/lib/supabase/server";
+import { BLANK_AVATAR, Global_Roles } from "@repo/shared/types/user";
 
 const COOKIE_CONFIG = {
   path: "/",
@@ -15,7 +16,6 @@ const DEFAULT_ROLE: Global_Roles = "student";
 const USER_CACHE_TTL = 3600;
 
 const redis = getRedisClient();
-
 
 const redirectWithCookie = (url: string, name: string, value: string) => {
   const res = NextResponse.redirect(url);

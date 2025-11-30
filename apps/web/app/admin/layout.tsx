@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import React from "react";
 
 import { Separator } from "@/components/ui/separator";
@@ -6,9 +7,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { AppSidebar } from "./_component/app-sidebar";
+
 import { getCurrentUser } from "../actions/user";
-import { redirect } from "next/navigation";
+import { AppSidebar } from "./_component/app-sidebar";
 interface AdminPageProps {
   children: React.ReactNode;
 }

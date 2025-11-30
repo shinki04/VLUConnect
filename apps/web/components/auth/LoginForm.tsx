@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import React from "react";
+
+import { signInWithAzure } from "@/app/auth/action";
 import { Button } from "@/components/ui/button";
 import { ERROR_MESSAGES, ErrorMessageKey } from "@/types/login-error";
-import { signInWithAzure } from "@/app/auth/action";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();

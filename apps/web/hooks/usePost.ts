@@ -1,14 +1,14 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { CreatePostInput } from "@/services/postService";
-import { useGetCurrentUser } from "./useAuth";
 import { toast } from "sonner";
-import { createQueueStatus } from "@/services/postQueueStatusService";
+
+import { useGetCurrentUser } from "./useAuth";
+import { createQueueStatus } from "@/app/actions/post-queue";
+import { CreatePostInput } from "@/lib/validations/addPost-schema";
 
 export function useCreatePostMutation() {
   const { data: user } = useGetCurrentUser();
-  console.log(user);
 
   return useMutation({
     mutationFn: async (input: CreatePostInput) => {

@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/client";
-import { extractHashtags } from "@/lib/hashtagUtils";
-import { getRedisClient } from "@/lib/redis/redis";
+import { extractHashtags } from "@repo/utils/hashtagUtils";
+import { getRedisClient } from "@repo/redis/redis";
+import { createServiceClient } from "../supabase/services_roles";
 
 interface HashtagWithCount {
   id: string;
@@ -16,7 +16,7 @@ export async function saveHashtagsFromContent(
   content: string,
   postId: string
 ): Promise<HashtagWithCount[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const hashtags = extractHashtags(content);
 
   if (hashtags.length === 0) {
@@ -129,7 +129,7 @@ export async function getTrendingHashtags(
   }
 
   // Fetch from database
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: hashtags, error } = await supabase
     .from("hashtags")
     .select("*")
@@ -157,7 +157,7 @@ export async function searchHashtags(
   query: string,
   limit: number = 20
 ): Promise<HashtagWithCount[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: hashtags, error } = await supabase
     .from("hashtags")
@@ -182,7 +182,7 @@ export async function getPostsByHashtag(
   limit: number = 10,
   offset: number = 0
 ) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // Get hashtag ID
   const { data: hashtag, error: hashtagError } = await supabase
@@ -225,7 +225,7 @@ export async function getPostsByHashtag(
 export async function getHashtagsForPost(
   postId: string
 ): Promise<HashtagWithCount[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: postHashtags, error } = await supabase
     .from("post_hashtags")
@@ -245,7 +245,7 @@ export async function getHashtagsForPost(
  * Delete hashtag and all associations
  */
 export async function deleteHashtag(hashtagId: string): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // This will cascade delete due to ON DELETE CASCADE
   const { error } = await supabase

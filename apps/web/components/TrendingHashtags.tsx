@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { RefreshCw, Search,TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { useHashtagTrending } from "@/hooks/useHashtagTrending";
-import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, RefreshCw, Search } from "lucide-react";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useHashtagTrending } from "@/hooks/useHashtagTrending";
 import { cn } from "@/lib/utils";
 
 interface TrendingHashtagsProps {

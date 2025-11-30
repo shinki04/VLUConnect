@@ -1,6 +1,8 @@
 "use client";
-import { usePostQueueStatus } from "@/hooks/usePostQueueStatus";
 import React from "react";
+
+import { usePostQueueStatus } from "@/hooks/usePostQueueStatus";
+
 import PostCard from "./PostCard";
 
 function PendingPost() {

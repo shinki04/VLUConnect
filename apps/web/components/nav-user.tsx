@@ -5,6 +5,7 @@ import {
   LogOut,
 } from "lucide-react";
 
+import { signOut } from "@/app/auth/action";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -21,7 +22,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { User } from "@/types/user";
-import { signOut } from "@/app/auth/action";
 
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();

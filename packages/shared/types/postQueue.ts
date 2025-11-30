@@ -1,5 +1,5 @@
-import { Enums, Tables } from "./database.types";
-import { Post } from "./post";
+import { Enums, Tables } from "./database.types.js";
+import { Post } from "./post.js";
 
 export type PostQueueStatus = Enums<"queue_status">;
 

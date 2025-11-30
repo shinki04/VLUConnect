@@ -1,17 +1,18 @@
-import * as React from "react";
-
-import { Button } from "@/components/ui/button";
-import { signOut } from "../auth/action";
-import Tepm from "@/components/dashboard/temp";
-import { getCurrentUser } from "../actions/user";
-import Link from "next/link";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import Link from "next/link";
+import * as React from "react";
+
 import AddPost from "@/components/dashboard/AddPost";
 import ListPosts from "@/components/dashboard/ListPosts";
+import Tepm from "@/components/dashboard/temp";
+import { Button } from "@/components/ui/button";
+
+import { getCurrentUser } from "../actions/user";
+import { signOut } from "../auth/action";
 
 // interface DashboardPageProps {
 //   propName: type;

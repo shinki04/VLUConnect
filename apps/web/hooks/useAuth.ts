@@ -1,10 +1,10 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import {
   getCurrentUser,
   getUserProfile,
   updateProfileWithAvatar,
 } from "@/app/actions/user";
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useGetCurrentUser() {
   return useQuery({

@@ -8,9 +8,18 @@ importers:
 
   .:
     devDependencies:
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.46.4
+        version: 8.48.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
       eslint:
-        specifier: ^9.34.0
+        specifier: ^9.39.1
         version: 9.39.1(jiti@2.6.1)
+      eslint-config-next:
+        specifier: 16.0.0
+        version: 16.0.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
+      eslint-plugin-unused-imports:
+        specifier: ^4.3.0
+        version: 4.3.0(@typescript-eslint/eslint-plugin@8.48.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))
       lefthook:
         specifier: ^2.0.4
         version: 2.0.4
@@ -156,6 +165,15 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@repo/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@repo/redis':
+        specifier: workspace:*
+        version: link:../../packages/redis
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -226,18 +244,27 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@repo/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@repo/redis':
+        specifier: workspace:*
+        version: link:../../packages/redis
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@types/amqplib':
         specifier: ^0.10.8
         version: 0.10.8
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^8.46.4
-        version: 8.48.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
-      lefthook:
-        specifier: ^2.0.4
-        version: 2.0.4
+      supabase:
+        specifier: ^2.54.11
+        version: 2.63.1
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
@@ -246,6 +273,10 @@ importers:
         version: 5.9.2
 
   packages/eslint-config:
+    dependencies:
+      eslint-plugin-simple-import-sort:
+        specifier: ^12.1.1
+        version: 12.1.1(eslint@9.39.1(jiti@2.6.1))
     devDependencies:
       '@eslint/js':
         specifier: ^9.34.0
@@ -271,6 +302,9 @@ importers:
       eslint-plugin-turbo:
         specifier: ^2.5.0
         version: 2.6.1(eslint@9.39.1(jiti@2.6.1))(turbo@2.6.1)
+      eslint-plugin-unused-imports:
+        specifier: ^4.3.0
+        version: 4.3.0(@typescript-eslint/eslint-plugin@8.48.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))
       globals:
         specifier: ^16.3.0
         version: 16.5.0
@@ -281,7 +315,57 @@ importers:
         specifier: ^8.40.0
         version: 8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
 
+  packages/rabbitmq:
+    dependencies:
+      amqplib:
+        specifier: ^0.10.9
+        version: 0.10.9
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/amqplib':
+        specifier: ^0.10.8
+        version: 0.10.8
+
+  packages/redis:
+    dependencies:
+      ioredis:
+        specifier: ^5.8.2
+        version: 5.8.2
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+
+  packages/shared:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+
   packages/typescript-config: {}
+
+  packages/utils:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
 
 packages:
 
@@ -619,8 +703,8 @@ packages:
     resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/eslintrc@3.3.1':
-    resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
+  '@eslint/eslintrc@3.3.3':
+    resolution: {integrity: sha512-Kr+LPIUVKz2qkx1HAMH8q1q6azbqBAsXJUxBl/ODDuVPX45Z9DfwB8tPjTi6nNZ8BuM3nbJxC5zCAg5elnBUTQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.39.1':
@@ -2348,6 +2432,11 @@ packages:
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
+
+  eslint-plugin-simple-import-sort@12.1.1:
+    resolution: {integrity: sha512-6nuzu4xwQtE3332Uz0to+TxDQYRLTKRESSc2hefVT48Zc8JthmN23Gx9lnYhu0FtkRSL1oxny3kJ2aveVhmOVA==}
+    peerDependencies:
+      eslint: '>=5.0.0'
 
   eslint-plugin-turbo@2.6.1:
     resolution: {integrity: sha512-nxwJD6ReZTxEmq/ZNJXI/Mfa3aXctTpQpJrQZESDC1bxjXXcz4i040P7wG6RsRRsQ+9eYB9D+KdCqERpwNZGzw==}
@@ -4531,7 +4620,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/eslintrc@3.3.1':
+  '@eslint/eslintrc@3.3.3':
     dependencies:
       ajv: 6.12.6
       debug: 4.4.3
@@ -6314,6 +6403,10 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
+  eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.1(jiti@2.6.1)):
+    dependencies:
+      eslint: 9.39.1(jiti@2.6.1)
+
   eslint-plugin-turbo@2.6.1(eslint@9.39.1(jiti@2.6.1))(turbo@2.6.1):
     dependencies:
       dotenv: 16.0.3
@@ -6342,7 +6435,7 @@ snapshots:
       '@eslint/config-array': 0.21.1
       '@eslint/config-helpers': 0.4.2
       '@eslint/core': 0.17.0
-      '@eslint/eslintrc': 3.3.1
+      '@eslint/eslintrc': 3.3.3
       '@eslint/js': 9.39.1
       '@eslint/plugin-kit': 0.4.1
       '@humanfs/node': 0.16.7

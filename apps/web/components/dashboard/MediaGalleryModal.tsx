@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { ChevronLeft, ChevronRight,X } from "lucide-react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
 
 interface MediaGalleryModalProps {
   mediaUrls: string[];

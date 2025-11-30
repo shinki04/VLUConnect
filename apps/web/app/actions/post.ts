@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/client";
-import { Post, PostResponse } from "@/types/post";
+import { createClient } from "@/lib/supabase/server";
+import { Post, PostResponse } from "@repo/shared/types/post";
 
 export interface CreatePostInput {
   content: string;

@@ -1,9 +1,10 @@
 "use server";
-import { getRedisClient } from "@/lib/redis/redis";
-import { createClient } from "@/lib/supabase/server";
-import { User } from "@/types/user";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
+import { getRedisClient } from "@repo/redis/redis";
+import { createClient } from "@/lib/supabase/server";
+import { User } from "@repo/shared/types/user";
 
 // Constants
 const CACHE_KEYS = {
@@ -98,9 +99,8 @@ export async function getUserProfile(id: string): Promise<User | null> {
     .eq("id", id)
     .single();
 
-
   if (error || !profile) {
-   console.error(error?.message || "Profile not found");
+    console.error(error?.message || "Profile not found");
     return null;
   }
 

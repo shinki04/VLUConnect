@@ -1,20 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PostQueueItem } from "@/types/postQueue";
+import { PostQueueItem } from "@repo/shared/types/postQueue";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   deleteQueueStatus,
   getQueueStatusByUser,
-} from "@/services/postQueueStatusService";
+} from "@/app/actions/post-queue";
 import { useGetCurrentUser } from "./useAuth";
 
-/**
- * Hook to subscribe to real-time queue status updates via Supabase Realtime
- * Shows toast notifications for each status change
- */
 export function usePostQueueStatus() {
   const [queueItems, setQueueItems] = useState<PostQueueItem[]>([]);
   const { data: user } = useGetCurrentUser();
@@ -28,7 +24,7 @@ export function usePostQueueStatus() {
     let channel: ReturnType<typeof supabaseClient.channel> | null = null;
 
     const setupRealtimeSubscription = async () => {
-      supabaseClient = await createClient();
+      supabaseClient = createClient();
 
       // Fetch initial queue items
       const initialItems = await getQueueStatusByUser(user.id);
@@ -50,82 +46,127 @@ export function usePostQueueStatus() {
 
             if (payload.eventType === "INSERT") {
               const newItem = payload.new as PostQueueItem;
-              setQueueItems((prev) => [newItem, ...prev]);
 
-              // Show loading toast
-              const toastId = toast.loading(
-                `Đang tải lên bài viết${
-                  newItem.media_count! > 0
-                    ? ` với ${newItem.media_count} file`
-                    : ""
-                }...`
-              );
-              toastIdsRef.current.set(newItem.id, toastId);
+              // Kiểm tra trùng lặp trước khi thêm
+              setQueueItems((prev) => {
+                const exists = prev.some((item) => item.id === newItem.id);
+                if (exists) return prev;
+                return [newItem, ...prev];
+              });
+
+              // Kiểm tra xem đã có toast cho item này chưa
+              if (!toastIdsRef.current.has(newItem.id)) {
+                const toastId = toast.loading(
+                  `Đang tải lên bài viết${
+                    newItem.media_count! > 0
+                      ? ` với ${newItem.media_count} file`
+                      : ""
+                  }...`
+                );
+                toastIdsRef.current.set(newItem.id, toastId);
+              }
             } else if (payload.eventType === "UPDATE") {
               const updatedItem = payload.new as PostQueueItem;
-              setQueueItems((prev) =>
-                prev.map((item) =>
-                  item.id === updatedItem.id ? updatedItem : item
-                )
-              );
+
+              // Cập nhật queue items (đảm bảo không duplicate)
+              setQueueItems((prev) => {
+                const filtered = prev.filter(
+                  (item) => item.id !== updatedItem.id
+                );
+                return [updatedItem, ...filtered];
+              });
 
               const existingToastId = toastIdsRef.current.get(updatedItem.id);
 
               if (updatedItem.status === "processing") {
-                // Update toast to processing
+                // QUAN TRỌNG: Sử dụng cùng ID để UPDATE toast hiện tại
                 if (existingToastId) {
                   toast.loading("Đang xử lý bài viết...", {
-                    id: existingToastId,
+                    id: existingToastId, // Sử dụng cùng ID
                   });
+                  // KHÔNG set lại trong ref vì đã có rồi
+                } else {
+                  // Nếu chưa có toast, tạo mới
+                  const toastId = toast.loading("Đang xử lý bài viết...");
+                  toastIdsRef.current.set(updatedItem.id, toastId);
                 }
               } else if (updatedItem.status === "completed") {
                 // Success toast
                 if (existingToastId) {
+                  // Tự động thay thế toast loading bằng success (không cần dismiss)
                   toast.success("Bài viết đã đăng thành công!", {
-                    id: existingToastId,
+                    id: existingToastId, // Sử dụng cùng ID
                   });
+
+                  // Xóa toastId khỏi ref sau 3 giây
+                  setTimeout(() => {
+                    toastIdsRef.current.delete(updatedItem.id);
+                  }, 3000);
+                } else {
+                  toast.success("Bài viết đã đăng thành công!");
                 }
 
-                // Invalidate posts query to refetch with new post
+                // Invalidate posts query
                 queryClient.invalidateQueries({ queryKey: ["posts"] });
 
-                // Remove from queue items after a delay
+                // Remove from queue after delay
                 setTimeout(() => {
                   setQueueItems((prev) =>
                     prev.filter((item) => item.id !== updatedItem.id)
                   );
-                  toastIdsRef.current.delete(updatedItem.id);
-
-                  // Delete from database
                   deleteQueueStatus(updatedItem.id);
                 }, 5000);
               } else if (updatedItem.status === "failed") {
-                // Error toast with retry option
+                // Error toast
                 if (existingToastId) {
-                  toast.dismiss(existingToastId);
+                  // Tự động thay thế toast loading bằng error (không cần dismiss)
+                  toast.error(updatedItem.error_message || "Lỗi khi đăng bài", {
+                    id: existingToastId, // Sử dụng cùng ID
+                    description: `Đã thử ${updatedItem.retry_count} lần`,
+                    action: {
+                      label: "Đóng",
+                      onClick: () => {
+                        setQueueItems((prev) =>
+                          prev.filter((item) => item.id !== updatedItem.id)
+                        );
+                        deleteQueueStatus(updatedItem.id);
+                        toastIdsRef.current.delete(updatedItem.id);
+                      },
+                    },
+                    duration: 10000,
+                  });
+                } else {
+                  toast.error(updatedItem.error_message || "Lỗi khi đăng bài", {
+                    description: `Đã thử ${updatedItem.retry_count} lần`,
+                    action: {
+                      label: "Đóng",
+                      onClick: () => {
+                        setQueueItems((prev) =>
+                          prev.filter((item) => item.id !== updatedItem.id)
+                        );
+                        deleteQueueStatus(updatedItem.id);
+                      },
+                    },
+                    duration: 10000,
+                  });
                 }
 
-                toast.error(updatedItem.error_message || "Lỗi khi đăng bài", {
-                  description: `Đã thử ${updatedItem.retry_count} lần`,
-                  action: {
-                    label: "Đóng",
-                    onClick: () => {
-                      // Remove failed item
-                      setQueueItems((prev) =>
-                        prev.filter((item) => item.id !== updatedItem.id)
-                      );
-                      deleteQueueStatus(updatedItem.id);
-                    },
-                  },
-                  duration: Infinity, // Keep visible
-                });
-                toastIdsRef.current.delete(updatedItem.id);
+                // Xóa khỏi ref sau 10 giây
+                setTimeout(() => {
+                  toastIdsRef.current.delete(updatedItem.id);
+                }, 10000);
               }
             } else if (payload.eventType === "DELETE") {
               const deletedItem = payload.old as PostQueueItem;
               setQueueItems((prev) =>
                 prev.filter((item) => item.id !== deletedItem.id)
               );
+
+              // Dismiss toast
+              const existingToastId = toastIdsRef.current.get(deletedItem.id);
+              if (existingToastId) {
+                toast.dismiss(existingToastId);
+              }
               toastIdsRef.current.delete(deletedItem.id);
             }
           }
@@ -135,18 +176,28 @@ export function usePostQueueStatus() {
 
     setupRealtimeSubscription();
 
-    // Cleanup
     return () => {
       if (channel) {
         channel.unsubscribe();
       }
+
+      // Cleanup all toasts
+      toastIdsRef.current.forEach((toastId) => {
+        toast.dismiss(toastId);
+      });
+      toastIdsRef.current.clear();
     };
   }, [user?.id, queryClient]);
 
-  // Get only pending/processing items for UI display
-  const pendingItems = queueItems.filter(
-    (item) => item.status === "pending" || item.status === "processing"
-  );
+  // Get only pending/processing items (đảm bảo unique)
+  const pendingItems = useMemo(() => {
+    const uniqueItems = Array.from(
+      new Map(queueItems.map((item) => [item.id, item])).values()
+    );
+    return uniqueItems.filter(
+      (item) => item.status === "pending" || item.status === "processing"
+    );
+  }, [queueItems]);
 
   return {
     queueItems: pendingItems,
