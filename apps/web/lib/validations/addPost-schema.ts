@@ -1,3 +1,4 @@
+import { privacyPost } from "@repo/shared/types/post";
 import { z } from "zod";
 
 // Định nghĩa các loại file được phép
@@ -46,7 +47,7 @@ export const fileMediaSchema = z
     "Kích thước file phải nhỏ hơn 10MB"
   );
 
-const privacyLevels = ["public", "friends", "private"] as const;
+const privacyLevels = ["public", "friends", "private"] as privacyPost;
 export type PrivacyPost = (typeof privacyLevels)[number];
 export const privacyLevelEnum = z.enum(privacyLevels);
 
@@ -58,9 +59,30 @@ export const createPostSchema = z.object({
   media: z
     .array(fileMediaSchema)
     .max(10, "Chỉ được chọn tối đa 10 file")
-    .optional()
     .default([]),
   privacy_level: privacyLevelEnum.default("public"),
 });
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;
+
+// Validator for individual fields
+export const validateContent = (value: string) => {
+  const schema = z
+    .string()
+    .min(1, "Nội dung không được để trống")
+    .max(5000, "Nội dung quá dài");
+  const result = schema.safeParse(value);
+  return result.success
+    ? undefined
+    : result.error.flatten().formErrors[0] || result.error.issues[0]?.message;
+};
+
+export const validateMedia = (files: File[]) => {
+  const schema = z
+    .array(fileMediaSchema)
+    .max(10, "Chỉ được chọn tối đa 10 file");
+  const result = schema.safeParse(files);
+  return result.success
+    ? undefined
+    : result.error.flatten().formErrors[0] || result.error.issues[0]?.message;
+};

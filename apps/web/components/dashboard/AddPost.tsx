@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import {
@@ -25,7 +25,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCreatePostMutation } from "@/hooks/usePost";
 import { getFileInfo, isImageType, isVideoType } from "@/lib/mediaUtils";
-import { createPostSchema } from "@/lib/validations/addPost-schema";
+import {
+  validateContent,
+  validateMedia,
+} from "@/lib/validations/addPost-schema";
 import type { User } from "@repo/shared/types/user";
 
 import { Button } from "../ui/button";
@@ -92,22 +95,12 @@ function AddPost({ currentUser }: AddPostProps) {
   };
 
   const removeMedia = (index: number) => {
-    setMediaPreviews((prev) => {
-      const updated = prev.filter((_, i) => i !== index);
+    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
 
-      // Always reset file input when removing files
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      // Update form field with remaining files
-      form.setFieldValue(
-        "media",
-        updated.map((p) => p.file)
-      );
-
-      return updated;
-    });
+    // Always reset file input when removing files
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const form = useForm({
@@ -116,9 +109,7 @@ function AddPost({ currentUser }: AddPostProps) {
       media: [] as File[],
       privacy_level: "public" as privacyPost,
     },
-    // validators: {
-    //   onSubmit: createPostSchema,
-    // },
+
     onSubmit: async ({ value }) => {
       if (!currentUser) {
         toast.error("Vui lòng đăng nhập để đăng bài");
@@ -126,16 +117,6 @@ function AddPost({ currentUser }: AddPostProps) {
       }
 
       try {
-        const validatedData = createPostSchema.safeParse(value);
-
-        if (!validatedData.success) {
-          const errors = validatedData.error.issues
-            .map((err) => err.message)
-            .join(", ");
-          toast.error(`Dữ liệu không hợp lệ: ${errors}`);
-          return;
-        }
-
         // Sử dụng TanStack Query mutation để upload
         await createPostMutation.mutateAsync({
           content: value.content,
@@ -154,6 +135,14 @@ function AddPost({ currentUser }: AddPostProps) {
       }
     },
   });
+
+  // Update form media field when mediaPreviews changes
+  useEffect(() => {
+    form.setFieldValue(
+      "media",
+      mediaPreviews.map((p) => p.file)
+    );
+  }, [mediaPreviews, form]);
 
   const getFileIcon = (mimeType: string) => {
     const fileInfo = getFileInfo("", mimeType);
@@ -186,11 +175,16 @@ function AddPost({ currentUser }: AddPostProps) {
         className="space-y-6"
       >
         {/* Content Field */}
-        <form.Field name="content">
+        <form.Field
+          name="content"
+          validators={{
+            onChange: ({ value }) => validateContent(value),
+          }}
+        >
           {(field) => (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nội dung *
+                Nội dung
               </label>
               <Textarea
                 name={field.name}
@@ -200,11 +194,12 @@ function AddPost({ currentUser }: AddPostProps) {
                 rows={4}
                 className="w-full px-3 py-2  resize-none"
                 placeholder="Bạn đang nghĩ gì?..."
+                required
               />
 
               <div className="flex justify-between text-sm text-gray-500 mt-1">
                 <div className="text-red-500">
-                  {field.state.meta.errors.length > 0 &&
+                  {field.state.meta.errors &&
                     field.state.meta.errors.join(", ")}
                 </div>
                 <div>{field.state.value.length}/5000</div>
@@ -214,35 +209,49 @@ function AddPost({ currentUser }: AddPostProps) {
         </form.Field>
 
         {/* Media Upload */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Thêm media (tối đa 10 file)
-            </label>
-            {mediaPreviews.length > 0 && (
-              <span className="text-sm text-blue-600 font-medium">
-                {mediaPreviews.length} file
-              </span>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,video/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.xltx"
-            onChange={(e) => {
-              handleMediaChange(e.target.files);
-              // Update form field with files
-              if (e.target.files) {
-                form.setFieldValue("media", Array.from(e.target.files));
-              }
-            }}
-            className="block w-full text-sm text-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 10MB/file)
-          </p>
-        </div>
+        <form.Field
+          name="media"
+          validators={{
+            onChange: ({ value }) => validateMedia(value),
+          }}
+        >
+          {(field) => (
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Thêm media (tối đa 10 file)
+                </label>
+                {mediaPreviews.length > 0 && (
+                  <span className="text-sm text-blue-600 font-medium">
+                    {mediaPreviews.length} file
+                  </span>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.xltx"
+                onChange={(e) => {
+                  handleMediaChange(e.target.files);
+                  // Update form field with files
+                  if (e.target.files) {
+                    field.handleChange(Array.from(e.target.files));
+                  }
+                }}
+                className="block w-full text-sm text-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 10MB/file)
+              </p>
+              {field.state.meta.errors && (
+                <p className="text-red-500 text-sm mt-1">
+                  {field.state.meta.errors.join(", ")}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
 
         {/* Media Previews */}
         {mediaPreviews.length > 0 && (

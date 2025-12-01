@@ -163,7 +163,7 @@ interface MediaFile {
   size: number;
 }
 
-export interface PostCreateJobPayload {
+export interface PostJobPayload {
   userId: string;
   content: string;
   privacyLevel: "public" | "friends" | "private";
@@ -238,7 +238,7 @@ export async function queuePostCreation(
     });
   }
 
-  const payload: PostCreateJobPayload = {
+  const payload: PostJobPayload = {
     userId,
     content,
     privacyLevel,
@@ -257,7 +257,7 @@ export async function queuePostCreation(
  * Process post creation job from queue
  * Handles file upload + post creation + hashtag extraction + queue status updates
  */
-export async function processPostCreation(payload: PostCreateJobPayload) {
+export async function processPostCreation(payload: PostJobPayload) {
   const supabase = await createClient();
 
   try {
