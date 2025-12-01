@@ -1,21 +1,28 @@
 "use server";
-import { privacyPost } from "@repo/shared/types/post";
-import { PostQueueItem, PostQueueStatus } from "@repo/shared/types/postQueue";
+import {
+  PostJobPayload,
+  PostQueueItem,
+  PostQueueStatus,
+} from "@repo/shared/types/postQueue";
 
 import { getPostRabbitMQClient } from "@repo/rabbitmq/PostRabbitMQ";
 import { createClient } from "@/lib/supabase/server";
-import { uploadPostImages } from "../../../workers/src/lib/services/post";
-import { saveHashtagsFromContent } from "../../../workers/src/lib/services/hashtag";
 
+export type TCreateQueue = {
+  userId: string;
+  content: string;
+  privacyLevel: "public" | "friends" | "private";
+  mediaCount: number;
+};
 /**
  * Create a new queue status entry when post is submitted
  */
-export async function createQueueStatus(
-  userId: string,
-  content: string,
-  privacyLevel: "public" | "friends" | "private",
-  mediaCount: number
-): Promise<PostQueueItem> {
+export async function createQueueStatus({
+  userId,
+  content,
+  privacyLevel,
+  mediaCount,
+}: TCreateQueue): Promise<PostQueueItem> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -163,14 +170,6 @@ interface MediaFile {
   size: number;
 }
 
-export interface PostJobPayload {
-  userId: string;
-  content: string;
-  privacyLevel: "public" | "friends" | "private";
-  media: MediaFile[]; // Changed from mediaUrls to media with base64
-  queueId?: string; // Track queue status ID
-}
-
 /**
  * Convert File to base64 for transmission over queue
  * Works in both browser and Node.js environments
@@ -211,145 +210,18 @@ function base64ToFile(base64: string, name: string, mimeType: string): File {
 
 /**
  * Publish a post creation job to the queue
- * Now includes media files as base64 and creates queue status entry
  */
-export async function queuePostCreation(
-  userId: string,
-  content: string,
-  privacyLevel: privacyPost,
-  mediaFiles: File[] = [],
-  queueId?: string
-) {
+
+export async function queuePostCreation(payload: PostJobPayload) {
   const rabbitMQ = getPostRabbitMQClient();
 
   if (!rabbitMQ.isReady()) {
     await rabbitMQ.connect();
   }
 
-  // Convert files to base64
-  const encodedMedia: MediaFile[] = [];
-  for (const file of mediaFiles) {
-    const base64Data = await fileToBase64(file);
-    encodedMedia.push({
-      name: file.name,
-      mimeType: file.type,
-      data: base64Data,
-      size: file.size,
-    });
-  }
-
-  const payload: PostJobPayload = {
-    userId,
-    content,
-    privacyLevel,
-    media: encodedMedia,
-    queueId, // Include queue ID for tracking
-  };
-
-  console.log(`📤 Queueing post with ${encodedMedia.length} files`);
+  if (!payload) throw new Error("Payload is null or undefined");
 
   return await rabbitMQ.publishPostCreate(
     payload as unknown as Record<string, unknown>
   );
-}
-
-/**
- * Process post creation job from queue
- * Handles file upload + post creation + hashtag extraction + queue status updates
- */
-export async function processPostCreation(payload: PostJobPayload) {
-  const supabase = await createClient();
-
-  try {
-    console.log(
-      `🔄 Processing post creation for user: ${payload.userId}, media: ${payload.media.length} files`
-    );
-
-    // Update status to 'processing'
-    if (payload.queueId) {
-      await updateQueueStatus(payload.queueId, "processing");
-    }
-
-    // Step 1: Upload files to Supabase Storage
-    let mediaUrls: string[] = [];
-    if (payload.media.length > 0) {
-      try {
-        console.log("📤 Uploading files to Supabase Storage...");
-
-        // Reconstruct File objects from base64
-        const filesToUpload = payload.media.map((media) =>
-          base64ToFile(media.data, media.name, media.mimeType)
-        );
-
-        mediaUrls = await uploadPostImages(filesToUpload, payload.userId);
-        console.log(`✅ Uploaded ${mediaUrls.length} files`);
-      } catch (uploadError) {
-        console.error("❌ Error uploading files:", uploadError);
-        const errorMessage =
-          uploadError instanceof Error ? uploadError.message : "Unknown error";
-
-        // Update status to 'failed' with error message
-        if (payload.queueId) {
-          await updateQueueStatus(
-            payload.queueId,
-            "failed",
-            undefined,
-            `Failed to upload files: ${errorMessage}`
-          );
-        }
-
-        throw new Error(`Failed to upload files: ${errorMessage}`);
-      }
-    }
-
-    // Step 2: Create post in database
-    console.log("📝 Creating post in database...");
-    const { data: post, error } = await supabase
-      .from("posts")
-      .insert({
-        author_id: payload.userId,
-        content: payload.content,
-        privacy_level: payload.privacyLevel,
-        media_urls: mediaUrls || [],
-      })
-      .select()
-      .single();
-
-    if (error) {
-      // Update status to 'failed' with error message
-      if (payload.queueId) {
-        await updateQueueStatus(
-          payload.queueId,
-          "failed",
-          undefined,
-          `Failed to create post: ${error.message}`
-        );
-      }
-      throw new Error(`Failed to create post: ${error.message}`);
-    }
-
-    console.log("✅ Post created successfully:", post.id);
-
-    // Step 3: Extract and save hashtags
-    try {
-      const hashtags = await saveHashtagsFromContent(payload.content, post.id);
-      if (hashtags.length > 0) {
-        console.log(`✅ Saved ${hashtags.length} hashtags for post`);
-      }
-    } catch (hashtagError) {
-      console.error("⚠️  Error saving hashtags:", hashtagError);
-      // Don't fail the post creation if hashtags fail
-    }
-
-    // Update status to 'completed' with post ID
-    if (payload.queueId) {
-      await updateQueueStatus(payload.queueId, "completed", post.id);
-    }
-
-    console.log("🎉 Post processing completed successfully");
-    return post;
-  } catch (error) {
-    console.error("❌ Error processing post creation:", error);
-    throw error;
-  }
 }

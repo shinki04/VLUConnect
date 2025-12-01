@@ -68,8 +68,7 @@ export async function saveHashtagsFromContent(
       }
 
       // Increment post_count using database function
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: incrementError } = await (supabase as any).rpc(
+      const { error: incrementError } = await supabase.rpc(
         "increment_hashtag_count",
         { hashtag_id: hashtagId }
       );

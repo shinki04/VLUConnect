@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import Dashboard from "@uppy/dashboard";
 
 import {
   Select,
@@ -33,6 +34,7 @@ import type { User } from "@repo/shared/types/user";
 
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { useUppyWithSupabase } from "@/hooks/useUppy";
 
 interface AddPostProps {
   currentUser: User;
@@ -49,6 +51,7 @@ function AddPost({ currentUser }: AddPostProps) {
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const createPostMutation = useCreatePostMutation();
+  const uppy = useUppyWithSupabase("posts");
 
   const handleMediaChange = (files: FileList | null) => {
     if (!files) return;
@@ -118,11 +121,11 @@ function AddPost({ currentUser }: AddPostProps) {
 
       try {
         // Sử dụng TanStack Query mutation để upload
-        await createPostMutation.mutateAsync({
-          content: value.content,
-          privacy_level: value.privacy_level,
-          media: mediaPreviews.map((p) => p.file),
-        });
+        // await createPostMutation.mutateAsync({
+        //   content: value.content,
+        //   privacy_level: value.privacy_level,
+        //   media: mediaPreviews.map((p) => p.file),
+        // });
 
         // Reset form - Realtime will show success toast
         form.reset();
@@ -143,6 +146,15 @@ function AddPost({ currentUser }: AddPostProps) {
       mediaPreviews.map((p) => p.file)
     );
   }, [mediaPreviews, form]);
+
+  useEffect(() => {
+    // Set up Uppy Dashboard to display as an inline component within a specified target
+    uppy.use(Dashboard, {
+      inline: true, // Ensures the dashboard is rendered inline
+      target: "#drag-drop-area", // HTML element where the dashboard renders
+      hideProgressDetails: false, // Show progress details for file uploads
+    });
+  }, []);
 
   const getFileIcon = (mimeType: string) => {
     const fileInfo = getFileInfo("", mimeType);
@@ -216,40 +228,41 @@ function AddPost({ currentUser }: AddPostProps) {
           }}
         >
           {(field) => (
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Thêm media (tối đa 10 file)
-                </label>
-                {mediaPreviews.length > 0 && (
-                  <span className="text-sm text-blue-600 font-medium">
-                    {mediaPreviews.length} file
-                  </span>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,video/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.xltx"
-                onChange={(e) => {
-                  handleMediaChange(e.target.files);
-                  // Update form field with files
-                  if (e.target.files) {
-                    field.handleChange(Array.from(e.target.files));
-                  }
-                }}
-                className="block w-full text-sm text-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 10MB/file)
-              </p>
-              {field.state.meta.errors && (
-                <p className="text-red-500 text-sm mt-1">
-                  {field.state.meta.errors.join(", ")}
-                </p>
-              )}
-            </div>
+            // <div>
+            //   <div className="flex justify-between items-center mb-2">
+            //     <label className="block text-sm font-medium text-gray-700">
+            //       Thêm media (tối đa 10 file)
+            //     </label>
+            //     {mediaPreviews.length > 0 && (
+            //       <span className="text-sm text-blue-600 font-medium">
+            //         {mediaPreviews.length} file
+            //       </span>
+            //     )}
+            //   </div>
+            //   <input
+            //     ref={fileInputRef}
+            //     type="file"
+            //     multiple
+            //     accept="image/*,video/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.xltx"
+            //     onChange={(e) => {
+            //       handleMediaChange(e.target.files);
+            //       // Update form field with files
+            //       if (e.target.files) {
+            //         field.handleChange(Array.from(e.target.files));
+            //       }
+            //     }}
+            //     className="block w-full text-sm text-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            //   />
+            //   <p className="text-xs text-gray-500 mt-1">
+            //     Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 10MB/file)
+            //   </p>
+            //   {field.state.meta.errors && (
+            //     <p className="text-red-500 text-sm mt-1">
+            //       {field.state.meta.errors.join(", ")}
+            //     </p>
+            //   )}
+            // </div>
+            <div id="drag-drop-area"> </div>
           )}
         </form.Field>
 

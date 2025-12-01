@@ -6,7 +6,7 @@ import {
 import Link from "next/link";
 import * as React from "react";
 
-import AddPost from "@/components/dashboard/AddPost";
+import AddPost from "@/components/dashboard/add";
 import ListPosts from "@/components/dashboard/ListPosts";
 import Tepm from "@/components/dashboard/temp";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ export default async function DashboardPage() {
         <Link href={`/profile/95a3fadb-5f4f-497f-b826-e9a66e8e4655`}>
           <Button>DucTrung Profile</Button>
         </Link>
+        {/* <AddPost currentUser={user} /> */}
         <AddPost currentUser={user} />
         <ListPosts />
       </HydrationBoundary>

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback,useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 import PostCard from "@/components/dashboard/PostCard";
 import { useInfinitePostsQuery } from "@/hooks/useInfinitePosts";
-import { PostResponse } from "@/types/post";
+import { PostResponse } from "@repo/shared/types/post";
 
 import { Skeleton } from "../ui/skeleton";
 import PendingPost from "./PendingPost";
@@ -30,7 +30,7 @@ export function InfinitePostsList() {
       (entries) => {
         // Nếu element đầu tiên đang hiển thị và có trang tiếp theo và không đang tải
 
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (entries[0]!.isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage(); // Tải trang tiếp theo
         }
       },

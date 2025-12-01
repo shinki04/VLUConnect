@@ -1,8 +1,9 @@
 import { getPostRabbitMQClient } from "@repo/rabbitmq/PostRabbitMQ";
 
-import { processPostCreation, PostCreateJobPayload } from "@/lib/services/post";
+import { processPostCreation } from "@/lib/services/post";
 import { config } from "dotenv";
 import { resolve } from "path";
+import { PostJobPayload } from "@repo/shared/types/postQueue";
 
 // config({ path: resolve(process.cwd(), ".env.local") });
 
@@ -21,7 +22,7 @@ export async function startPostWorker() {
     // Start consuming jobs
     await rabbitMQ.consumePostCreate(
       async (payload: Record<string, unknown>) => {
-        const typedPayload = payload as unknown as PostCreateJobPayload;
+        const typedPayload = payload as unknown as PostJobPayload;
         console.log("🔄 Processing job for user:", typedPayload.userId);
         try {
           const post = await processPostCreation(typedPayload);
@@ -34,7 +35,7 @@ export async function startPostWorker() {
     );
     await rabbitMQ.consumePostUpdate(
       async (payload: Record<string, unknown>) => {
-        const typedPayload = payload as unknown as PostCreateJobPayload;
+        const typedPayload = payload as unknown as PostJobPayload;
         console.log("🔄 Processing update job for user:", typedPayload.userId);
       }
     );
@@ -42,7 +43,7 @@ export async function startPostWorker() {
     await rabbitMQ.consumePostDelete(
       async (payload: Record<string, unknown>) => {
         // ✅ Sửa thành consume
-        const typedPayload = payload as unknown as PostCreateJobPayload;
+        const typedPayload = payload as unknown as PostJobPayload;
         console.log("🔄 Processing delete job for user:", typedPayload.userId);
         // TODO: Implement delete logic
       }

@@ -86,6 +86,15 @@ importers:
       '@uppy/core':
         specifier: ^5.1.1
         version: 5.1.1
+      '@uppy/dashboard':
+        specifier: ^5.0.4
+        version: 5.0.4(@uppy/core@5.1.1)
+      '@uppy/locales':
+        specifier: ^5.0.1
+        version: 5.0.1
+      '@uppy/react':
+        specifier: ^5.1.1
+        version: 5.1.1(@uppy/core@5.1.1)(@uppy/dashboard@5.0.4(@uppy/core@5.1.1))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@uppy/tus':
         specifier: ^5.0.2
         version: 5.0.2(@uppy/core@5.1.1)
@@ -1892,11 +1901,64 @@ packages:
     peerDependencies:
       '@uppy/core': ^5.1.1
 
+  '@uppy/components@1.1.0':
+    resolution: {integrity: sha512-omiNBzJn49FQznkSwOIGn3TKz+3r4T+y8sxWIBDMO6De2genzywRk1drAWO9GbSAF3htlVuvamNojQ2pSLeh3w==}
+    peerDependencies:
+      '@uppy/core': ^5.1.1
+      '@uppy/image-editor': ^4.0.2
+      '@uppy/screen-capture': ^5.0.1
+      '@uppy/webcam': ^5.0.2
+    peerDependenciesMeta:
+      '@uppy/image-editor':
+        optional: true
+      '@uppy/screen-capture':
+        optional: true
+      '@uppy/webcam':
+        optional: true
+
   '@uppy/core@5.1.1':
     resolution: {integrity: sha512-a0EDB+KBENB1+jkeY3oeZLMJfLhMSMsA1EfeAr6XUtKIN2uu2YHFhut5psQlYfLNOL7qtRWmG0jAa03ew1TvEw==}
 
+  '@uppy/dashboard@5.0.4':
+    resolution: {integrity: sha512-oIQsWjDJWllCXemkXjubv+aTTqALQIemRgt9xwv5mzNNhJ5KJ1FSNTM6ya3CnoZAtoEHQ/KvVLDz4LQCxQyKFA==}
+    peerDependencies:
+      '@uppy/core': ^5.1.1
+
+  '@uppy/locales@5.0.1':
+    resolution: {integrity: sha512-6VpRGdo4DvGeSINeUtJhwxhK2JsHEn0el+Rgg1JKWFlvm3E6PluZ5nDcIxjOMQODj0iE/0n+ghKdNHbxCVrC/Q==}
+
+  '@uppy/provider-views@5.1.2':
+    resolution: {integrity: sha512-lslYaRvBP8Mk8C+mZWgGaFtSpzKIqHf8ptZcbS8kjjZudAF3LNk77ynegr2l/wSQnG/gQQCqiZbefDEql+DDuw==}
+    peerDependencies:
+      '@uppy/core': ^5.1.1
+
+  '@uppy/react@5.1.1':
+    resolution: {integrity: sha512-VP9c5YMpAhDFAI5Z+mvvwqXXCg3ximcYSurG/38pbRLnQpvNr8ldtQ7g+2t5awRhtY8uWaI2QT6qdhMGKWFeDQ==}
+    peerDependencies:
+      '@uppy/core': ^5.1.1
+      '@uppy/dashboard': ^5.0.3
+      '@uppy/screen-capture': ^5.0.1
+      '@uppy/status-bar': ^5.0.2
+      '@uppy/webcam': ^5.0.2
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@uppy/dashboard':
+        optional: true
+      '@uppy/screen-capture':
+        optional: true
+      '@uppy/status-bar':
+        optional: true
+      '@uppy/webcam':
+        optional: true
+
   '@uppy/store-default@5.0.0':
     resolution: {integrity: sha512-hQtCSQ1yGiaval/wVYUWquYGDJ+bpQ7e4FhUUAsRQz1x1K+o7NBtjfp63O9I4Ks1WRoKunpkarZ+as09l02cPw==}
+
+  '@uppy/thumbnail-generator@5.0.2':
+    resolution: {integrity: sha512-MRNZEgjNO0gYC/CPji2ngmDx9dCZyHuXkeLQmZen986f+rHcOkeVXim163PBbkFT5CF1xavez03yNDJSeWl6PA==}
+    peerDependencies:
+      '@uppy/core': ^5.1.1
 
   '@uppy/tus@5.0.2':
     resolution: {integrity: sha512-sW1EEaCJJqyzzRm05XTmJCRl7gYBThWMXa6X6SmXUgNQo6WnKlyQ/6pVB7dypsVW8u2uzWpWfyUMfUNRFKleNw==}
@@ -2098,6 +2160,9 @@ packages:
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
 
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
+
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
     engines: {node: '>=18'}
@@ -2273,6 +2338,10 @@ packages:
   depd@2.0.0:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
+
+  dequal@2.0.3:
+    resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
+    engines: {node: '>=6'}
 
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
@@ -2544,6 +2613,9 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  eventemitter3@5.0.1:
+    resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
+
   eventsource-parser@3.0.6:
     resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
     engines: {node: '>=18.0.0'}
@@ -2559,6 +2631,9 @@ packages:
   execa@9.6.0:
     resolution: {integrity: sha512-jpWzZ1ZhwUmeWRhS7Qv3mhpOhLfwI+uAX4e5fOcXqwMR7EcJ0pj2kV1CVzHVMX/LphnKWD3LObjZCoJ71lKpHw==}
     engines: {node: ^18.19.0 || >=20.5.0}
+
+  exifr@7.1.3:
+    resolution: {integrity: sha512-g/aje2noHivrRSLbAUtBPWFbxKdKhgj/xr1vATDdUXPOFYJlQ62Ft0oy+72V6XLIpDJfHs6gXLbBLAolqOXYRw==}
 
   express-rate-limit@7.5.1:
     resolution: {integrity: sha512-7iN8iPMDzOMHPUYllBEsQdWVB6fPDMPqwjBaFrgr4Jgr/+okjvzAy+UHlYYL/Vs0OsOrMkwS6PJDkFlJwoxUnw==}
@@ -3538,9 +3613,17 @@ packages:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
 
+  p-queue@8.1.1:
+    resolution: {integrity: sha512-aNZ+VfjobsWryoiPnEApGGmf5WmNsCo9xu8dfaYamG5qaLP7ClhLN6NgsFe6SwJ2UbLEBK5dv9x8Mn5+RVhMWQ==}
+    engines: {node: '>=18'}
+
   p-retry@6.2.1:
     resolution: {integrity: sha512-hEt02O4hUct5wtwg4H4KcWgDdm+l1bOaEy/hWzd8xtXB9BqxTWBBhb+2ImAtH4Cv4rPjV76xN3Zumqk3k3AhhQ==}
     engines: {node: '>=16.17'}
+
+  p-timeout@6.1.4:
+    resolution: {integrity: sha512-MyIV3ZA/PmyBN/ud8vV9XzwTrNtR4jFrObymZYnZqMmW0zA8Z17vnT0rBgFE/TlohB+YCHqXMgZzb3Csp49vqg==}
+    engines: {node: '>=14.16'}
 
   package-manager-detector@1.6.0:
     resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
@@ -3618,6 +3701,10 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+
+  pretty-bytes@6.1.1:
+    resolution: {integrity: sha512-mQUvGU6aUFQ+rNvTIAcZuWGRT9a6f6Yrg9bHs4ImKF+HZCEK+plBvnAZYSIQztknZF2qnzNtr6F8s0+IuptdlQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
 
   pretty-ms@9.3.0:
     resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
@@ -3862,6 +3949,9 @@ packages:
   shadcn@3.5.1:
     resolution: {integrity: sha512-yLbIDouYv8Xz25BxV/GAGC/46R7/oNwoXIs/IFIYXK47+fKcFIYzThtBqJwFEZTzkkvqJCo+MBg0K9QLTmhFmQ==}
     hasBin: true
+
+  shallow-equal@3.1.0:
+    resolution: {integrity: sha512-pfVOw8QZIXpMbhBWvzBISicvToTiM5WBF1EeAUZDDSb5Dt29yl4AYbyywbJFSEsRUMr7gJaxqCdr4L3tQf9wVg==}
 
   sharp@0.34.5:
     resolution: {integrity: sha512-Ou9I5Ft9WNcCbXrU9cMgPBcCK8LiwLqcbywW3t4oDV37n1pzpuNLsYiAV8eODnjbtQlSDwZ2cUEeQz4E54Hltg==}
@@ -5838,6 +5928,14 @@ snapshots:
       namespace-emitter: 2.0.1
       p-retry: 6.2.1
 
+  '@uppy/components@1.1.0(@uppy/core@5.1.1)':
+    dependencies:
+      '@uppy/core': 5.1.1
+      clsx: 2.1.1
+      dequal: 2.0.3
+      preact: 10.27.2
+      pretty-bytes: 6.1.1
+
   '@uppy/core@5.1.1':
     dependencies:
       '@transloadit/prettier-bytes': 0.3.5
@@ -5849,7 +5947,53 @@ snapshots:
       nanoid: 5.1.6
       preact: 10.27.2
 
+  '@uppy/dashboard@5.0.4(@uppy/core@5.1.1)':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.3.5
+      '@uppy/core': 5.1.1
+      '@uppy/provider-views': 5.1.2(@uppy/core@5.1.1)
+      '@uppy/thumbnail-generator': 5.0.2(@uppy/core@5.1.1)
+      '@uppy/utils': 7.1.3
+      classnames: 2.5.1
+      lodash: 4.17.21
+      nanoid: 5.1.6
+      preact: 10.27.2
+      shallow-equal: 3.1.0
+
+  '@uppy/locales@5.0.1':
+    dependencies:
+      '@uppy/utils': 7.1.3
+
+  '@uppy/provider-views@5.1.2(@uppy/core@5.1.1)':
+    dependencies:
+      '@uppy/core': 5.1.1
+      '@uppy/utils': 7.1.3
+      classnames: 2.5.1
+      lodash: 4.17.21
+      nanoid: 5.1.6
+      p-queue: 8.1.1
+      preact: 10.27.2
+
+  '@uppy/react@5.1.1(@uppy/core@5.1.1)(@uppy/dashboard@5.0.4(@uppy/core@5.1.1))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@uppy/components': 1.1.0(@uppy/core@5.1.1)
+      '@uppy/core': 5.1.1
+      preact: 10.27.2
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      use-sync-external-store: 1.6.0(react@19.2.0)
+    optionalDependencies:
+      '@uppy/dashboard': 5.0.4(@uppy/core@5.1.1)
+    transitivePeerDependencies:
+      - '@uppy/image-editor'
+
   '@uppy/store-default@5.0.0': {}
+
+  '@uppy/thumbnail-generator@5.0.2(@uppy/core@5.1.1)':
+    dependencies:
+      '@uppy/core': 5.1.1
+      '@uppy/utils': 7.1.3
+      exifr: 7.1.3
 
   '@uppy/tus@5.0.2(@uppy/core@5.1.1)':
     dependencies:
@@ -6087,6 +6231,8 @@ snapshots:
     dependencies:
       clsx: 2.1.1
 
+  classnames@2.5.1: {}
+
   cli-cursor@5.0.0:
     dependencies:
       restore-cursor: 5.1.0
@@ -6226,6 +6372,8 @@ snapshots:
   denque@2.1.0: {}
 
   depd@2.0.0: {}
+
+  dequal@2.0.3: {}
 
   detect-libc@2.1.2: {}
 
@@ -6646,6 +6794,8 @@ snapshots:
 
   etag@1.8.1: {}
 
+  eventemitter3@5.0.1: {}
+
   eventsource-parser@3.0.6: {}
 
   eventsource@3.0.7:
@@ -6678,6 +6828,8 @@ snapshots:
       signal-exit: 4.1.0
       strip-final-newline: 4.0.0
       yoctocolors: 2.1.2
+
+  exifr@7.1.3: {}
 
   express-rate-limit@7.5.1(express@5.1.0):
     dependencies:
@@ -7614,11 +7766,18 @@ snapshots:
     dependencies:
       p-limit: 3.1.0
 
+  p-queue@8.1.1:
+    dependencies:
+      eventemitter3: 5.0.1
+      p-timeout: 6.1.4
+
   p-retry@6.2.1:
     dependencies:
       '@types/retry': 0.12.2
       is-network-error: 1.3.0
       retry: 0.13.1
+
+  p-timeout@6.1.4: {}
 
   package-manager-detector@1.6.0: {}
 
@@ -7676,6 +7835,8 @@ snapshots:
   preact@10.27.2: {}
 
   prelude-ls@1.2.1: {}
+
+  pretty-bytes@6.1.1: {}
 
   pretty-ms@9.3.0:
     dependencies:
@@ -7988,6 +8149,8 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - typescript
+
+  shallow-equal@3.1.0: {}
 
   sharp@0.34.5:
     dependencies:

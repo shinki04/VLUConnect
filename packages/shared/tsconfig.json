@@ -1,9 +1,9 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "outDir": "dist"
+    // "declaration": true,
+    // "emitDeclarationOnly": true,
+    // "outDir": "dist"
   },
   "include": ["**/*.ts", "**/*.tsx", "./types/*.ts"]
 }

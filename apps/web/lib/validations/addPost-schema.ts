@@ -47,7 +47,7 @@ export const fileMediaSchema = z
     "Kích thước file phải nhỏ hơn 10MB"
   );
 
-const privacyLevels = ["public", "friends", "private"] as privacyPost;
+export const privacyLevels: privacyPost[] = ["public", "friends", "private"];
 export type PrivacyPost = (typeof privacyLevels)[number];
 export const privacyLevelEnum = z.enum(privacyLevels);
 

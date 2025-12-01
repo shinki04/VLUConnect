@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useGetCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { updateProfileSchema } from "@/lib/validations/updateProfile-schema";
-import { Avatar, BLANK_AVATAR, User } from "@/types/user";
+import { Avatar, BLANK_AVATAR, User } from "@repo/shared/types/user";
 
 import { FieldErrors } from "../FieldErrors";
 import { Button } from "../ui/button";

@@ -1,186 +1,13 @@
 import { createServiceClient } from "../supabase/services_roles";
 import { Post, PostResponse } from "@repo/shared/types/post";
 import { getPostRabbitMQClient } from "@repo/rabbitmq/PostRabbitMQ";
-import { PostQueueItem, PostQueueStatus } from "@repo/shared/types/postQueue";
+import {
+  PostJobPayload,
+  PostQueueItem,
+  PostQueueStatus,
+} from "@repo/shared/types/postQueue";
 import { saveHashtagsFromContent } from "./hashtag";
 import { privacyPost } from "@repo/shared/types/post";
-
-export interface CreatePostInput {
-  content: string;
-  privacy_level: "public" | "friends" | "private";
-  media: File[];
-}
-
-export interface CreatePostResponse {
-  post: Post;
-  mediaUrls: string[];
-}
-
-export async function uploadPostImages(
-  files: File[],
-  userId: string
-): Promise<string[]> {
-  const supabase = createServiceClient();
-
-  const uploadedUrls: string[] = [];
-
-  for (const file of files) {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}/${Date.now()}-${Math.random()}.${fileExt}`;
-
-    const { error } = await supabase.storage
-      .from("posts")
-      .upload(fileName, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      throw new Error(`Failed to upload image: ${error.message}`);
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("posts").getPublicUrl(fileName);
-
-    uploadedUrls.push(publicUrl);
-  }
-
-  return uploadedUrls;
-}
-
-export async function createPost(
-  input: CreatePostInput,
-  userId: string
-): Promise<CreatePostResponse> {
-  const supabase = createServiceClient();
-
-  // Upload media files first
-  const mediaUrls = await uploadPostImages(input.media, userId);
-
-  // Create post in database
-  const { data, error } = await supabase
-    .from("posts")
-    .insert({
-      author_id: userId,
-      content: input.content,
-      privacy_level: input.privacy_level,
-      media_urls: mediaUrls,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(`Failed to create post: ${error.message}`);
-  }
-
-  return {
-    post: data,
-    mediaUrls,
-  };
-}
-export interface FetchPostsResponse {
-  posts: PostResponse[];
-  hasMore: boolean;
-  total: number;
-  currentPage: number;
-}
-
-export async function fetchPosts(
-  page: number,
-  itemsPerPage: number
-): Promise<FetchPostsResponse> {
-  const supabase = createServiceClient();
-
-  // Validate page number
-  if (page < 1) {
-    throw new Error("Page number must be greater than 0");
-  }
-
-  const offset = (page - 1) * itemsPerPage;
-
-  // Get total count
-  const { count, error: countError } = await supabase
-    .from("posts")
-    .select("*", { count: "exact", head: true });
-
-  if (countError) {
-    throw new Error(`Failed to count posts: ${countError.message}`);
-  }
-
-  const total = count || 0;
-
-  // If offset is beyond total, return empty array
-  if (offset >= total && total > 0) {
-    return {
-      posts: [],
-      hasMore: false,
-      total,
-      currentPage: page,
-    };
-  }
-
-  // Fetch posts for current page
-  const { data, error } = await supabase
-    .from("posts")
-    .select(
-      `
-      id,
-      created_at, 
-      author: author_id(
-        id,
-        username,
-        display_name,
-        avatar_url,
-        global_role
-      ),
-      content,
-      media_urls,
-      updated_at,
-      like_count,
-      comment_count,
-      share_count,
-      privacy_level
-      `
-    )
-    .range(offset, offset + itemsPerPage - 1)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch posts: ${error.message}`);
-  }
-
-  // Check if there are more posts after current page
-  const hasMore = offset + itemsPerPage < total;
-
-  return {
-    posts: data || [],
-    hasMore,
-    total,
-    currentPage: page,
-  };
-}
-
-export async function fetchPostById(postId: string): Promise<Post | null> {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("posts")
-    .select()
-    .eq("id", postId)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      // No rows found
-      return null;
-    }
-    throw new Error(`Failed to fetch post: ${error.message}`);
-  }
-
-  return data;
-}
 
 export async function deletePost(postId: string): Promise<void> {
   const supabase = createServiceClient();
@@ -213,151 +40,24 @@ export async function updatePost(
   return data;
 }
 
-interface MediaFile {
-  name: string;
-  mimeType: string;
-  data: string; // base64 encoded
-  size: number;
-}
-
-export interface PostCreateJobPayload {
-  userId: string;
-  content: string;
-  privacyLevel: "public" | "friends" | "private";
-  media: MediaFile[]; // Changed from mediaUrls to media with base64
-  queueId?: string; // Track queue status ID
-}
-
-/**
- * Convert File to base64 for transmission over queue
- * Works in both browser and Node.js environments
- */
-async function fileToBase64(file: File): Promise<string> {
-  // In Node.js (server-side): convert ArrayBuffer to base64
-  if (file instanceof File && typeof window === "undefined") {
-    const buffer = await file.arrayBuffer();
-    return Buffer.from(buffer).toString("base64");
-  }
-
-  // In browser: use FileReader
-  if (typeof FileReader !== "undefined") {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        resolve(base64!);
-      };
-      reader.onerror = reject;
-    });
-  }
-
-  throw new Error("Cannot process file in current environment");
-}
-
-/**
- * Convert base64 back to File for processing
- */
-function base64ToFile(base64: string, name: string, mimeType: string): File {
-  const byteString = atob(base64);
-  const byteArray = new Uint8Array(byteString.length);
-  for (let i = 0; i < byteString.length; i++) {
-    byteArray[i] = byteString.charCodeAt(i);
-  }
-  return new File([byteArray], name, { type: mimeType });
-}
-
-/**
- * Publish a post creation job to the queue
- * Now includes media files as base64 and creates queue status entry
- */
-export async function queuePostCreation(
-  userId: string,
-  content: string,
-  privacyLevel: privacyPost,
-  mediaFiles: File[] = [],
-  queueId?: string
-) {
-  const rabbitMQ = getPostRabbitMQClient();
-
-  if (!rabbitMQ.isReady()) {
-    await rabbitMQ.connect();
-  }
-
-  // Convert files to base64
-  const encodedMedia: MediaFile[] = [];
-  for (const file of mediaFiles) {
-    const base64Data = await fileToBase64(file);
-    encodedMedia.push({
-      name: file.name,
-      mimeType: file.type,
-      data: base64Data,
-      size: file.size,
-    });
-  }
-
-  const payload: PostCreateJobPayload = {
-    userId,
-    content,
-    privacyLevel,
-    media: encodedMedia,
-    queueId, // Include queue ID for tracking
-  };
-
-  console.log(`📤 Queueing post with ${encodedMedia.length} files`);
-  console.log(`Queue ID ${queueId}`);
-  return await rabbitMQ.publishPostCreate(
-    payload as unknown as Record<string, unknown>
-  );
-}
-
 /**
  * Process post creation job from queue
  * Handles file upload + post creation + hashtag extraction + queue status updates
  */
-export async function processPostCreation(payload: PostCreateJobPayload) {
+export async function processPostCreation(payload: PostJobPayload) {
   const supabase = createServiceClient();
 
   try {
-    console.log(
-      `🔄 Processing post creation for user: ${payload.userId}, media: ${payload.media.length} files`
-    );
+    // console.log(
+    //   `🔄 Processing post creation for user: ${payload.userId}, media: ${payload.media.length} files`
+    // );
 
     // Update status to 'processing'
     if (payload.queueId) {
       await updateQueueStatus(payload.queueId, "processing");
     }
 
-    // Step 1: Upload files to Supabase Storage
-    let mediaUrls: string[] = [];
-    if (payload.media.length > 0) {
-      try {
-        console.log("📤 Uploading files to Supabase Storage...");
-
-        // Reconstruct File objects from base64
-        const filesToUpload = payload.media.map((media) =>
-          base64ToFile(media.data, media.name, media.mimeType)
-        );
-
-        mediaUrls = await uploadPostImages(filesToUpload, payload.userId);
-        console.log(`✅ Uploaded ${mediaUrls.length} files`);
-      } catch (uploadError) {
-        console.error("❌ Error uploading files:", uploadError);
-        const errorMessage =
-          uploadError instanceof Error ? uploadError.message : "Unknown error";
-
-        // Update status to 'failed' with error message
-        if (payload.queueId) {
-          await updateQueueStatus(
-            payload.queueId,
-            "failed",
-            undefined,
-            `Failed to upload files: ${errorMessage}`
-          );
-        }
-
-        throw new Error(`Failed to upload files: ${errorMessage}`);
-      }
-    }
+    // Step 1: Using AI for check
 
     // Step 2: Create post in database
     console.log("📝 Creating post in database...");
@@ -367,7 +67,7 @@ export async function processPostCreation(payload: PostCreateJobPayload) {
         author_id: payload.userId,
         content: payload.content,
         privacy_level: payload.privacyLevel,
-        media_urls: mediaUrls || [],
+        media_urls: payload.media_urls || [],
       })
       .select()
       .single();

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
-import { queuePostCreation } from "@/app/actions/post-queue";
 import { fetchPosts } from "@/app/actions/post";
 
 export async function GET(request: NextRequest) {
@@ -22,84 +20,84 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+// export async function POST(request: NextRequest) {
+//   try {
+//     const supabase = await createClient();
+//     const {
+//       data: { user },
+//     } = await supabase.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+//     if (!user) {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//     }
 
-    let formData;
-    try {
-      // Parse FormData for file uploads
-      formData = await request.formData();
-    } catch (formError) {
-      console.error("FormData parse error:", formError);
-      return NextResponse.json(
-        {
-          error:
-            "Failed to parse form data. The files may be too large. Maximum recommended size: 100MB total",
-          details:
-            formError instanceof Error ? formError.message : "Unknown error",
-        },
-        { status: 413 } // Payload Too Large
-      );
-    }
+//     let formData;
+//     try {
+//       // Parse FormData for file uploads
+//       formData = await request.formData();
+//     } catch (formError) {
+//       console.error("FormData parse error:", formError);
+//       return NextResponse.json(
+//         {
+//           error:
+//             "Failed to parse form data. The files may be too large. Maximum recommended size: 100MB total",
+//           details:
+//             formError instanceof Error ? formError.message : "Unknown error",
+//         },
+//         { status: 413 } // Payload Too Large
+//       );
+//     }
 
-    const content = formData.get("content") as string;
-    const privacy_level = (formData.get("privacy_level") as string) || "public";
-    const queueId = formData.get("queueId") as string | null;
-    const mediaFiles: File[] = [];
+//     const content = formData.get("content") as string;
+//     const privacy_level = (formData.get("privacy_level") as string) || "public";
+//     const queueId = formData.get("queueId") as string | null;
+//     const mediaFiles: File[] = [];
 
-    // Extract all file uploads (sent as "files" from FormData)
-    const filesFromFormData = formData.getAll("files");
-    console.log(`📥 Received ${filesFromFormData.length} files`);
+//     // Extract all file uploads (sent as "files" from FormData)
+//     const filesFromFormData = formData.getAll("files");
+//     console.log(`📥 Received ${filesFromFormData.length} files`);
 
-    for (const file of filesFromFormData) {
-      if (file instanceof File) {
-        console.log(
-          `  - ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`
-        );
-        mediaFiles.push(file);
-      }
-    }
+//     for (const file of filesFromFormData) {
+//       if (file instanceof File) {
+//         console.log(
+//           `  - ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`
+//         );
+//         mediaFiles.push(file);
+//       }
+//     }
 
-    if (!content?.trim()) {
-      return NextResponse.json(
-        { error: "Content is required" },
-        { status: 400 }
-      );
-    }
+//     if (!content?.trim()) {
+//       return NextResponse.json(
+//         { error: "Content is required" },
+//         { status: 400 }
+//       );
+//     }
 
-    // Queue the post creation with files
-    // Worker will handle file uploads + post creation
-    await queuePostCreation(
-      user.id,
-      content,
-      privacy_level as "public" | "friends" | "private",
-      mediaFiles,
-      queueId || undefined
-    );
+//     // Queue the post creation with files
+//     // Worker will handle file uploads + post creation
+//     await queuePostCreation(
+//       user.id,
+//       content,
+//       privacy_level as "public" | "friends" | "private",
+//       mediaFiles,
+//       queueId || undefined
+//     );
 
-    // Return immediately to client with 202 Accepted status
-    return NextResponse.json(
-      {
-        message: "Post creation queued successfully",
-        filesQueued: mediaFiles.length,
-      },
-      { status: 202 }
-    );
-  } catch (error) {
-    console.error("API error:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
-      { status: 500 }
-    );
-  }
-}
+//     // Return immediately to client with 202 Accepted status
+//     return NextResponse.json(
+//       {
+//         message: "Post creation queued successfully",
+//         filesQueued: mediaFiles.length,
+//       },
+//       { status: 202 }
+//     );
+//   } catch (error) {
+//     console.error("API error:", error);
+//     return NextResponse.json(
+//       {
+//         error: error instanceof Error ? error.message : "Internal server error",
+//       },
+//       { status: 500 }
+//     );
+//   }
+// }
