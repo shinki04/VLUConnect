@@ -8,10 +8,10 @@ import {
 } from "@repo/shared/types/postQueue";
 
 import { createServiceClient } from "../supabase/services_roles";
-import { 
-  saveHashtagsFromContent, 
-  syncHashtagsForPost, 
-  removeHashtagsForPost 
+import {
+  saveHashtagsFromContent,
+  syncHashtagsForPost,
+  removeHashtagsForPost,
 } from "./hashtag";
 import { urlToPath } from "@repo/utils/getPathSupabase";
 
@@ -122,7 +122,7 @@ export async function processPostCreation(payload: PostJobPayload) {
     }
 
     console.log("🎉 Post processing completed successfully");
-    await deleteQueueStatus(payload.queueId!);
+    // await deleteQueueStatus(payload.queueId!);
     return post;
   } catch (error) {
     console.error("❌ Error processing post creation:", error);

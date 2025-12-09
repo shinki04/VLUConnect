@@ -20,6 +20,8 @@ import { useGetCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { updateProfileSchema } from "@/lib/validations/updateProfile-schema";
 
 import { FieldErrors } from "../FieldErrors";
+import { FriendButton } from "../friendship/FriendButton";
+import { FriendsList } from "../friendship/FriendsList";
 import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import OldAvatars from "./OldAvatars";
@@ -124,11 +126,26 @@ function Profile({ user }: ProfileProps) {
         />
       </div>
 
+      {/* Friend Button - hiển thị cho người khác xem profile */}
+      {!isOwner && currentUser && (
+        <div className="my-4">
+          <FriendButton
+            targetUserId={user.id}
+            currentUserId={currentUser.id}
+          />
+        </div>
+      )}
+
       <Button onClick={() => router.back()}>Go Back</Button>
 
       <div>
         The last change avatar_image
         <OldAvatars avatars={avatars} />
+      </div>
+
+      {/* Friends List */}
+      <div className="my-4">
+        <FriendsList userId={user.id} limit={6} />
       </div>
 
       <p>Des : {user?.description}</p>

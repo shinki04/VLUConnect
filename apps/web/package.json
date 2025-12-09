@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-slot": "^1.2.4",
     "@repo/ui": "workspace:*",
     "@supabase/ssr": "^0.7.0",
@@ -28,7 +29,6 @@
     "@uppy/locales": "^5.0.1",
     "@uppy/react": "^5.1.1",
     "@uppy/tus": "^5.0.2",
-    "amqplib": "^0.10.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "concurrently": "^9.2.1",
