@@ -1,6 +1,18 @@
 "use client";
 import { privacyPost } from "@repo/shared/types/post";
 import type { User } from "@repo/shared/types/user";
+import { Button } from "@repo/ui/components/button";
+import { Card } from "@repo/ui/components/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
+import { Textarea } from "@repo/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import Dashboard from "@uppy/dashboard";
 import {
@@ -15,16 +27,6 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/ui/components/select";
-import { Textarea } from "@repo/ui/components/textarea";
 import { useCreatePostMutation } from "@/hooks/usePost";
 import { useUppyWithSupabase } from "@/hooks/useUppy";
 import { getFileInfo, isImageType, isVideoType } from "@/lib/mediaUtils";
@@ -32,9 +34,6 @@ import {
   validateContent,
   validateMedia,
 } from "@/lib/validations/addPost-schema";
-
-import { Button } from "@repo/ui/components/button";
-import { Card } from "@repo/ui/components/card";
 
 interface AddPostProps {
   currentUser: User;

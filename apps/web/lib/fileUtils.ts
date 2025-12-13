@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createClient } from "@/lib/supabase/client";
 import type Uppy from "@uppy/core";
+
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Extract storage path from Supabase public URL

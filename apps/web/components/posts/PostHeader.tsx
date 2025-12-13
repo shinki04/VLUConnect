@@ -1,9 +1,9 @@
+import { Global_Roles } from "@repo/shared/types/user";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@repo/ui/components/avatar";
-import { Global_Roles } from "@repo/shared/types/user";
 import { formatPostDate } from "@repo/utils/formatDate";
 import { Globe, LockKeyhole, Users } from "lucide-react";
 

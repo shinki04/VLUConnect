@@ -6,14 +6,14 @@ import {
   PostQueueStatus,
   UpdatePostJobPayload,
 } from "@repo/shared/types/postQueue";
+import { urlToPath } from "@repo/utils/getPathSupabase";
 
 import { createServiceClient } from "../supabase/services_roles";
 import {
+  removeHashtagsForPost,
   saveHashtagsFromContent,
   syncHashtagsForPost,
-  removeHashtagsForPost,
 } from "./hashtag";
-import { urlToPath } from "@repo/utils/getPathSupabase";
 
 export async function deletePost(postId: string): Promise<void> {
   const supabase = createServiceClient();

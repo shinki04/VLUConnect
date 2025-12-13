@@ -3,12 +3,8 @@
 
 import "@uppy/react/css/style.css";
 
-import { privacyPost, PostResponse } from "@repo/shared/types/post";
-import { useForm } from "@tanstack/react-form";
-import { Dropzone, FilesGrid, UppyContextProvider } from "@uppy/react";
-import React, { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
+import { PostResponse,privacyPost } from "@repo/shared/types/post";
+import { Button } from "@repo/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -25,17 +21,22 @@ import {
   SelectValue,
 } from "@repo/ui/components/select";
 import { Textarea } from "@repo/ui/components/textarea";
-import { Button } from "@repo/ui/components/button";
+import { useForm } from "@tanstack/react-form";
+import { Dropzone, FilesGrid, UppyContextProvider } from "@uppy/react";
+import React, { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+import { useUpdatePost } from "@/hooks/usePost";
 import { useUppyWithSupabase } from "@/hooks/useUppy";
 import {
-  loadRemoteFilesToUppy,
-  getRemovedFiles,
-  getNewFiles,
   deleteSupabaseFile,
+  getNewFiles,
+  getRemovedFiles,
+  loadRemoteFilesToUppy,
 } from "@/lib/fileUtils";
 import { createClient } from "@/lib/supabase/client";
 import { validateContent } from "@/lib/validations/addPost-schema";
-import { useUpdatePost } from "@/hooks/usePost";
+
 import AlertDialog from "../AlertDialog";
 
 interface EditPostProps {

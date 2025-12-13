@@ -1,8 +1,3 @@
-import Link from "next/link";
-import * as React from "react";
-
-import { NavUser } from "@/components/nav-user";
-import { SearchForm } from "@/components/search-form";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +11,11 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@repo/ui/componentssidebar";
+import Link from "next/link";
+import * as React from "react";
+
+import { NavUser } from "@/components/nav-user";
+import { SearchForm } from "@/components/search-form";
 import { VersionSwitcher } from "@/components/version-switcher";
 import { AdminSidebarData } from "@/constants/admin-sidebar";
 import { User } from "@/types/user";

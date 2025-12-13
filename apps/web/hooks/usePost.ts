@@ -72,6 +72,7 @@
 
 "use client";
 
+import { privacyPost } from "@repo/shared/types/post";
 import { PostJobPayload, PostQueueStatus } from "@repo/shared/types/postQueue";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -86,7 +87,6 @@ import {
 import { getQueryClient } from "@/lib/react-query";
 
 import { useGetCurrentUser } from "./useAuth";
-import { privacyPost } from "@repo/shared/types/post";
 
 export function useCreatePostMutation() {
   const { data: user } = useGetCurrentUser();

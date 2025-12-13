@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@repo/ui/components/button";
+import { Input } from "@repo/ui/components/input";
+import { Skeleton } from "@repo/ui/components/skeleton";
 import { RefreshCw, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { Button } from "@repo/ui/components/button";
-import { Input } from "@repo/ui/components/input";
-import { Skeleton } from "@repo/ui/components/skeleton";
 import { useHashtagTrending } from "@/hooks/useHashtagTrending";
 import { cn } from "@/lib/utils";
 

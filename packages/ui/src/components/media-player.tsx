@@ -3,6 +3,24 @@
 import { useDirection } from "@radix-ui/react-direction";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { Slot } from "@radix-ui/react-slot";
+import { Badge } from "@repo/ui/components/badge";
+import { Button } from "@repo/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@repo/ui/components/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@repo/ui/components/tooltip";
+import { cn } from "@repo/ui/lib/utils";
 import {
   AlertTriangleIcon,
   CaptionsOffIcon,
@@ -37,26 +55,9 @@ import {
 } from "media-chrome/react/media-store";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Badge } from "@repo/ui/components/badge";
-import { Button } from "@repo/ui/components/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@repo/ui/components/tooltip";
-import { useComposedRefs } from "@/lib/compose-refs";
-import { cn } from "@repo/ui/lib/utils";
+
 import { useLazyRef } from "@/hooks/use-lazy-ref";
+import { useComposedRefs } from "@/lib/compose-refs";
 
 const ROOT_NAME = "MediaPlayer";
 const SEEK_NAME = "MediaPlayerSeek";
@@ -3088,31 +3089,31 @@ function MediaPlayerTooltip(props: MediaPlayerTooltipProps) {
 
 export {
   MediaPlayer,
-  MediaPlayerVideo,
   MediaPlayerAudio,
+  MediaPlayerCaptions,
   MediaPlayerControls,
   MediaPlayerControlsOverlay,
-  MediaPlayerLoading,
+  MediaPlayerDownload,
   MediaPlayerError,
-  MediaPlayerVolumeIndicator,
+  MediaPlayerFullscreen,
+  MediaPlayerLoading,
+  MediaPlayerLoop,
+  MediaPlayerPiP,
   MediaPlayerPlay,
+  MediaPlayerPlaybackSpeed,
+  MediaPlayerPortal,
+  //
+  type MediaPlayerProps,
+  MediaPlayerSeek,
   MediaPlayerSeekBackward,
   MediaPlayerSeekForward,
-  MediaPlayerSeek,
-  MediaPlayerVolume,
-  MediaPlayerTime,
-  MediaPlayerPlaybackSpeed,
-  MediaPlayerLoop,
-  MediaPlayerFullscreen,
-  MediaPlayerPiP,
-  MediaPlayerCaptions,
-  MediaPlayerDownload,
   MediaPlayerSettings,
-  MediaPlayerPortal,
+  MediaPlayerTime,
   MediaPlayerTooltip,
+  MediaPlayerVideo,
+  MediaPlayerVolume,
+  MediaPlayerVolumeIndicator,
   //
   useMediaSelector as useMediaPlayer,
   useStore as useMediaPlayerStore,
-  //
-  type MediaPlayerProps,
 };

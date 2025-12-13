@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 import { Button } from "@repo/ui/components/button";
 import {
   Dialog,
@@ -11,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/components/dialog";
+import React from "react";
 
 interface AlertDialogProps {
   open: boolean;

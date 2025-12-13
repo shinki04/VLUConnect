@@ -1,11 +1,6 @@
 "use client";
 
 import { BLANK_AVATAR } from "@repo/shared/types/user";
-import { Users } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-
-import { useFriends } from "@/hooks/useFriendship";
 import {
   Card,
   CardContent,
@@ -14,6 +9,11 @@ import {
   CardTitle,
 } from "@repo/ui/components/card";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+import { useFriends } from "@/hooks/useFriendship";
 
 interface FriendsListProps {
   userId: string;

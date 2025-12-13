@@ -1,5 +1,3 @@
-import { MoreHorizontalIcon, Pencil, Trash2Icon } from "lucide-react";
-
 import { Button } from "@repo/ui/components/button";
 import {
   DropdownMenu,
@@ -9,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
+import { MoreHorizontalIcon, Pencil, Trash2Icon } from "lucide-react";
 
 interface PostOwnerDropdownProps {
   onDelete: () => void;
