@@ -1,183 +1,129 @@
 "use client";
 
+import type { User } from "@repo/shared/types/user";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@repo/ui/components/sidebar";
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
+  Bell,
+  Home,
   MessageCircle,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  PlusSquare,
+  Search,
+  Users,
 } from "lucide-react";
-import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import NavUser from "@/components/nav-user";
+import { useDashboard } from "@/components/providers/DashboardProvider";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Tin nhắn",
-      url: "/messages",
-      icon: MessageCircle,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
+interface AppSidebarProps {
+  currentUser: User | null;
+  onSignOut: () => void;
+}
+
+const SidebarItem = ({
+  icon: Icon,
+  label,
+  href,
+  onClick,
+}: {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  icon: any;
+  label: string;
+  href?: string;
+  onClick?: () => void;
+}) => {
+  const pathname = usePathname();
+  const isActive = href ? pathname === href : false;
+
+  const content = (
+    <div
+      className={`
+        flex items-center gap-4 px-6 py-3.5 mx-3 mb-1 rounded-[14px] cursor-pointer 
+        transition-all duration-200 font-bold
+        ${
+          isActive
+            ? "bg-[#EF4444] text-white shadow-lg shadow-red-900/30"
+            : "text-white/80 hover:bg-white/10 hover:text-white"
+        }
+      `}
+    >
+      <Icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
+      <span className="text-[15px] tracking-wide">{label}</span>
+    </div>
+  );
+
+  if (href)
+    return (
+      <Link href={href} className="block w-full">
+        {content}
+      </Link>
+    );
+  return (
+    <button onClick={onClick} className="block w-full text-left">
+      {content}
+    </button>
+  );
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export default function AppSidebar({
+  currentUser,
+  onSignOut,
+}: AppSidebarProps) {
+  const { openAddPost } = useDashboard();
+
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+    <aside className="hidden md:flex flex-col w-[260px] bg-[#37426F] h-screen fixed left-0 top-0 z-30 ...">
+      {/* Logo */}
+      <div className="flex flex-col items-center pt-10 pb-6">
+        <div className="w-20 h-20 relative mb-2 flex items-center justify-center">
+          <Image
+            src="/logo_white.png"
+            alt="VLUConnect"
+            width={80}
+            height={80}
+            className="object-contain"
+            priority
+          />
+        </div>
+        <h1 className="text-white font-bold text-xl tracking-wide uppercase">
+          VLUConnect
+        </h1>
+      </div>
+
+      {/* Menu */}
+      <nav className="flex-1 space-y-1 w-full px-0 mt-2 overflow-y-auto no-scrollbar">
+        <SidebarItem icon={Home} label="Trang chủ" href="/dashboard" />
+        <SidebarItem
+          icon={Users}
+          label="Cộng đồng"
+          href="/dashboard/community"
+        />
+        <SidebarItem icon={Search} label="Tìm kiếm" href="/dashboard/search" />
+        <SidebarItem icon={MessageCircle} label="Trò chuyện" href="/messages" />
+        <SidebarItem
+          icon={Bell}
+          label="Thông báo"
+          href="/dashboard/notifications"
+        />
+        <SidebarItem
+          icon={PlusSquare}
+          label="Thêm bài viết"
+          onClick={openAddPost}
+        />
+      </nav>
+
+      {/* Footer User */}
+      <div className="mt-auto w-full pb-6 px-3">
+        <NavUser
+          displayName={currentUser?.display_name || "User"}
+          roleLabel="Sinh viên"
+          avatarUrl={currentUser?.avatar_url}
+          profileHref={currentUser?.id ? `/profile/${currentUser.id}` : "#"}
+          onSignOut={onSignOut}
+        />
+      </div>
+    </aside>
   );
 }

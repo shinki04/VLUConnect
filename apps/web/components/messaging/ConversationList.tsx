@@ -6,7 +6,7 @@ import { Input } from "@repo/ui/components/input";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
 import { Plus, Search } from "lucide-react";
-import { useMemo,useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ConversationItem, ConversationListEmpty } from "./ConversationItem";
 
@@ -94,7 +94,10 @@ export function ConversationList({
       {/* Conversations list */}
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
-          <ConversationListSkeleton />
+          <>
+            <p>Đang tải ...</p>
+            <ConversationListSkeleton />
+          </>
         ) : filteredConversations.length === 0 ? (
           searchQuery ? (
             <div className="text-center py-8 text-muted-foreground">
