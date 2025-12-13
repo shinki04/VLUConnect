@@ -1,109 +1,101 @@
 "use client";
-import { privacyPost } from "@repo/shared/types/post";
-import type { User } from "@repo/shared/types/user";
-import { useForm } from "@tanstack/react-form";
-import Dashboard from "@uppy/dashboard";
-import {
-  File,
-  FileText,
-  Image as ImageIcon,
-  Sheet,
-  Video,
-  X,
-} from "lucide-react";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
 
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { toast } from "sonner";
+import { useForm } from "@tanstack/react-form";
+import { privacyPost } from "@repo/shared/types/post";
+import {
+  Globe,
+  Lock,
+  Users,
+  CloudUpload,
+  Plus,
+  X,
+  FileText,
+  MoreVertical,
+} from "lucide-react";
+import { Button } from "@repo/ui/components/button";
+import { Textarea } from "@repo/ui/components/textarea";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/select";
-import { Textarea } from "@repo/ui/components/textarea";
-import { useCreatePostMutation } from "@/hooks/usePost";
-import { useUppyWithSupabase } from "@/hooks/useUppy";
-import { getFileInfo, isImageType, isVideoType } from "@/lib/mediaUtils";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/ui/components/avatar";
+import { useUppyWithSupabase } from "@/hooks/useUppy";
+import type { UppyFile } from "@uppy/core";
+import { createClient } from "@/lib/supabase/client";
+import { useCreatePostMutation } from "@/hooks/usePost";
+import { createQueueStatus } from "@/app/actions/post-queue";
+import {
+  createPostSchema,
   validateContent,
-  validateMedia,
 } from "@/lib/validations/addPost-schema";
-
-import { Button } from "@repo/ui/components/button";
-import { Card } from "@repo/ui/components/card";
+import type { User } from "@repo/shared/types/user";
 
 interface AddPostProps {
   currentUser: User;
+  onSuccess?: () => void;
 }
 
-interface MediaPreview {
-  url: string;
-  mimeType: string;
-  name: string;
-  file: File;
-}
-
-function AddPost({ currentUser }: AddPostProps) {
-  const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+function AddPost({ currentUser, onSuccess }: AddPostProps) {
+  const supabase = createClient();
+  const uppy = useUppyWithSupabase("posts", "add-post-uploader");
   const createPostMutation = useCreatePostMutation();
-  const uppy = useUppyWithSupabase("posts", "add-post-legacy");
 
-  const handleMediaChange = (files: FileList | null) => {
-    if (!files) return;
+  const [attachedFiles, setAttachedFiles] = useState<UppyFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const newPreviews: MediaPreview[] = [];
-    let processedCount = 0;
+  useEffect(() => {
+    const updateFiles = () => setAttachedFiles(uppy.getFiles());
+    uppy.on("file-added", updateFiles);
+    uppy.on("file-removed", updateFiles);
+    uppy.on("complete", updateFiles);
+    return () => {
+      uppy.off("file-added", updateFiles);
+      uppy.off("file-removed", updateFiles);
+      uppy.off("complete", updateFiles);
+      uppy.cancelAll();
+    };
+  }, [uppy]);
 
-    Array.from(files).forEach((file) => {
-      const fileInfo = getFileInfo(file.name, file.type);
-
-      if (isImageType(fileInfo.type) || isVideoType(fileInfo.type)) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const url = e.target?.result as string;
-          const preview: MediaPreview = {
-            url,
-            mimeType: file.type,
+  const handleAddFiles = useCallback(
+    (files: FileList | File[]) => {
+      Array.from(files).forEach((file) => {
+        try {
+          uppy.addFile({
+            source: "user",
             name: file.name,
-            file,
-          };
-          newPreviews.push(preview);
-          processedCount++;
-
-          if (processedCount === files.length) {
-            setMediaPreviews((prev) => [...prev, ...newPreviews]);
-          }
-        };
-        reader.readAsDataURL(file);
-      } else {
-        const preview: MediaPreview = {
-          url: "",
-          mimeType: file.type,
-          name: file.name,
-          file,
-        };
-        newPreviews.push(preview);
-        processedCount++;
-
-        if (processedCount === files.length) {
-          setMediaPreviews((prev) => [...prev, ...newPreviews]);
+            type: file.type,
+            data: file,
+          });
+        } catch (err: any) {
+          if (err.isRestriction) toast.error(err.message);
         }
-      }
-    });
+      });
+    },
+    [uppy]
+  );
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
   };
-
-  const removeMedia = (index: number) => {
-    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
-
-    // Always reset file input when removing files
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files?.length) handleAddFiles(e.dataTransfer.files);
   };
 
   const form = useForm({
@@ -112,291 +104,303 @@ function AddPost({ currentUser }: AddPostProps) {
       media: [] as File[],
       privacy_level: "public" as privacyPost,
     },
-
     onSubmit: async ({ value }) => {
       if (!currentUser) {
-        toast.error("Vui lòng đăng nhập để đăng bài");
+        toast.error("Vui lòng đăng nhập");
         return;
       }
 
-      try {
-        // Sử dụng TanStack Query mutation để upload
-        // await createPostMutation.mutateAsync({
-        //   content: value.content,
-        //   privacy_level: value.privacy_level,
-        //   media: mediaPreviews.map((p) => p.file),
-        // });
+      const validated = createPostSchema.safeParse(value);
+      if (!validated.success) {
+        toast.error("Nội dung không hợp lệ");
+        return;
+      }
 
-        // Reset form - Realtime will show success toast
+      const files = uppy.getFiles();
+      const res = await createQueueStatus({
+        userId: currentUser.id,
+        content: value.content,
+        privacyLevel: value.privacy_level,
+        mediaCount: files.length,
+        queueOperations: "CREATE",
+      });
+
+      if (!res) {
+        toast.error("Lỗi khởi tạo bài viết");
+        return;
+      }
+
+      let mediaUrls: string[] = [];
+
+      try {
+        if (files.length > 0) {
+          toast.loading("Đang tải lên...", { id: "upload" });
+          const result = await uppy.upload();
+          toast.dismiss("upload");
+
+          if (!result || result.failed.length > 0) {
+            toast.error("Lỗi upload file");
+            return;
+          }
+
+          mediaUrls = result.successful.map((f) => {
+            const { data } = supabase.storage
+              .from("posts")
+              .getPublicUrl(f.meta.objectName as string);
+            return data.publicUrl;
+          });
+        }
+
+        await createPostMutation.mutateAsync({
+          queueId: res.id,
+          userId: currentUser.id,
+          queueStatus: "processing",
+          content: res.content,
+          privacyLevel: value.privacy_level as
+            | "public"
+            | "friends"
+            | "private",
+          media_urls: mediaUrls,
+        });
+
+        toast.success("Đăng bài thành công!");
         form.reset();
-        setMediaPreviews([]);
-      } catch (error) {
-        console.error("Lỗi khi đăng bài:", error);
-        toast.error(
-          error instanceof Error ? error.message : "Có lỗi xảy ra khi đăng bài"
-        );
+        uppy.cancelAll();
+        if (onSuccess) onSuccess();
+      } catch (e: any) {
+        toast.error(e.message || "Có lỗi xảy ra");
       }
     },
   });
 
-  // Update form media field when mediaPreviews changes
-  useEffect(() => {
-    form.setFieldValue(
-      "media",
-      mediaPreviews.map((p) => p.file)
-    );
-  }, [mediaPreviews, form]);
-
-  useEffect(() => {
-    // Set up Uppy Dashboard to display as an inline component within a specified target
-    uppy.use(Dashboard, {
-      inline: true, // Ensures the dashboard is rendered inline
-      target: "#drag-drop-area", // HTML element where the dashboard renders
-      hideProgressDetails: false, // Show progress details for file uploads
-    });
-  }, []);
-
-  const getFileIcon = (mimeType: string) => {
-    const fileInfo = getFileInfo("", mimeType);
-    switch (fileInfo.type) {
-      case "image":
-        return <ImageIcon className="w-5 h-5 text-blue-500" />;
-      case "video":
-        return <Video className="w-5 h-5 text-purple-500" />;
-      case "pdf":
-        return <File className="w-5 h-5 text-red-500" />;
-      case "word":
-        return <FileText className="w-5 h-5 text-blue-600" />;
-      case "excel":
-        return <Sheet className="w-5 h-5 text-green-600" />;
-      default:
-        return <FileText className="w-5 h-5 text-gray-500" />;
-    }
+  const handleCancel = () => {
+    form.reset();
+    uppy.cancelAll();
+    if (onSuccess) onSuccess();
   };
 
-  return (
-    <Card className=" rounded-lg shadow p-6 my-6">
-      <h2 className="text-xl font-semibold mb-4">Tạo bài viết mới</h2>
+  const shortName = currentUser?.display_name?.split(" ").pop() || "bạn";
 
+  return (
+    <div className="flex flex-col h-full bg-white sm:rounded-[24px]">
       <form
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-6"
+        className="flex flex-col h-full"
       >
-        {/* Content Field */}
-        <form.Field
-          name="content"
-          validators={{
-            onChange: ({ value }) => validateContent(value),
-          }}
-        >
-          {(field) => (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nội dung
-              </label>
-              <Textarea
-                name={field.name}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2  resize-none"
-                placeholder="Bạn đang nghĩ gì?..."
-                required
-              />
+        {/* HEADER */}
+        <div className="px-6 pt-6 pb-2 flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12 border border-gray-100 shadow-sm">
+              <AvatarImage src={currentUser?.avatar_url || ""} />
+              <AvatarFallback>
+                {currentUser?.display_name?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-bold text-[#37426F] text-[16px]">
+                {currentUser?.display_name || "User"}
+              </span>
+              <span className="text-[13px] text-gray-400 font-medium">
+                Sinh viên
+              </span>
+            </div>
+          </div>
 
-              <div className="flex justify-between text-sm text-gray-500 mt-1">
-                <div className="text-red-500">
-                  {field.state.meta.errors &&
-                    field.state.meta.errors.join(", ")}
+          {/* PRIVACY SELECTOR – đảm bảo dễ click, không bị che */}
+          <div className="flex items-center gap-2 mt-1 relative z-[10001]">
+            <span className="text-[13px] text-gray-500 font-medium">
+              Tuỳ chỉnh:
+            </span>
+            <form.Field name="privacy_level">
+              {(field) => (
+                <Select
+                  value={field.state.value}
+                  onValueChange={(v) =>
+                    field.handleChange(v as privacyPost)
+                  }
+                >
+                  <SelectTrigger className="min-w-[160px] h-9 px-3 border border-gray-300 rounded-md bg-white text-[13px] text-[#37426F]">
+                    <SelectValue placeholder="Chọn quyền riêng tư" />
+                  </SelectTrigger>
+
+                  <SelectContent className="bg-white border border-gray-200 shadow-xl rounded-xl min-w-[180px] z-[10002]">
+                    <SelectItem value="public">
+                      <div className="flex items-center gap-2 text-[#37426F] text-[14px]">
+                        <Globe className="w-4 h-4" />
+                        <span>Công khai</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="friends">
+                      <div className="flex items-center gap-2 text-[#37426F] text-[14px]">
+                        <Users className="w-4 h-4" />
+                        <span>Bạn bè</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="private">
+                      <div className="flex items-center gap-2 text-[#37426F] text-[14px]">
+                        <Lock className="w-4 h-4" />
+                        <span>Riêng tư</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </form.Field>
+
+            <MoreVertical className="w-5 h-5 text-[#37426F] cursor-pointer" />
+          </div>
+        </div>
+
+        {/* BODY */}
+        <div className="flex-1 px-6 py-4 overflow-y-auto custom-scrollbar">
+          <form.Field
+            name="content"
+            validators={{ onChange: ({ value }) => validateContent(value) }}
+          >
+            {(field) => (
+              <div className="relative mb-6">
+                <Textarea
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder={`Hi ${shortName}, bạn đang nghĩ gì?`}
+                  className="w-full min-h-[140px] text-[16px] border-none shadow-none resize-none px-5 py-4 focus-visible:ring-0 placeholder:text-gray-400 bg-[#EEF2FF] rounded-[20px] text-[#37426F]"
+                />
+                <div className="flex justify-between text-[11px] mt-1 px-1">
+                  <div className="text-red-500">
+                    {field.state.meta.errors?.join(", ")}
+                  </div>
+                  <div className="text-gray-400">
+                    {field.state.value.length}/5000
+                  </div>
                 </div>
-                <div>{field.state.value.length}/5000</div>
+              </div>
+            )}
+          </form.Field>
+
+          {/* UPLOAD BOX */}
+          <div
+            className={`relative border-[1.5px] border-dashed rounded-[20px] transition-colors min-h-[180px] flex flex-col items-center justify-center text-center p-6 group cursor-pointer
+            ${isDragging
+                ? "border-[#37426F] bg-blue-50"
+                : "border-[#93C5FD] bg-[#F8FAFC] hover:bg-[#F1F5F9]"
+              }`}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              type="file"
+              multiple
+              className="hidden"
+              ref={fileInputRef}
+              onChange={(e) => {
+                if (e.target.files) handleAddFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            <div className="pointer-events-none flex flex-col items-center gap-4">
+              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:scale-110 transition-transform">
+                <CloudUpload
+                  className="w-7 h-7 text-[#37426F]"
+                  strokeWidth={1.5}
+                />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[15px] font-bold text-[#37426F]">
+                  Chọn hoặc thả file{" "}
+                  <span className="underline decoration-[#37426F]">
+                    tại đây
+                  </span>
+                </p>
+                <p className="text-[12px] text-gray-400 max-w-[220px] mx-auto">
+                  Tối đa 10 file (ảnh, video, PDF, Word...)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* FILES LIST */}
+          {attachedFiles.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-bold text-[#37426F] uppercase">
+                Đã chọn ({attachedFiles.length})
+              </p>
+              <div className="grid gap-2">
+                {attachedFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 flex items-center justify-center bg-[#EEF2FF] rounded-lg text-[#37426F]">
+                        {file.type?.startsWith("image/") ? (
+                          "IMG"
+                        ) : (
+                          <FileText className="w-5 h-5" />
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-[#37426F] truncate max-w-[200px]">
+                        {file.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        uppy.removeFile(file.id);
+                      }}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
-        </form.Field>
+        </div>
 
-        {/* Media Upload */}
-        <form.Field
-          name="media"
-          validators={{
-            onChange: ({ value }) => validateMedia(value),
-          }}
-        >
-          {(field) => (
-            // <div>
-            //   <div className="flex justify-between items-center mb-2">
-            //     <label className="block text-sm font-medium text-gray-700">
-            //       Thêm media (tối đa 10 file)
-            //     </label>
-            //     {mediaPreviews.length > 0 && (
-            //       <span className="text-sm text-blue-600 font-medium">
-            //         {mediaPreviews.length} file
-            //       </span>
-            //     )}
-            //   </div>
-            //   <input
-            //     ref={fileInputRef}
-            //     type="file"
-            //     multiple
-            //     accept="image/*,video/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.xltx"
-            //     onChange={(e) => {
-            //       handleMediaChange(e.target.files);
-            //       // Update form field with files
-            //       if (e.target.files) {
-            //         field.handleChange(Array.from(e.target.files));
-            //       }
-            //     }}
-            //     className="block w-full text-sm text-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            //   />
-            //   <p className="text-xs text-gray-500 mt-1">
-            //     Hỗ trợ ảnh, video, PDF, Word, Excel, Text (tối đa 10MB/file)
-            //   </p>
-            //   {field.state.meta.errors && (
-            //     <p className="text-red-500 text-sm mt-1">
-            //       {field.state.meta.errors.join(", ")}
-            //     </p>
-            //   )}
-            // </div>
-            <div id="drag-drop-area"> </div>
-          )}
-        </form.Field>
-
-        {/* Media Previews */}
-        {mediaPreviews.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {mediaPreviews.map((preview, index) => {
-              const fileInfo = getFileInfo(preview.name, preview.mimeType);
-              const isImage = isImageType(fileInfo.type);
-              const isVideo = isVideoType(fileInfo.type);
-
-              return (
-                <div key={index} className="relative group">
-                  {isImage && preview.url ? (
-                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                      <Image
-                        src={preview.url}
-                        alt={`Preview ${index + 1}`}
-                        width={200}
-                        height={200}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : isVideo && preview.url ? (
-                    <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                      <video
-                        src={preview.url}
-                        className="max-h-full max-w-full"
-                        controls
-                      />
-                    </div>
-                  ) : (
-                    <div className="aspect-square rounded-lg overflow-hidden bg-linear-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-3 border border-gray-300">
-                      <div className="flex justify-center mb-2">
-                        {getFileIcon(preview.mimeType)}
-                      </div>
-                      <p className="text-xs font-semibold text-gray-700 text-center line-clamp-2">
-                        {preview.name}
-                      </p>
-                      <p className="text-xs text-gray-500 text-center mt-1">
-                        {getFileInfo("", preview.mimeType).label}
-                      </p>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeMedia(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Privacy Level */}
-        <form.Field name="privacy_level">
-          {(field) => (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quyền riêng tư
-              </label>
-
-              <Select
-                // Nhận giá trị từ form
-                value={field.state.value}
-                onOpenChange={(open: boolean) => {
-                  if (!open) field.handleBlur();
-                }}
-                onValueChange={(value: privacyPost) =>
-                  field.handleChange(value as privacyPost)
-                }
-              >
-                <SelectTrigger id="privacy-level" className="w-full">
-                  <SelectValue placeholder="Chọn quyền riêng tư" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Chọn quyền riêng tư cho bài viết</SelectLabel>
-                    <SelectItem value="public">Công khai</SelectItem>
-                    <SelectItem value="friends">Bạn bè</SelectItem>
-                    <SelectItem value="private">Chỉ mình tôi</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-
-              {/* Hiển thị lỗi nếu cần */}
-              {field.state.meta.errors && field.state.meta.isTouched && (
-                <p className="text-red-500 text-sm mt-1">
-                  {field.state.meta.errors}
-                </p>
-              )}
-            </div>
-          )}
-        </form.Field>
-
-        {/* Submit Button */}
-        <div className="flex justify-end space-x-3">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
+        {/* FOOTER */}
+        <div className="p-5 px-6 flex justify-end gap-3 bg-white border-t border-gray-50 pt-4">
+          <Button
+            type="button"
+            onClick={handleCancel}
+            className="bg-gray-100 hover:bg-gray-200 text-[#37426F] rounded-[14px] px-6 font-bold h-11 transition-colors"
           >
+            Hủy
+          </Button>
+
+          <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    form.reset();
-                    setMediaPreviews([]);
-                  }}
-                  disabled={
-                    !canSubmit || isSubmitting || createPostMutation.isPending
-                  }
-                >
-                  Hủy
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={
-                    !canSubmit || isSubmitting || createPostMutation.isPending
-                  }
-                >
-                  {isSubmitting || createPostMutation.isPending
-                    ? "Đang đăng bài..."
-                    : "Đăng bài"}
-                </Button>
-              </>
+              <Button
+                type="submit"
+                disabled={
+                  !canSubmit ||
+                  isSubmitting ||
+                  createPostMutation.isPending
+                }
+                className="bg-[#37426F] hover:bg-[#2a3255] text-white rounded-[14px] px-8 font-bold h-11 shadow-lg shadow-[#37426F]/20 flex items-center gap-2"
+              >
+                {isSubmitting || createPostMutation.isPending ? (
+                  "Đang đăng..."
+                ) : (
+                  <>
+                    Đăng
+                    <Plus className="w-5 h-5" strokeWidth={2.5} />
+                  </>
+                )}
+              </Button>
             )}
           </form.Subscribe>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }
 

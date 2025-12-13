@@ -1,61 +1,65 @@
-import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from "@tanstack/react-query";
-import Link from "next/link";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import * as React from "react";
-
-import Tepm from "@/components/dashboard/temp";
-import AddPost from "@/components/posts/add";
+import Image from "next/image";
+import { Globe, Users, User, Image as ImageIcon, Link as LinkIcon, Send } from "lucide-react";
 import ListPosts from "@/components/posts/ListPosts";
-import { Button } from "@repo/ui/components/button";
-
 import { getCurrentUser } from "../actions/user";
-import { signOut } from "../auth/action";
 
-// interface DashboardPageProps {
-//   propName: type;
-// }
 
 export default async function DashboardPage() {
   const queryClient = new QueryClient();
-
-  // const user = await queryClient.fetchQuery({
-  //   queryKey: ["user"],
-  //   queryFn: () => getCurrentUser(),
-  //   staleTime: 10000,
-  // });
-
   const [user] = await Promise.all([
-    await queryClient.fetchQuery({
-      queryKey: ["user"],
-      queryFn: () => getCurrentUser(),
-      staleTime: 10000,
-    }),
+    queryClient.fetchQuery({ queryKey: ["user"], queryFn: () => getCurrentUser() }),
   ]);
-  return (
-    <>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <Button onClick={signOut}>Đăng xuất</Button>
 
-        <Tepm />
-        <Link href={`/profile/${user?.id}`}>
-          <Button>My Profile</Button>
-        </Link>
-        <Link href={`/profile/716ce5a8-a82c-4bce-be69-723110b28c47`}>
-          <Button>HieuTran Profile</Button>
-        </Link>
-        <Link href={`/profile/89780d45-e3da-4920-9a80-33af0266ffea`}>
-          <Button>NhiNguyen Profile</Button>
-        </Link>
-        <Link href={`/profile/95a3fadb-5f4f-497f-b826-e9a66e8e4655`}>
-          <Button>DucTrung Profile</Button>
-        </Link>
-        {/* <AddPost currentUser={user} /> */}
-        <AddPost currentUser={user} />
+  const shortName = user?.display_name?.split(" ").pop() || "bạn";
+  const initial = user?.display_name?.[0] || "U";
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      {/* TOP TABS */}
+      <div className="flex items-center justify-center gap-8 mb-8">
+        <button className="flex items-center gap-2 text-primary font-bold border-b-[3px] border-primary pb-2 px-1 transition-all">
+          <span className="text-[17px]">Tất cả</span> <Globe className="w-5 h-5" />
+        </button>
+        <span className="text-gray-300 text-2xl font-light pb-2">|</span>
+        <button className="flex items-center gap-2 text-muted-foreground font-bold hover:text-sidebar transition-colors pb-2 px-1 border-b-[3px] border-transparent">
+          <span className="text-[17px]">Bạn bè</span> <User className="w-5 h-5" />
+        </button>
+        <span className="text-gray-300 text-2xl font-light pb-2">|</span>
+        <button className="flex items-center gap-2 text-muted-foreground font-bold hover:text-sidebar transition-colors pb-2 px-1 border-b-[3px] border-transparent">
+          <span className="text-[17px]">Nhóm</span> <Users className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* CREATE POST TRIGGER - Visual only */}
+      <div className="flex items-center gap-4 mb-8 px-0 w-full cursor-pointer group">
+        <div className="h-12 w-12 rounded-full border-2 border-card shadow-sm overflow-hidden bg-card flex items-center justify-center shrink-0">
+          {user?.avatar_url ? (
+            <Image src={user.avatar_url} alt="User" width={48} height={48} className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-bold text-muted-foreground text-xl">{initial}</span>
+          )}
+        </div>
+        <div className="flex-1 relative">
+          <div className="w-full bg-card rounded-full h-[52px] flex items-center px-6 shadow-sm border border-input transition-all group-hover:border-primary/50 group-hover:shadow-md">
+            <span className="text-muted-foreground text-[15px] select-none">
+              Hi {shortName}, bạn đang nghĩ gì?
+            </span>
+          </div>
+          <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-5 text-muted-foreground pointer-events-none">
+            <LinkIcon className="w-5 h-5 group-hover:text-sidebar transition-colors" />
+            <ImageIcon className="w-5 h-5 group-hover:text-sidebar transition-colors" />
+            <Send className="w-5 h-5 text-sidebar group-hover:text-primary transition-colors" />
+
+          </div>
+        </div>
+      </div>
+
+      {/* POSTS */}
+      <div className="space-y-8">
         <ListPosts />
-      </HydrationBoundary>
-    </>
+      </div>
+    </HydrationBoundary>
   );
 }
