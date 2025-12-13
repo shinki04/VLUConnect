@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@repo/ui/components/button";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 
 import { signInWithAzure } from "@/app/auth/action";
-import { Button } from "@repo/ui/components/button";
 import { ERROR_MESSAGES, ErrorMessageKey } from "@/types/login-error";
 
 export default function LoginForm() {

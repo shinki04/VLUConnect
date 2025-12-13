@@ -1,10 +1,9 @@
 "use client";
+import { Button } from "@repo/ui/components/button";
 import React from "react";
 import { toast } from "sonner";
 
 import { useGetCurrentUser } from "@/hooks/useAuth";
-
-import { Button } from "@repo/ui/components/button";
 
 export default function Tepm() {
   const { data } = useGetCurrentUser();

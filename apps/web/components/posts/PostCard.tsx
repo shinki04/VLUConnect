@@ -1,24 +1,23 @@
 "use client";
 
 import { PostResponse } from "@repo/shared/types/post";
-import React from "react";
-
 import { Card } from "@repo/ui/components/card";
-import { useDeletePost } from "@/hooks/usePost";
+import React from "react";
 import { toast } from "sonner";
-import { useGetCurrentUser } from "@/hooks/useAuth";
 
-import PostHeader from "./PostHeader";
-import PostMediaGallery from "./MediaPreview";
-import EditPost from "./EditPost";
+import { useGetCurrentUser } from "@/hooks/useAuth";
+import { useDeletePost } from "@/hooks/usePost";
+import { getFileInfo, isImageType, type MediaType } from "@/lib/mediaUtils";
 
 import AlertDialog from "../AlertDialog";
+import EditPost from "./EditPost";
+import FileLightbox from "./FileLightbox";
 import MediaGalleryModal from "./MediaGalleryModal";
 import MediaLightbox from "./MediaLightbox";
-import FileLightbox from "./FileLightbox";
-import { getFileInfo, isImageType, type MediaType } from "@/lib/mediaUtils";
-import ReadMore from "./ReadMore";
+import PostMediaGallery from "./MediaPreview";
 import { PostActions, PostStats } from "./PostActions";
+import PostHeader from "./PostHeader";
+import ReadMore from "./ReadMore";
 
 interface PostCardProps {
   post: PostResponse;

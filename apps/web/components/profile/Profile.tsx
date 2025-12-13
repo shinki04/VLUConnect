@@ -1,12 +1,6 @@
 "use client";
 import { Avatar, BLANK_AVATAR, User } from "@repo/shared/types/user";
-import { useForm } from "@tanstack/react-form";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
-
-import { getUserAvatars } from "@/app/actions/user";
+import { Button } from "@repo/ui/components/button";
 import {
   Dialog,
   DialogClose,
@@ -16,14 +10,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/ui/components/dialog";
+import { Skeleton } from "@repo/ui/components/skeleton";
+import { useForm } from "@tanstack/react-form";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { getUserAvatars } from "@/app/actions/user";
 import { useGetCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { updateProfileSchema } from "@/lib/validations/updateProfile-schema";
 
 import { FieldErrors } from "../FieldErrors";
 import { FriendButton } from "../friendship/FriendButton";
 import { FriendsList } from "../friendship/FriendsList";
-import { Button } from "@repo/ui/components/button";
-import { Skeleton } from "@repo/ui/components/skeleton";
 import OldAvatars from "./OldAvatars";
 
 interface ProfileProps {

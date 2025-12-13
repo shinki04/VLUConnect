@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Loader2, Search, UserPlus, Users, X, Check } from "lucide-react";
-
+import { Tables } from "@repo/shared/types/database.types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
@@ -17,7 +15,8 @@ import {
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { cn } from "@repo/ui/lib/utils";
-import { Tables } from "@repo/shared/types/database.types";
+import { Check,Loader2, Search, UserPlus, Users, X } from "lucide-react";
+import { useMemo,useState } from "react";
 
 interface CreateConversationDialogProps {
   open: boolean;

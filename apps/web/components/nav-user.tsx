@@ -1,8 +1,5 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
-
-import { signOut } from "@/app/auth/action";
 import {
   Avatar,
   AvatarFallback,
@@ -22,6 +19,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@repo/ui/components/sidebar";
+import { ChevronsUpDown, LogOut } from "lucide-react";
+
+import { signOut } from "@/app/auth/action";
 import { User } from "@/types/user";
 
 export function NavUser({ user }: { user: User }) {

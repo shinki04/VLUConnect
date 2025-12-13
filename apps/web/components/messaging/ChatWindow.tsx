@@ -1,14 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
-import {
-  Loader2,
-  MessageCircle,
-  MoreVertical,
-  Users,
-  LogOut,
-} from "lucide-react";
-
+import { Tables } from "@repo/shared/types/database.types";
+import type { ConversationWithDetails } from "@repo/shared/types/messaging";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -20,11 +13,17 @@ import {
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { TooltipProvider } from "@repo/ui/components/tooltip";
 import { cn } from "@repo/ui/lib/utils";
-import type { ConversationWithDetails } from "@repo/shared/types/messaging";
-import { Tables } from "@repo/shared/types/database.types";
+import {
+  Loader2,
+  LogOut,
+  MessageCircle,
+  MoreVertical,
+  Users,
+} from "lucide-react";
+import { useCallback,useEffect, useRef } from "react";
 
-import { useMessages } from "@/hooks/useMessages";
 import { useConversationFriendship } from "@/hooks/useConversations";
+import { useMessages } from "@/hooks/useMessages";
 
 import { MessageBubble, MessageDateSeparator } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";

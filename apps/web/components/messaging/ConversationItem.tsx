@@ -1,14 +1,13 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
-import { MessageCircle, Users } from "lucide-react";
-
+import { Tables } from "@repo/shared/types/database.types";
+import type { ConversationWithDetails } from "@repo/shared/types/messaging";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import { cn } from "@repo/ui/lib/utils";
-import type { ConversationWithDetails } from "@repo/shared/types/messaging";
-import { Tables } from "@repo/shared/types/database.types";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+import { MessageCircle, Users } from "lucide-react";
 
 interface ConversationItemProps {
   conversation: ConversationWithDetails;

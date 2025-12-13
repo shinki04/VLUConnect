@@ -1,10 +1,9 @@
 "use client";
 
-import { UserPlus } from "lucide-react";
-
+import { Tables } from "@repo/shared/types/database.types";
 import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
-import { Tables } from "@repo/shared/types/database.types";
+import { UserPlus } from "lucide-react";
 
 interface NotFriendsBannerProps {
   otherUser: Tables<"profiles">;

@@ -1,11 +1,6 @@
 "use client";
 
 import { BLANK_AVATAR } from "@repo/shared/types/user";
-import { Loader2, UserCheck, UserX } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-
-import { usePendingRequests } from "@/hooks/useFriendship";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -15,7 +10,12 @@ import {
   CardTitle,
 } from "@repo/ui/components/card";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { Loader2, UserCheck, UserX } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
+
+import { usePendingRequests } from "@/hooks/useFriendship";
 
 interface FriendRequestListProps {
   className?: string;

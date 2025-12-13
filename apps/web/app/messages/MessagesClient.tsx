@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { Tables } from "@repo/shared/types/database.types";
+import { cn } from "@repo/ui/lib/utils";
 import { MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback,useState } from "react";
 import { toast } from "sonner";
 
-import { cn } from "@repo/ui/lib/utils";
-import { Tables } from "@repo/shared/types/database.types";
-
-import { useConversations, useConversation } from "@/hooks/useConversations";
 import {
   ChatWindow,
   ConversationList,
   CreateConversationDialog,
 } from "@/components/messaging";
+import { useConversation,useConversations } from "@/hooks/useConversations";
 
 interface MessagesClientProps {
   currentUser: Tables<"profiles">;

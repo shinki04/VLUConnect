@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 
-import { getCurrentUser } from "@/app/actions/user";
 import { getFriends } from "@/app/actions/friendship";
+import { getCurrentUser } from "@/app/actions/user";
+
 import { MessagesClient } from "./MessagesClient";
 
 

@@ -1,11 +1,10 @@
-import { Search } from "lucide-react";
-
 import { Label } from "@repo/ui/components/label";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarInput,
 } from "@repo/ui/components/sidebar";
+import { Search } from "lucide-react";
 
 export function SearchForm({ ...props }: React.ComponentProps<"form">) {
   return (

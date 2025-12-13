@@ -1,12 +1,12 @@
 "use client";
 
 import { PostResponse } from "@repo/shared/types/post";
+import { Skeleton } from "@repo/ui/components/skeleton";
 import React, { useCallback, useEffect, useRef } from "react";
 
 import PostCard from "@/components/posts/PostCard";
 import { useInfinitePostsByAuthorQuery } from "@/hooks/useInfinitePosts";
 
-import { Skeleton } from "@repo/ui/components/skeleton";
 import PendingPost from "./PendingPost";
 interface PostByAuthorProps {
   authorId: string;

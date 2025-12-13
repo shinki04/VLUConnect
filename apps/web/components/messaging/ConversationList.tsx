@@ -1,13 +1,12 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
-import { useState, useMemo } from "react";
-
+import type { ConversationWithDetails } from "@repo/shared/types/messaging";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
-import type { ConversationWithDetails } from "@repo/shared/types/messaging";
+import { Plus, Search } from "lucide-react";
+import { useMemo,useState } from "react";
 
 import { ConversationItem, ConversationListEmpty } from "./ConversationItem";
 

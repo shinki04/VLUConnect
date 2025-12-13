@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Loader2, Send } from "lucide-react";
-
 import { Button } from "@repo/ui/components/button";
 import { Textarea } from "@repo/ui/components/textarea";
 import { cn } from "@repo/ui/lib/utils";
+import { Loader2, Send } from "lucide-react";
+import { KeyboardEvent,useEffect, useRef, useState } from "react";
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;

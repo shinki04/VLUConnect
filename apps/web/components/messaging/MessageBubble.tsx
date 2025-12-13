@@ -1,9 +1,7 @@
 "use client";
 
-import { format, isToday, isYesterday } from "date-fns";
-import { vi } from "date-fns/locale";
-import { AlertCircle, Check, Loader2, RotateCcw } from "lucide-react";
-
+import { Tables } from "@repo/shared/types/database.types";
+import type { MessageWithSender, OptimisticMessage } from "@repo/shared/types/messaging";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -12,8 +10,9 @@ import {
   TooltipTrigger,
 } from "@repo/ui/components/tooltip";
 import { cn } from "@repo/ui/lib/utils";
-import type { MessageWithSender, OptimisticMessage } from "@repo/shared/types/messaging";
-import { Tables } from "@repo/shared/types/database.types";
+import { format, isToday, isYesterday } from "date-fns";
+import { vi } from "date-fns/locale";
+import { AlertCircle, Check, Loader2, RotateCcw } from "lucide-react";
 
 interface MessageBubbleProps {
   message: MessageWithSender | OptimisticMessage;

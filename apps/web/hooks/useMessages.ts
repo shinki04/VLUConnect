@@ -1,5 +1,11 @@
 "use client";
 
+import { Tables } from "@repo/shared/types/database.types";
+import type {
+  MessageStatus,
+  MessageWithSender,
+  OptimisticMessage,
+} from "@repo/shared/types/messaging";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -9,12 +15,6 @@ import {
   sendMessage as sendMessageAction,
 } from "@/app/actions/messaging";
 import { createClient } from "@/lib/supabase/client";
-import type {
-  MessageStatus,
-  MessageWithSender,
-  OptimisticMessage,
-} from "@repo/shared/types/messaging";
-import { Tables } from "@repo/shared/types/database.types";
 
 interface UseMessagesOptions {
   conversationId: string;

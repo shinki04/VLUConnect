@@ -2,11 +2,6 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { Loader2, UserCheck, UserMinus, UserPlus, UserX } from "lucide-react";
-import { toast } from "sonner";
-
-import { useFriendship } from "@/hooks/useFriendship";
 import { Button } from "@repo/ui/components/button";
 import {
   DropdownMenu,
@@ -14,6 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
+import { Loader2, UserCheck, UserMinus, UserPlus, UserX } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { useFriendship } from "@/hooks/useFriendship";
 
 interface FriendButtonProps {
   targetUserId: string;
