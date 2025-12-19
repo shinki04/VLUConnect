@@ -2,17 +2,23 @@
 
 import { Tables } from "@repo/shared/types/database.types";
 import type { ConversationWithDetails } from "@repo/shared/types/messaging";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
-import  ScrollButton  from "@repo/ui/components/scroll-button";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/ui/components/avatar";
+import ScrollButton from "@repo/ui/components/scroll-button";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { TooltipProvider } from "@repo/ui/components/tooltip";
 import { cn } from "@repo/ui/lib/utils";
+import { Loader2, MessageCircle, Users } from "lucide-react";
 import {
-  Loader2,
-  MessageCircle,
-  Users,
-} from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import { useConversationFriendship } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
@@ -52,7 +58,7 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Combined scroll state ref for better performance
   const scrollStateRef = useRef<ScrollState>({
     prevScrollHeight: 0,
@@ -101,17 +107,24 @@ export function ChatWindow({
       avatarUrl: profile?.avatar_url,
       subtitle: "Đang hoạt động",
     };
-  }, [isGroup, conversation.name, conversation.avatar_url, conversation.members, currentUserId]);
+  }, [
+    isGroup,
+    conversation.name,
+    conversation.avatar_url,
+    conversation.members,
+    currentUserId,
+  ]);
 
   // Memoized grouped messages
-  const groupedMessages = useMemo(() => 
-    messages.reduce<Record<string, typeof messages>>((groups, message) => {
-      const date = message.created_at
-        ? new Date(message.created_at).toDateString()
-        : "Unknown";
-      (groups[date] ??= []).push(message);
-      return groups;
-    }, {}),
+  const groupedMessages = useMemo(
+    () =>
+      messages.reduce<Record<string, typeof messages>>((groups, message) => {
+        const date = message.created_at
+          ? new Date(message.created_at).toDateString()
+          : "Unknown";
+        (groups[date] ??= []).push(message);
+        return groups;
+      }, {}),
     [messages]
   );
 
@@ -128,7 +141,7 @@ export function ChatWindow({
   useLayoutEffect(() => {
     const container = messagesContainerRef.current;
     const state = scrollStateRef.current;
-    
+
     if (!container || messages.length === 0) return;
 
     // Handle scroll position preservation after load more
@@ -152,13 +165,14 @@ export function ChatWindow({
     // Handle new messages - auto scroll if near bottom
     const newCount = messages.length;
     if (newCount > state.prevMessagesCount && state.prevMessagesCount > 0) {
-      const isNearBottom = 
-        container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        150;
       if (isNearBottom) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
-    
+
     state.prevMessagesCount = newCount;
   }, [messages, isLoading, isLoadingMore]);
 
@@ -217,7 +231,7 @@ export function ChatWindow({
             {isGroup ? (
               <ChatDropdownGroup onLeave={onLeave} />
             ) : (
-              <ChatDropdownDirect userId={friendshipData!.otherUser!.id} />
+              <ChatDropdownDirect userId={friendshipData?.otherUser?.id} />
             )}
 
             {/* <DropdownMenu>
@@ -293,7 +307,9 @@ export function ChatWindow({
 
                         return (
                           <MessageBubble
-                            key={"tempId" in message ? message.tempId : message.id}
+                            key={
+                              "tempId" in message ? message.tempId : message.id
+                            }
                             message={message}
                             isOwn={isOwn}
                             showAvatar={showAvatar}
@@ -312,8 +328,8 @@ export function ChatWindow({
           </div>
 
           {/* Scroll to bottom button - positioned outside scrollable area */}
-          <ScrollButton 
-            containerRef={messagesContainerRef} 
+          <ScrollButton
+            containerRef={messagesContainerRef}
             scrollAnchorRef={messagesEndRef}
           />
         </div>
@@ -353,7 +369,10 @@ function ChatWindowSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className={cn("flex items-end gap-2", i % 2 === 0 ? "" : "flex-row-reverse")}
+          className={cn(
+            "flex items-end gap-2",
+            i % 2 === 0 ? "" : "flex-row-reverse"
+          )}
         >
           {i % 2 === 0 && <Skeleton className="h-8 w-8 rounded-full" />}
           <Skeleton
