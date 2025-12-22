@@ -54,7 +54,7 @@ export async function updateSession(request: NextRequest) {
 
     const res = NextResponse.redirect(url);
     res.cookies.set("access_error", "Bạn không có quyền truy cập", {
-      path: "/",
+      path: "/login",
       httpOnly: false,
       sameSite: "lax",
       maxAge: 10,
@@ -63,8 +63,26 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Check role admin nếu truy cập /admin
-  if (request.nextUrl.pathname.startsWith("/")) {
-    const role = user?.app_metadata?.global_role; // custom claims
+  if (request.nextUrl.pathname.startsWith("/dashboard")) {
+    if (!user?.sub) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      const res = NextResponse.redirect(url);
+      res.cookies.set("access_error", "Có lỗi xảy ra", {
+        path: "/login",
+        httpOnly: false,
+        sameSite: "lax",
+        maxAge: 10,
+      });
+      return res;
+    }
+    const profile = await supabase
+      .from("profiles")
+      .select("global_role")
+      .eq("id", user.sub)
+      .single();
+    const role = profile.data?.global_role; // custom claims
+    console.log("Role:", role);
     if (role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/login"; // redirect nếu không phải admin
@@ -72,7 +90,7 @@ export async function updateSession(request: NextRequest) {
 
       // Set cookie tạm để gửi message
       res.cookies.set("access_error", "Bạn không có quyền truy cập", {
-        path: "/",
+        path: "/login",
         httpOnly: false, // client đọc được
         sameSite: "lax",
         maxAge: 10, // 10 giây là đủ

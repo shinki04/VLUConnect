@@ -1,14 +1,9 @@
-import { Separator } from "@repo/ui/components/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@repo/ui/components/sidebar";
+
+
 import { redirect } from "next/navigation";
 import React from "react";
 
 import { getCurrentUser } from "../actions/user";
-import { AppSidebar } from "./_component/app-sidebar";
 interface AdminPageProps {
   children: React.ReactNode;
 }
@@ -19,7 +14,8 @@ export default async function AdminLayout({ children }: AdminPageProps) {
   }
   return (
     <>
-      <SidebarProvider>
+      {children}
+      {/* <SidebarProvider>
         <AppSidebar user={user} />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -28,7 +24,7 @@ export default async function AdminLayout({ children }: AdminPageProps) {
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-            {/* <Breadcrumb>
+            <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
@@ -40,20 +36,20 @@ export default async function AdminLayout({ children }: AdminPageProps) {
                   <BreadcrumbPage>Data Fetching</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
-            </Breadcrumb> */}
+            </Breadcrumb>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4">
-            {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
               <div className="bg-muted/50 aspect-video rounded-xl" />
               <div className="bg-muted/50 aspect-video rounded-xl" />
               <div className="bg-muted/50 aspect-video rounded-xl" />
-            </div> */}
+            </div>
             <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min">
               {children}
             </div>
           </div>
         </SidebarInset>
-      </SidebarProvider>
+      </SidebarProvider> */}
     </>
   );
 }

@@ -1,9 +1,10 @@
 "use client"
 
-import * as SheetPrimitive from "@radix-ui/react-dialog"
-import { cn } from "@repo/ui/lib/utils"
-import { XIcon } from "lucide-react"
 import * as React from "react"
+import * as SheetPrimitive from "@radix-ui/react-dialog"
+import { XIcon } from "lucide-react"
+
+import { cn } from "@repo/ui/lib/utils"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -128,11 +129,11 @@ function SheetDescription({
 
 export {
   Sheet,
+  SheetTrigger,
   SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
+  SheetFooter,
   SheetTitle,
-  SheetTrigger,
+  SheetDescription,
 }
