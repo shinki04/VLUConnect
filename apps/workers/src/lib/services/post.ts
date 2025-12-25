@@ -1,4 +1,4 @@
-import { Post } from "@repo/shared/types/post";
+import {  ModerationStatus, Post } from "@repo/shared/types/post";
 import {
   PostJobPayload,
   PostQueueDeletePayload,
@@ -76,9 +76,29 @@ export async function processPostCreation(payload: PostJobPayload) {
       await updateQueueStatus(payload.queueId, "processing");
     }
 
-    // Step 1: Using AI for check
+    // Step 1: Using AI for sentiment check
     const sentiment = await sentimentModel(payload.content);
     console.log("Sentiment: ", sentiment);
+    if (sentiment.length === 0) {
+      throw new Error("Failed to get sentiment");
+    }
+
+    // Find NEG sentiment score
+    const negSentiment = sentiment.find((s) => s.label === "NEG");
+    const negScore = negSentiment?.score ?? 0;
+
+    // Determine moderation status based on NEG score
+    let moderationStatus: ModerationStatus = "approved";
+    let moderationReason: string | null = null;
+
+    if (negScore >= 0.9) {
+      moderationStatus = "rejected";
+      moderationReason = `AI đã phát hiện nội dung tiêu cực với độ tin cậy ${(negScore * 100).toFixed(1)}%`;
+      console.log(`🚫 Post rejected: NEG score ${negScore}`);
+    } else if (negScore > 0.7) {
+      moderationStatus = "flagged";
+      console.log(`⚠️ Post flagged: NEG score ${negScore}`);
+    }
 
     // Step 2: Create post in database
     console.log("📝 Creating post in database...");
@@ -89,22 +109,23 @@ export async function processPostCreation(payload: PostJobPayload) {
         content: payload.content,
         privacy_level: payload.privacyLevel,
         media_urls: payload.media_urls || [],
-        moderation_status: "approved",
+        moderation_status: moderationStatus,
+        ...(moderationReason && { moderation_reason: moderationReason }),
       })
       .select()
       .single();
 
-    if (error) {
+    if (error || !post) {
       // Update status to 'failed' with error message
       if (payload.queueId) {
         await updateQueueStatus(
           payload.queueId,
           "failed",
           undefined,
-          `Failed to create post: ${error.message}`
+          `Failed to create post: ${error?.message || "Unknown error"}`
         );
       }
-      throw new Error(`Failed to create post: ${error.message}`);
+      throw new Error(`Failed to create post: ${error?.message || "Unknown error"}`);
     }
 
     console.log("✅ Post created successfully:", post.id);

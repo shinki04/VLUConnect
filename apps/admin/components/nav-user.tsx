@@ -47,7 +47,11 @@ export function NavUser({ user }: { user: User }) {
                 <span className="truncate font-medium">
                   {user.display_name || user.username}
                 </span>
-                <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate text-xs capitalize text-primary font-medium">
+                  {user.global_role}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+              
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -71,7 +75,11 @@ export function NavUser({ user }: { user: User }) {
                   <span className="truncate font-medium">
                     {user.display_name || user.username}
                   </span>
-                  <span className="truncate text-xs">{user.email}</span>
+                   <span className="truncate text-xs capitalize text-primary font-medium">
+                    {user.global_role}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                 
                 </div>
               </div>
             </DropdownMenuLabel>

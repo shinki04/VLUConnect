@@ -3,7 +3,7 @@ import { Tables, Enums, TablesUpdate } from "./database.types";
 export type privacyPost = Enums<"privacy_post">;
 export type Post = Tables<"posts">;
 export type UpdatePost = TablesUpdate<"posts">;
-
+export type ModerationStatus = Enums<"moderation_status">;
 export type PostResponse = {
   id: string;
   created_at: string;

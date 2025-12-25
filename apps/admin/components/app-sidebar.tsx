@@ -1,10 +1,15 @@
-import * as React from "react"
+"use client";
 
-import { SearchForm } from "@/components/search-form"
-import { VersionSwitcher } from "@/components/version-switcher"
+import { User } from "@repo/shared/types/user";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@repo/ui/components/collapsible";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -12,171 +17,98 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
-} from "@repo/ui/components/sidebar"
+} from "@repo/ui/components/sidebar";
+import { ChevronRight, Shield } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import * as React from "react";
 
-// This is sample data.
-const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
-  navMain: [
-    {
-      title: "Getting Started",
-      url: "#",
-      items: [
-        {
-          title: "Installation",
-          url: "#",
-        },
-        {
-          title: "Project Structure",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Building Your Application",
-      url: "#",
-      items: [
-        {
-          title: "Routing",
-          url: "#",
-        },
-        {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
-        },
-        {
-          title: "Rendering",
-          url: "#",
-        },
-        {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "API Reference",
-      url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-  ],
+import { APP_INFO, SIDEBAR_NAV_ITEMS } from "@/constants/admin-sidebar";
+import { NavUser } from "./nav-user";
+
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  user: User;
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
+  const pathname = usePathname();
+
+  // Check if any sub-item is active to determine if parent should be open
+  const isGroupActive = (items: { url: string }[] | undefined) => {
+    if (!items) return false;
+    return items.some((item) => pathname.startsWith(item.url));
+  };
+
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
-        />
-        <SearchForm />
+        <div className="flex items-center gap-2 px-4 py-2">
+          <Shield className="h-6 w-6 text-primary" />
+          <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">
+            {APP_INFO.name}
+          </span>
+        </div>
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {SIDEBAR_NAV_ITEMS.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  {item.items ? (
+                    <Collapsible
+                      defaultOpen={isGroupActive(item.items)}
+                      className="group/collapsible"
+                    >
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip={item.title}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.items.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.url}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={pathname === subItem.url}
+                              >
+                                <Link href={subItem.url}>{subItem.title}</Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ) : (
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url!}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                  )}
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={user} />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

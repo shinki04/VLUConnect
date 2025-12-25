@@ -1,8 +1,5 @@
 "use client"
 
-import * as React from "react"
-import { Check, ChevronsUpDown, GalleryVerticalEnd } from "lucide-react"
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@repo/ui/components/sidebar"
+import { Check, ChevronsUpDown, GalleryVerticalEnd } from "lucide-react"
+import * as React from "react"
 
 export function VersionSwitcher({
   versions,

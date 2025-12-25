@@ -1,206 +1,49 @@
 /**
- * Utility để detect loại file và render media phù hợp
+ * Media utility functions for admin dashboard
+ * Similar to web app's mediaUtils
  */
 
-export type MediaType =
-  | "image"
-  | "video"
-  | "document"
-  | "excel"
-  | "word"
-  | "pdf";
+export type MediaType = "image" | "video" | "document" | "excel" | "word" | "pdf";
 
 export interface FileInfo {
   type: MediaType;
-  icon: string;
-  label: string;
   extension: string;
+  label: string;
 }
 
-const MEDIA_TYPE_CONFIG: Record<string, FileInfo> = {
+const EXTENSION_MAP: Record<string, FileInfo> = {
   // Images
-  "image/jpeg": {
-    type: "image",
-    icon: "🖼️",
-    label: "JPEG Image",
-    extension: ".jpg",
-  },
-  "image/png": {
-    type: "image",
-    icon: "🖼️",
-    label: "PNG Image",
-    extension: ".png",
-  },
-  "image/webp": {
-    type: "image",
-    icon: "🖼️",
-    label: "WebP Image",
-    extension: ".webp",
-  },
-  "image/gif": {
-    type: "image",
-    icon: "🖼️",
-    label: "GIF Image",
-    extension: ".gif",
-  },
-  "image/svg+xml": {
-    type: "image",
-    icon: "🖼️",
-    label: "SVG Image",
-    extension: ".svg",
-  },
-
+  jpg: { type: "image", extension: ".jpg", label: "JPEG Image" },
+  jpeg: { type: "image", extension: ".jpeg", label: "JPEG Image" },
+  png: { type: "image", extension: ".png", label: "PNG Image" },
+  webp: { type: "image", extension: ".webp", label: "WebP Image" },
+  gif: { type: "image", extension: ".gif", label: "GIF Image" },
+  svg: { type: "image", extension: ".svg", label: "SVG Image" },
   // Videos
-  "video/mp4": {
-    type: "video",
-    icon: "🎬",
-    label: "MP4 Video",
-    extension: ".mp4",
-  },
-  "video/webm": {
-    type: "video",
-    icon: "🎬",
-    label: "WebM Video",
-    extension: ".webm",
-  },
-  "video/ogg": {
-    type: "video",
-    icon: "🎬",
-    label: "OGG Video",
-    extension: ".ogg",
-  },
-  "video/quicktime": {
-    type: "video",
-    icon: "🎬",
-    label: "MOV Video",
-    extension: ".mov",
-  },
-
+  mp4: { type: "video", extension: ".mp4", label: "MP4 Video" },
+  webm: { type: "video", extension: ".webm", label: "WebM Video" },
+  ogg: { type: "video", extension: ".ogg", label: "OGG Video" },
+  mov: { type: "video", extension: ".mov", label: "MOV Video" },
+  avi: { type: "video", extension: ".avi", label: "AVI Video" },
+  mkv: { type: "video", extension: ".mkv", label: "MKV Video" },
   // Documents
-  "application/pdf": {
-    type: "pdf",
-    icon: "📄",
-    label: "PDF Document",
-    extension: ".pdf",
-  },
-  "application/msword": {
-    type: "word",
-    icon: "📝",
-    label: "Word Document",
-    extension: ".doc",
-  },
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
-    type: "word",
-    icon: "📝",
-    label: "Word Document",
-    extension: ".docx",
-  },
-  "text/plain": {
-    type: "document",
-    icon: "📄",
-    label: "Text File",
-    extension: ".txt",
-  },
-
-  // Excel
-  "application/vnd.ms-excel": {
-    type: "excel",
-    icon: "📊",
-    label: "Excel Spreadsheet",
-    extension: ".xls",
-  },
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
-    type: "excel",
-    icon: "📊",
-    label: "Excel Spreadsheet",
-    extension: ".xlsx",
-  },
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.template": {
-    type: "excel",
-    icon: "📊",
-    label: "Excel Template",
-    extension: ".xltx",
-  },
+  pdf: { type: "pdf", extension: ".pdf", label: "PDF Document" },
+  doc: { type: "word", extension: ".doc", label: "Word Document" },
+  docx: { type: "word", extension: ".docx", label: "Word Document" },
+  txt: { type: "document", extension: ".txt", label: "Text File" },
+  xls: { type: "excel", extension: ".xls", label: "Excel Spreadsheet" },
+  xlsx: { type: "excel", extension: ".xlsx", label: "Excel Spreadsheet" },
 };
 
-export function getFileInfo(url: string, mimeType?: string): FileInfo {
-  // Nếu có mimeType, sử dụng nó
-  if (mimeType && MEDIA_TYPE_CONFIG[mimeType]) {
-    return MEDIA_TYPE_CONFIG[mimeType];
-  }
-
-  // Nếu không, guess từ URL extension
+export function getFileInfo(url: string): FileInfo {
   const urlWithoutQuery = url.split("?")[0];
-  const extension = urlWithoutQuery!.split(".").pop()?.toLowerCase() || "";
-
-  const extensionMap: Record<string, FileInfo> = {
-    jpg: { type: "image", icon: "🖼️", label: "JPEG Image", extension: ".jpg" },
-    jpeg: { type: "image", icon: "🖼️", label: "JPEG Image", extension: ".jpg" },
-    png: { type: "image", icon: "🖼️", label: "PNG Image", extension: ".png" },
-    webp: {
-      type: "image",
-      icon: "🖼️",
-      label: "WebP Image",
-      extension: ".webp",
-    },
-    gif: { type: "image", icon: "🖼️", label: "GIF Image", extension: ".gif" },
-    svg: { type: "image", icon: "🖼️", label: "SVG Image", extension: ".svg" },
-    mp4: { type: "video", icon: "🎬", label: "MP4 Video", extension: ".mp4" },
-    webm: {
-      type: "video",
-      icon: "🎬",
-      label: "WebM Video",
-      extension: ".webm",
-    },
-    ogg: { type: "video", icon: "🎬", label: "OGG Video", extension: ".ogg" },
-    mov: { type: "video", icon: "🎬", label: "MOV Video", extension: ".mov" },
-    pdf: { type: "pdf", icon: "📄", label: "PDF Document", extension: ".pdf" },
-    doc: {
-      type: "word",
-      icon: "📝",
-      label: "Word Document",
-      extension: ".doc",
-    },
-    docx: {
-      type: "word",
-      icon: "📝",
-      label: "Word Document",
-      extension: ".docx",
-    },
-    txt: {
-      type: "document",
-      icon: "📄",
-      label: "Text File",
-      extension: ".txt",
-    },
-    xls: {
-      type: "excel",
-      icon: "📊",
-      label: "Excel Spreadsheet",
-      extension: ".xls",
-    },
-    xlsx: {
-      type: "excel",
-      icon: "📊",
-      label: "Excel Spreadsheet",
-      extension: ".xlsx",
-    },
-    xltx: {
-      type: "excel",
-      icon: "📊",
-      label: "Excel Template",
-      extension: ".xltx",
-    },
+  const extension = urlWithoutQuery?.split(".").pop()?.toLowerCase() || "";
+  
+  return EXTENSION_MAP[extension] || {
+    type: "document",
+    extension: `.${extension}`,
+    label: "File",
   };
-
-  return (
-    extensionMap[extension] || {
-      type: "document",
-      icon: "📎",
-      label: "File",
-      extension: `.${extension}`,
-    }
-  );
 }
 
 export function isImageType(type: MediaType): boolean {
@@ -215,36 +58,7 @@ export function isDocumentType(type: MediaType): boolean {
   return ["document", "pdf", "word", "excel"].includes(type);
 }
 
-/**
- * Format file size from bytes to human-readable format
- */
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-}
-
-/**
- * Check if file type can be previewed in browser
- */
-export function canPreviewInBrowser(type: MediaType): boolean {
-  return ["image", "video", "pdf", "document"].includes(type);
-}
-
-/**
- * Get lucide-react icon name for file type
- */
-export function getFileIconName(type: MediaType): string {
-  const iconMap: Record<MediaType, string> = {
-    image: "Image",
-    video: "Video",
-    pdf: "FileText",
-    word: "FileType",
-    excel: "FileSpreadsheet",
-    document: "File",
-  };
-  return iconMap[type] || "File";
+export function getFileName(url: string): string {
+  const urlWithoutQuery = url.split("?")[0];
+  return urlWithoutQuery?.split("/").pop() || "File";
 }

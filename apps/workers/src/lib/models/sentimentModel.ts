@@ -13,7 +13,7 @@ function getClient(): InferenceClient {
     return client;
 }
 
-export async function sentimentModel(text: string): Promise<Array<{ label: string; score: number }>> {
+export async function sentimentModel(text: string): Promise<{ label: string; score: number }[]> {
     const output = await getClient().textClassification({
         model: "5CD-AI/Vietnamese-Sentiment-visobert",
         inputs: text,
