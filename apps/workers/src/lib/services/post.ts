@@ -111,6 +111,7 @@ export async function processPostCreation(payload: PostJobPayload) {
         media_urls: payload.media_urls || [],
         moderation_status: moderationStatus,
         ...(moderationReason && { moderation_reason: moderationReason }),
+        ...(payload.groupId && { group_id: payload.groupId }),
       })
       .select()
       .single();

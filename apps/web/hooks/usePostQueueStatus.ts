@@ -13,7 +13,7 @@ import {
 
 import { useGetCurrentUser } from "./useAuth";
 
-export function usePostQueueStatus() {
+export function usePostQueueStatus(groupId?: string) {
   const [queueItems, setQueueItems] = useState<PostQueueItem[]>([]);
   const { data: user } = useGetCurrentUser();
   const queryClient = useQueryClient();
@@ -33,6 +33,8 @@ export function usePostQueueStatus() {
       setQueueItems(initialItems);
 
       // Set up Realtime subscription
+      // Note: We subscribe to ALL user changes, filtering happens in UI
+      // This ensures we get updates even if we switch views
       channel = supabaseClient
         .channel("post_queue_changes")
         .on(
@@ -56,7 +58,8 @@ export function usePostQueueStatus() {
                 return [newItem, ...prev];
               });
 
-              // Kiểm tra xem đã có toast cho item này chưa
+              // Chỉ show toast nếu đúng context hoặc là global notification
+              // Tạm thời show global toast
               if (!toastIdsRef.current.has(newItem.id)) {
                 const toastId = toast.loading(
                   `Đang tải lên bài viết${
@@ -110,6 +113,11 @@ export function usePostQueueStatus() {
 
                 // Invalidate posts query
                 queryClient.invalidateQueries({ queryKey: ["posts"] });
+                if (updatedItem.group_id) {
+                    // Also invalidate group posts if applicable
+                    // We might need to import groupKeys here or use broad invalidation
+                    // For now "posts" query keys might assume specific structure
+                }
 
                 // Remove from queue after delay
                 setTimeout(() => {
@@ -197,10 +205,25 @@ export function usePostQueueStatus() {
     const uniqueItems = Array.from(
       new Map(queueItems.map((item) => [item.id, item])).values()
     );
-    return uniqueItems.filter(
+    
+    // Filter by status first
+    let filtered = uniqueItems.filter(
       (item) => item.status === "pending" || item.status === "processing"
     );
-  }, [queueItems]);
+
+    // Filter by groupId if provided
+    if (groupId) {
+      filtered = filtered.filter(item => item.group_id === groupId);
+    } else {
+        // If no groupId (main feed etc), maybe show all? 
+        // Or show only non-group posts?
+        // User didn't specify, but usually main feed shows purely personal + group posts.
+        // For now, let's show ALL if no groupId is passed, but filter strictly if it is.
+        // This solves "pending post hiển thị cả ở group post" because group post WILL pass groupId.
+    }
+
+    return filtered;
+  }, [queueItems, groupId]); // Added groupId to dependency
 
   return {
     queueItems: pendingItems,

@@ -54,6 +54,7 @@ function Profile({ user }: ProfileProps) {
   const form = useForm({
     defaultValues: {
       display_name: user?.display_name || "",
+      slug: user?.slug || "",
       description: user?.description || "",
       avatar_image: undefined as File | undefined,
     },
@@ -75,6 +76,7 @@ function Profile({ user }: ProfileProps) {
         // Tạo FormData để gửi file
         const formData = new FormData();
         formData.append("display_name", value.display_name);
+        formData.append("slug", value.slug);
         formData.append("description", value.description);
 
         if (value.avatar_image) {
@@ -111,6 +113,8 @@ function Profile({ user }: ProfileProps) {
   ) : (
     <div>
       <p>Display name: {user?.display_name || user?.username}</p>
+      <p>Slug: {user?.slug || user?.id}</p>
+      <p>ID: {user?.id}</p>
       <p>Username: {user?.username}</p>
       <p>Email: {user?.email}</p>
       <p>Roles: {user?.global_role}</p>
@@ -220,6 +224,26 @@ function Profile({ user }: ProfileProps) {
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Nhập tên hiển thị của bạn"
+                    />
+                    <FieldErrors field={field} />
+                  </div>
+                )}
+              </form.Field>
+              
+               {/* Slug Field */}
+               <form.Field name="slug">
+                {(field) => (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                       Slug (URL Profile) *
+                    </label>
+                    <input
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập slug (ví dụ: ten-cua-ban)"
                     />
                     <FieldErrors field={field} />
                   </div>

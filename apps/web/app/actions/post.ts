@@ -78,6 +78,7 @@ export async function fetchPosts(
   }
 
   // Fetch posts for current page
+  // Main feed excludes group posts (group_id is null)
   const { data, error } = await supabase
     .from("posts")
     .select(
@@ -97,9 +98,16 @@ export async function fetchPosts(
       like_count,
       comment_count,
       share_count,
-      privacy_level
+      privacy_level,
+      group_id,
+      group: groups!group_id(
+        id,
+        name,
+        slug
+      )
       `
     )
+    .is("group_id", null)  // Exclude group posts from main feed
     .range(offset, offset + itemsPerPage - 1)
     .order("created_at", { ascending: false });
 

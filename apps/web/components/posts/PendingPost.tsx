@@ -5,9 +5,13 @@ import { usePostQueueStatus } from "@/hooks/usePostQueueStatus";
 
 import PostCard from "./PostCard";
 
-function PendingPost() {
+interface PendingPostProps {
+  groupId?: string;
+}
+
+function PendingPost({ groupId }: PendingPostProps) {
   // Get pending posts from queue
-  const { queueItems } = usePostQueueStatus();
+  const { queueItems } = usePostQueueStatus(groupId);
 
   // Convert queue items to optimistic posts
   //TODO Sửa lại kiểu PostResponse

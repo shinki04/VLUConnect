@@ -22,4 +22,11 @@ export type PostResponse = {
   share_count: number | null;
   is_liked_by_viewer?: boolean;
   privacy_level: privacyPost;
+  group_id?: string | null;
+  group?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
 };
+

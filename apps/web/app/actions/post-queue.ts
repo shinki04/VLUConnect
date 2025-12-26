@@ -16,6 +16,7 @@ export type TCreateQueue = {
   mediaCount?: number;
   mediaUrls?: string[] | null;
   queueOperations?: PostQueueOperations;
+  groupId?: string;
 };
 /**
  * Create a new queue status entry when post is submitted
@@ -26,6 +27,7 @@ export async function createQueueStatus({
   privacyLevel,
   mediaCount,
   queueOperations,
+  groupId,
 }: TCreateQueue): Promise<PostQueueItem> {
   const supabase = await createClient();
 
@@ -38,6 +40,7 @@ export async function createQueueStatus({
       privacy_level: privacyLevel,
       media_count: mediaCount,
       operation_type: queueOperations,
+      group_id: groupId,
     })
     .select()
     .single();
@@ -217,15 +220,22 @@ function base64ToFile(base64: string, name: string, mimeType: string): File {
  */
 
 export async function queuePostCreation(payload: PostJobPayload) {
+  console.log("📨 queuePostCreation called with payload:", payload);
+  
   const rabbitMQ = getPostRabbitMQClient();
 
   if (!rabbitMQ.isReady()) {
+    console.log("🔌 RabbitMQ not ready, connecting...");
     await rabbitMQ.connect();
   }
 
   if (!payload) throw new Error("Payload is null or undefined");
 
-  return await rabbitMQ.publishPostCreate(payload as PostJobPayload);
+  console.log("📤 Publishing to RabbitMQ...");
+  const result = await rabbitMQ.publishPostCreate(payload as PostJobPayload);
+  console.log("✅ Published to RabbitMQ, result:", result);
+  
+  return result;
 }
 
 export async function queuePostUpdate(payload: UpdatePostJobPayload) {

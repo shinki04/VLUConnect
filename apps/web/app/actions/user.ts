@@ -91,12 +91,20 @@ export async function getUserProfile(id: string): Promise<User | null> {
     return cachedUser;
   }
 
+  // Check if id is UUID
+  const isUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
   const supabase = await createClient();
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .single();
+  let query = supabase.from("profiles").select("*");
+
+  if (isUUID) {
+    query = query.eq("id", id);
+  } else {
+    query = query.eq("slug", id);
+  }
+
+  const { data: profile, error } = await query.single();
 
   if (error || !profile) {
     console.error(error?.message || "Profile not found");
@@ -104,9 +112,13 @@ export async function getUserProfile(id: string): Promise<User | null> {
   }
 
   // Set cache asynchronously without waiting
-  setUserCache(profile.id, profile).catch(console.error);
+  // Cache by both ID and Slug if available to ensure fast lookups
+  setUserCache(profile.id, profile as User).catch(console.error);
+  if (profile.slug) {
+    setUserCache(profile.slug, profile as User).catch(console.error);
+  }
 
-  return profile;
+  return profile as User;
 }
 
 // Storage functions
@@ -201,6 +213,7 @@ export async function updateProfileWithAvatar(
   // Parse and validate form data
   const displayName = formData.get("display_name") as string;
   const description = formData.get("description") as string;
+  const slug = formData.get("slug") as string;
   const avatarImage = formData.get("avatar_image") as File | null;
 
   if (!displayName?.trim()) {
@@ -229,6 +242,7 @@ export async function updateProfileWithAvatar(
     id: userId,
     display_name: displayName.trim(),
     description: description?.trim() || null,
+    slug: slug?.trim() || null,
     ...(avatarUrl && { avatar_url: avatarUrl }),
     updated_at: new Date().toISOString(),
   };
@@ -240,6 +254,9 @@ export async function updateProfileWithAvatar(
     .single();
 
   if (error) {
+    if (error.code === "23505") {
+      throw new Error("Slug đã tồn tại, vui lòng chọn slug khác");
+    }
     throw new Error(`Profile update failed: ${error.message}`);
   }
 
@@ -248,10 +265,14 @@ export async function updateProfileWithAvatar(
 
   // Revalidate relevant paths
   revalidatePath("/profile");
+  revalidatePath("/profile");
   revalidatePath(`/profile/${userId}`);
+  if (data.slug) {
+    revalidatePath(`/profile/${data.slug}`);
+  }
   revalidatePath("/", "layout");
 
-  return data;
+  return data as User;
 }
 
 // Utility function to clear all user-related cache

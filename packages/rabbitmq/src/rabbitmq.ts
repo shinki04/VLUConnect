@@ -132,11 +132,29 @@ class RabbitMQClient {
    */
   private async getConsumerChannel(queue: string): Promise<Channel> {
     if (this.consumerChannels.has(queue)) {
-      return this.consumerChannels.get(queue)!;
+      const existingChannel = this.consumerChannels.get(queue)!;
+      // Check if channel is still open
+      try {
+        // Try to check queue - this will throw if channel is closed
+        await existingChannel.checkQueue(queue);
+        return existingChannel;
+      } catch (error) {
+        console.log(`⚠️ Consumer channel for ${queue} is stale, creating new one`);
+        this.consumerChannels.delete(queue);
+      }
     }
 
     const consumerChannel = await this.connection!.createChannel();
-    // await consumerChannel.prefetch(this.config.consumerPrefetch!);
+    
+    // Add event handlers for debugging
+    consumerChannel.on('error', (err) => {
+      console.error(`❌ Consumer channel error for ${queue}:`, err);
+    });
+    
+    consumerChannel.on('close', () => {
+      console.log(`⚠️ Consumer channel for ${queue} closed`);
+      this.consumerChannels.delete(queue);
+    });
 
     this.consumerChannels.set(queue, consumerChannel);
 

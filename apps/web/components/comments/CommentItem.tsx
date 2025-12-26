@@ -16,7 +16,7 @@ import React, { useState } from "react";
 
 import { useGetCurrentUser } from "@/hooks/useAuth";
 
-import AlertDialog from "../AlertDialog";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 
 export interface Comment {
     id: string;

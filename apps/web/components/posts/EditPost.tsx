@@ -37,7 +37,7 @@ import {
 } from "@/lib/fileUtils";
 import { validateContent } from "@/lib/validations/addPost-schema";
 
-import AlertDialog from "../AlertDialog";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 
 interface EditPostProps {
   open: boolean;

@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     return redirectWithCookie(
       `${origin}/login`,
       "access_error",
-      "Có lỗi xảy ra"
+      "Có lỗi xảy ra với đăng nhập"
     );
   }
 
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
     return redirectWithCookie(
       `${origin}/login`,
       "access_error",
-      "Có lỗi xảy ra"
+      "Có lỗi xảy ra với đăng nhập"
     );
   }
 }

@@ -6,6 +6,7 @@ import {
 } from "@repo/ui/components/avatar";
 import { formatPostDate } from "@repo/utils/formatDate";
 import { Globe, LockKeyhole, Users } from "lucide-react";
+import Link from "next/link";
 
 import { PostOwnerDropdown } from "./Dropdown";
 import { PostViewerDropdown } from "./Dropdown";
@@ -13,18 +14,22 @@ import { PostViewerDropdown } from "./Dropdown";
 interface PostHeaderProps {
   author: {
     id: string;
-    username: string | null; // Allow null
-    display_name?: string | null; // Allow null
-    avatar_url?: string | null; // Allow null
-    global_role: Global_Roles | null; // Allow null
+    username: string | null;
+    display_name?: string | null;
+    avatar_url?: string | null;
+    global_role: Global_Roles | null;
   };
-
   createdAt: string;
   updatedAt?: string | null;
   privacyLevel: "public" | "friends" | "private";
   isOwner: boolean;
   onDelete: () => void;
   onUpdate: () => void;
+  group?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
 }
 
 const PRIVACY_CONFIG = {
@@ -50,11 +55,12 @@ export default function PostHeader({
   isOwner,
   onDelete,
   onUpdate,
+  group,
 }: PostHeaderProps) {
   const displayTime = updatedAt || createdAt;
   const formattedDate = formatPostDate(displayTime);
   const isEdited = !!updatedAt && updatedAt !== createdAt;
-  
+
   const privacy = PRIVACY_CONFIG[privacyLevel];
   const PrivacyIcon = privacy.icon;
 
@@ -71,13 +77,24 @@ export default function PostHeader({
           </Avatar>
         </div>
         <div>
+          {/* Author name with optional group context - like Facebook style */}
           <p className="font-semibold text-sm">
-            {author?.display_name || author?.username}
+            <Link href={`/profile/${author?.username}`} className="hover:underline">
+              {author?.display_name || author?.username}
+            </Link>
+            {group && (
+              <>
+                <span className="text-muted-foreground font-normal mx-1">đã đăng trong</span>
+                <Link href={`/groups/${group.slug}`} className="hover:underline text-primary">
+                  {group.name}
+                </Link>
+              </>
+            )}
           </p>
           <div className="flex flex-row items-center gap-1">
             <p className="text-xs text-gray-500">
-                {formattedDate}
-                {isEdited && <span className="italic ml-1">(đã chỉnh sửa)</span>}
+              {formattedDate}
+              {isEdited && <span className="italic ml-1">(đã chỉnh sửa)</span>}
             </p>
             <label title={privacy.alt}>
               <PrivacyIcon width={15} color="#9e9e9e" />

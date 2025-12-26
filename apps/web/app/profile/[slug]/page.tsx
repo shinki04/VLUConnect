@@ -11,11 +11,11 @@ import InfinitePostsListByAuthor from "@/components/posts/InfinitePostsListByAut
 import Profile from "@/components/profile/Profile";
 
 interface ProfileIdPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 async function ProfileIdPage({ params }: ProfileIdPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
   const queryClient = new QueryClient();
 
   // const user = await queryClient.fetchQuery({
@@ -32,8 +32,8 @@ async function ProfileIdPage({ params }: ProfileIdPageProps) {
 
   // Prefetch data cho client-side
   await queryClient.fetchQuery({
-    queryKey: ["user", id],
-    queryFn: () => getUserProfile(id),
+    queryKey: ["user", slug],
+    queryFn: () => getUserProfile(slug),
     staleTime: 5 * 60 * 1000,
   });
   // await Promise.all([
@@ -42,10 +42,11 @@ async function ProfileIdPage({ params }: ProfileIdPageProps) {
   //     queryFn: () => getUserProfile(id),
   //   }),
   // ]);
-  const user = queryClient.getQueryData<User>(["user", id]);
+  const user = queryClient.getQueryData<User>(["user", slug]);
   return (
     <>
-      <div>ID : {id}</div>
+      <div>ID : {user?.id  }</div>
+      <div>Slug : {user?.slug  }</div>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Profile user={user!} />
         <div className="w-full text-center">

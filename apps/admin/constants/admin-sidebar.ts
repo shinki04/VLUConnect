@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Shield,
   Users,
+  Grid,
   type LucideIcon,
 } from "lucide-react";
 
@@ -29,6 +30,9 @@ export const ADMIN_ROUTES = {
   // Hashtags
   HASHTAGS: "/dashboard/hashtags",
   HASHTAGS_MANAGE: "/dashboard/hashtags/manage",
+  // Groups
+  GROUPS: "/dashboard/groups",
+  GROUPS_MANAGE: "/dashboard/groups/manage",
   // Access Control
   ACCESS_CONTROL: "/dashboard/access-control",
   ACCESS_CONTROL_ROLES: "/dashboard/access-control/roles",
@@ -60,6 +64,13 @@ export const SIDEBAR_NAV_ITEMS: NavItem[] = [
     items: [
       { title: "Analytics", url: ADMIN_ROUTES.USERS },
       { title: "Manage Users", url: ADMIN_ROUTES.USERS_MANAGE },
+    ],
+  },
+  {
+    title: "Groups",
+    icon: Grid,
+    items: [
+      { title: "Manage Groups", url: ADMIN_ROUTES.GROUPS },
     ],
   },
   {

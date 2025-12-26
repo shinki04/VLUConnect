@@ -22,9 +22,19 @@ export const updateProfileSchema = z.object({
     .min(2, "Tên hiển thị phải có ít nhất 2 ký tự")
     .max(50, "Tên hiển thị không được quá 50 ký tự")
     .refine((val) => safeTextRegex.test(val), {
-      message: "Mô tả chứa ký tự không hợp lệ",
+      message: "Tên hiển thị chứa ký tự không hợp lệ",
     })
     .transform((val) => val.trim()),
+  
+  slug: z
+    .string()
+    .min(2, "Slug phải có ít nhất 2 ký tự")
+    .max(50, "Slug không được quá 50 ký tự")
+    .regex(
+      /^[a-zA-Z0-9-_]+$/,
+      "Slug chỉ được chứa chữ cái không dấu, số, gạch ngang và gạch dưới"
+    ),
+
   avatar_image: z.union([
     fileImageSchema.refine((file) => file.size >= 2, "Chỉ được chọn 1 ảnh"),
     z.undefined(),

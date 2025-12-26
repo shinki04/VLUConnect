@@ -9,7 +9,7 @@ import { useGetCurrentUser } from "@/hooks/useAuth";
 import { useDeletePost } from "@/hooks/usePost";
 import { getFileInfo, isImageType, type MediaType } from "@/lib/mediaUtils";
 
-import AlertDialog from "../AlertDialog";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import EditPost from "./EditPost";
 import FileLightbox from "./FileLightbox";
 import MediaGalleryModal from "./MediaGalleryModal";
@@ -113,6 +113,7 @@ export default function PostCard({ post, isPending = false }: PostCardProps) {
             isOwner={isOwner}
             onDelete={() => setOpenAlert(true)}
             onUpdate={() => setOpenEditDialog(true)}
+            group={post.group}
           />
 
           <div className="mb-3">

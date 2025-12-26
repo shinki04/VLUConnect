@@ -47,7 +47,7 @@ import {
 import * as React from "react";
 
 import { deletePostAdmin, flagPost, getAllPosts, rejectPost, approvePost } from "@/app/actions/admin-posts";
-import { AlertDialog } from "@/components/AlertDialog";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import { useRefresh } from "@/components/common/RefreshContext";
 import { FlagDialog } from "@/components/FlagDialog";
 import { RejectDialog } from "@/components/RejectDialog";

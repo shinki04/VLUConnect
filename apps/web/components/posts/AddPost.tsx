@@ -37,6 +37,7 @@ import {
 
 interface AddPostProps {
   currentUser: User;
+  groupId?: string;
 }
 
 interface MediaPreview {
@@ -46,7 +47,7 @@ interface MediaPreview {
   file: File;
 }
 
-function AddPost({ currentUser }: AddPostProps) {
+function AddPost({ currentUser, groupId }: AddPostProps) {
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const createPostMutation = useCreatePostMutation();
@@ -147,13 +148,24 @@ function AddPost({ currentUser }: AddPostProps) {
   }, [mediaPreviews, form]);
 
   useEffect(() => {
-    // Set up Uppy Dashboard to display as an inline component within a specified target
-    uppy.use(Dashboard, {
-      inline: true, // Ensures the dashboard is rendered inline
-      target: "#drag-drop-area", // HTML element where the dashboard renders
-      hideProgressDetails: false, // Show progress details for file uploads
-    });
-  }, []);
+    // Check if Dashboard plugin already exists before adding
+    if (!uppy.getPlugin("Dashboard")) {
+      uppy.use(Dashboard, {
+        id: "Dashboard", // Explicit ID
+        inline: true,
+        target: "#drag-drop-area",
+        hideProgressDetails: false,
+      });
+    }
+
+    // Cleanup on unmount
+    return () => {
+      const dashboard = uppy.getPlugin("Dashboard");
+      if (dashboard) {
+        uppy.removePlugin(dashboard);
+      }
+    };
+  }, [uppy]);
 
   const getFileIcon = (mimeType: string) => {
     const fileInfo = getFileInfo("", mimeType);

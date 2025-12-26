@@ -3,7 +3,9 @@ import { Post, privacyPost } from "./post.js";
 
 export type PostQueueStatus = Enums<"queue_status">;
 
-export type PostQueueItem = Tables<"post_queue_status">;
+export type PostQueueItem = Tables<"post_queue_status"> & {
+  group_id?: string | null;
+};
 export type PostQueueOperations = Enums<"sql_operation">;
 
 export interface OptimisticPost extends Omit<Post, "id"> {
@@ -19,6 +21,7 @@ export interface PostJobPayload {
   queueId: string; // Track queue status ID
   queueStatus?: PostQueueStatus;
   queueOperations?: PostQueueOperations;
+  groupId?: string | null; // Group ID for group posts
 }
 
 export interface UpdatePostJobPayload {

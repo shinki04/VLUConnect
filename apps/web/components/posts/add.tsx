@@ -17,6 +17,7 @@ import {
 import { Textarea } from "@repo/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { Dropzone, FilesGrid, UppyContextProvider } from "@uppy/react";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -30,9 +31,11 @@ import {
 
 interface AddPostProps {
   currentUser: User;
+  groupId?: string;
 }
 
-function AddPost({ currentUser }: AddPostProps) {
+function AddPost({ currentUser, groupId }: AddPostProps) {
+  const router = useRouter();
   const supabase = createClient();
   const uppy = useUppyWithSupabase("posts", "add-post");
 
@@ -66,6 +69,7 @@ function AddPost({ currentUser }: AddPostProps) {
         privacyLevel: value.privacy_level,
         mediaCount: files.length,
         queueOperations: "CREATE",
+        groupId,
       });
 
       if (!res) {
@@ -100,6 +104,13 @@ function AddPost({ currentUser }: AddPostProps) {
         }
 
         // Tạo post với danh sách URL
+        console.log("📝 [add.tsx] Calling createPostMutation with:", {
+          queueId: res?.id,
+          userId: currentUser.id,
+          groupId: groupId || null,
+          mediaUrlsCount: mediaUrls.length,
+        });
+        
         await createPostMutation.mutateAsync({
           queueId: res?.id,
           userId: currentUser.id,
@@ -107,11 +118,17 @@ function AddPost({ currentUser }: AddPostProps) {
           content: res?.content,
           privacyLevel: value.privacy_level,
           media_urls: mediaUrls,
+          groupId: groupId || null,
         });
 
         toast.success("Bài đăng đã vào danh sách chờ");
         form.reset();
         uppy.cancelAll();
+        
+        // Refresh page để load lại posts (đặc biệt cho group posts)
+        if (groupId) {
+          router.refresh();
+        }
       } catch (error: unknown) {
         console.error(error);
         toast.error(
@@ -204,29 +221,31 @@ function AddPost({ currentUser }: AddPostProps) {
             <FilesGrid imageThumbnail={true} columns={2} />
           </div>
 
-          {/* Quyền riêng tư */}
-          <form.Field name="privacy_level">
-            {(field) => (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quyền riêng tư
-                </label>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(v) => field.handleChange(v as privacyPost)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Chọn quyền riêng tư" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Công khai</SelectItem>
-                    <SelectItem value="friends">Bạn bè</SelectItem>
-                    <SelectItem value="private">Chỉ mình tôi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </form.Field>
+          {/* Quyền riêng tư - ẩn khi đăng trong group (theo quyền riêng tư của group) */}
+          {!groupId && (
+            <form.Field name="privacy_level">
+              {(field) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quyền riêng tư
+                  </label>
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(v) => field.handleChange(v as privacyPost)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Chọn quyền riêng tư" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Công khai</SelectItem>
+                      <SelectItem value="friends">Bạn bè</SelectItem>
+                      <SelectItem value="private">Chỉ mình tôi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </form.Field>
+          )}
 
           {/* Nút */}
           <div className="flex justify-end gap-3">

@@ -9,6 +9,7 @@ import * as React from "react";
 
 import Tepm from "@/components/dashboard/temp";
 import AddPost from "@/components/posts/add";
+import PendingPost from "@/components/posts/PendingPost";
 import ListPosts from "@/components/posts/ListPosts";
 
 import { getCurrentUser } from "../actions/user";
@@ -57,6 +58,7 @@ export default async function DashboardPage() {
         </Link>
         {/* <AddPost currentUser={user} /> */}
         <AddPost currentUser={user} />
+        <PendingPost />
         <ListPosts />
       </HydrationBoundary>
     </>
