@@ -1,5 +1,6 @@
-import { getGroup } from "@/app/actions/group";
 import { notFound, redirect } from "next/navigation";
+
+import { getGroup } from "@/app/actions/group";
 import { GroupSettingsForm } from "@/components/groups/group-settings-form";
 
 interface SettingsPageProps {

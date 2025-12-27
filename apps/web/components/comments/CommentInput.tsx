@@ -2,20 +2,25 @@
 
 import { Button } from "@repo/ui/components/button";
 import { Textarea } from "@repo/ui/components/textarea"; 
+import { useDebounce } from "@uidotdev/usehooks";
 import { Loader2, SendHorizontal } from "lucide-react";
 import React, { useRef, useState } from "react";
 
 import { useComments } from "@/hooks/usePostInteractions";
+import { useCommentStore } from "@/stores/commentStore";
 
 interface CommentInputProps {
-    postId: string;
-    replyTo: { name: string; parentId: string } | null;
-    onCancelReply: () => void;
-    onCommentSent?: () => void;
+  postId: string;
 }
 
-export function CommentInput({ postId, replyTo, onCancelReply, onCommentSent }: CommentInputProps) {
-  const { sendComment, isSending } = useComments(postId);
+export function CommentInput({ postId }: CommentInputProps) {
+  const replyTo = useCommentStore((state) => state.replyTargets[postId]);
+  const clearReplyTo = useCommentStore((state) => state.clearReplyTo);
+  const filters = useCommentStore((state) => state.getFilters(postId));
+  
+  // Use the same filters as CommentSection to ensure same query key
+  const debouncedSearch = useDebounce(filters.search, 500);
+  const { sendComment, isSending } = useComments(postId, debouncedSearch, filters.sortBy);
   
   const [content, setContent] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -34,27 +39,22 @@ export function CommentInput({ postId, replyTo, onCancelReply, onCommentSent }: 
       
       // Clear immediately
       setContent("");
-      onCancelReply(); // Clear reply state
+      clearReplyTo(postId);
       
       sendComment({ content: currentContent, parentId: replyTo?.parentId }, {
-          onSuccess: () => {
-              if (onCommentSent) onCommentSent();
-          },
+          onSuccess: () => {},
           onError: () => {
-              // Restore on error if needed, but simple toast is often enough. 
-              // Restoring text might be complex if user typed new stuff. 
-              // Simple: just notify error.
               setContent(currentContent);
           }
       });
   };
 
   return (
-       <div className="bg-background pt-2 pb-2 border-t">
+       <div className="bg-background pt-2 pb-2 border-t px-4">
            {replyTo && (
                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 bg-muted/50 p-2 rounded">
                    <span>Đang trả lời <b>{replyTo.name}</b></span>
-                   <button onClick={onCancelReply} className="hover:text-red-500 font-medium">Hủy</button>
+                   <button onClick={() => clearReplyTo(postId)} className="hover:text-red-500 font-medium">Hủy</button>
                </div>
            )}
            <div className="flex gap-2 items-end">

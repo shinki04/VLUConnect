@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { BLANK_AVATAR } from "@repo/shared/types/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
+import { Button } from "@repo/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
 import { Input } from "@repo/ui/components/input";
-import { MoreHorizontal, Shield, ShieldCheck, Crown, User, Search } from "lucide-react";
+import { Crown, MoreHorizontal, Search,Shield, ShieldCheck, User } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
 import {
+  useGroupMemberActions,
   useGroupMembers,
   usePendingMembers,
-  useGroupMemberActions,
 } from "@/hooks/useGroup";
-import Link from "next/link";
-import { BLANK_AVATAR } from "@repo/shared/types/user";
 
 interface MemberListProps {
   groupId: string;

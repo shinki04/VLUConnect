@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { createClient } from "@repo/supabase/client";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import { Button } from "@repo/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/components/card";
 import { Input } from "@repo/ui/components/input";
-import { Textarea } from "@repo/ui/components/textarea";
 import { Label } from "@repo/ui/components/label";
 import {
   Select,
@@ -14,19 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/components/card";
-import AlertDialog from "@repo/ui/components/AlertDialog";
-import { Globe, Lock, Trash2, Upload, Camera, Users } from "lucide-react";
-import { updateGroup, deleteGroup, updateGroupImages } from "@/app/actions/group";
+import { Textarea } from "@repo/ui/components/textarea";
+import { Camera, Globe, Lock, Trash2, Upload, Users } from "lucide-react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useRouter } from "next/navigation";
+import { useRef,useState } from "react";
 import { toast } from "sonner";
+
 import type { GroupWithDetails } from "@/app/actions/group";
-import { createClient } from "@repo/supabase/client";
+import { deleteGroup, updateGroup, updateGroupImages } from "@/app/actions/group";
 
 interface GroupSettingsFormProps {
   group: GroupWithDetails;

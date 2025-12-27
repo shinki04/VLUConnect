@@ -5,6 +5,7 @@ import "@uppy/react/css/style.css";
 
 import { PostResponse,privacyPost } from "@repo/shared/types/post";
 import { createClient } from "@repo/supabase/client";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import { Button } from "@repo/ui/components/button";
 import {
   Dialog,
@@ -36,8 +37,6 @@ import {
   loadRemoteFilesToUppy,
 } from "@/lib/fileUtils";
 import { validateContent } from "@/lib/validations/addPost-schema";
-
-import AlertDialog from "@repo/ui/components/AlertDialog";
 
 interface EditPostProps {
   open: boolean;

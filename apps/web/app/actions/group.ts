@@ -4,6 +4,7 @@ import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+
 import { createGroupSchema } from "@/lib/validations/group";
 
 export async function createGroup(formData: FormData) {
@@ -484,11 +485,20 @@ export interface GroupData {
   created_at: string | null;
 }
 
+export interface MemberProfile {
+  id: string;
+  display_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  global_role?: string | null;
+}
+
 export interface GroupMember {
   user_id: string;
   role: "admin" | "sub_admin" | "moderator" | "member";
   status: "active" | "banned" | "pending";
   joined_at: string | null;
+  profile?: MemberProfile | null;
 }
 
 export interface GroupWithDetails extends GroupData {
@@ -628,3 +638,107 @@ export async function getGroupMembers(
   return data || [];
 }
 
+
+/**
+ * Get group overview members (Core members + Friends)
+ */
+export async function getGroupOverviewMembers(groupId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // 1. Get Core Members (Admin, Sub-admin, Moderator)
+  const { data: coreMembers } = await supabase
+    .from("group_members")
+    .select(`
+      user_id,
+      role,
+      status,
+      joined_at,
+      profile:profiles!user_id(id, display_name, username, avatar_url, global_role)
+    `)
+    .eq("group_id", groupId)
+    .in("role", ["admin", "sub_admin", "moderator"])
+    .eq("status", "active")
+    .order("role", { ascending: false }); // admin > sub > mod
+
+  let friendMembers: GroupMember[] = [];
+
+  if (user) {
+    // 2. Get Friends IDs
+    // Friendships where (requester = me OR addressee = me) AND status = accepted
+    const { data: friendships } = await supabase
+        .from("friendships")
+        .select("requester_id, addressee_id")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+        .eq("status", "friends");
+
+    const friendIds = friendships?.map(f => 
+        f.requester_id === user.id ? f.addressee_id : f.requester_id
+    ) || [];
+
+    if (friendIds.length > 0) {
+        // 3. Get Group Members who are friends
+        const { data: friends } = await supabase
+            .from("group_members")
+            .select(`
+                user_id,
+                role,
+                status,
+                joined_at,
+                profile:profiles!user_id(id, display_name, username, avatar_url, global_role)
+            `)
+            .eq("group_id", groupId)
+            .eq("status", "active")
+            .in("user_id", friendIds);
+        
+        // Filter out those who are already in coreMembers to avoid duplication in display if desired, 
+        // but user might want to see them in "Friends" section explicitly.
+        // We will return them as is, UI can decide how to render.
+        friendMembers = friends || [];
+    }
+  }
+
+  return {
+    coreMembers: coreMembers || [],
+    friendMembers: friendMembers || []
+  };
+}
+
+/**
+ * Get list of suggested groups
+ */
+export async function getSuggestedGroups() {
+    const supabase = await createClient();
+    const { data } = await supabase
+        .from("groups")
+        .select(`
+            *,
+            members:group_members(count)
+        `)
+        .limit(20); // Removed explicit public filter as requested previously
+    
+    // Transform data to match UI needs if necessary, ensuring members count is accessible
+    // The query returns members as an array of objects with count.
+    return data?.map(group => ({
+        ...group,
+        member_count: group.members?.[0]?.count || 0
+    })) || [];
+}
+
+/**
+ * Get groups the current user has joined
+ */
+export async function getMyGroups() {
+     const supabase = await createClient();
+     const { data: { user } } = await supabase.auth.getUser();
+     if (!user) return [];
+
+     const { data } = await supabase
+        .from("group_members")
+        .select(`
+            group:groups(*)
+        `)
+        .eq("user_id", user.id);
+    
+    return data?.map(m => m.group).filter(Boolean) || [];
+}

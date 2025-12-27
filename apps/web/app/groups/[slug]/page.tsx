@@ -1,9 +1,10 @@
-import { getGroupPosts, getGroup } from "@/app/actions/group";
+import { PostResponse } from "@repo/shared/types/post";
 import { createClient } from "@repo/supabase/server";
 import { Lock } from "lucide-react";
 import { notFound } from "next/navigation";
+
+import { getGroup, getGroupOverviewMembers, getGroupPosts } from "@/app/actions/group";
 import { GroupContent } from "@/components/groups/group-content";
-import { PostResponse } from "@repo/shared/types/post";
 
 interface GroupPageProps {
   params: Promise<{ slug: string }>;
@@ -18,7 +19,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
 
   // Check privacy and membership
   const isPrivate = group.privacy_level === "private";
@@ -40,15 +41,18 @@ export default async function GroupPage({ params }: GroupPageProps) {
     );
   }
 
+  const { coreMembers, friendMembers } = await getGroupOverviewMembers(group.id);
   const { posts } = await getGroupPosts(group.id);
 
   return (
     <GroupContent
       group={group}
       initialPosts={posts as PostResponse[]}
-      currentUser={user}
+      coreMembers={coreMembers}
+      friendMembers={friendMembers}
       isActiveMember={isActiveMember}
       isAdmin={isAdmin}
     />
   );
 }
+

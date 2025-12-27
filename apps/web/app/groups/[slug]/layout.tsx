@@ -1,6 +1,7 @@
-import { getGroup } from "@/app/actions/group";
 import { createClient } from "@repo/supabase/server";
 import { notFound } from "next/navigation";
+
+import { getGroup } from "@/app/actions/group";
 import { GroupHeader } from "@/components/groups/group-header";
 
 interface GroupLayoutProps {

@@ -9,8 +9,8 @@ import * as React from "react";
 
 import Tepm from "@/components/dashboard/temp";
 import AddPost from "@/components/posts/add";
-import PendingPost from "@/components/posts/PendingPost";
 import ListPosts from "@/components/posts/ListPosts";
+import PendingPost from "@/components/posts/PendingPost";
 
 import { getCurrentUser } from "../actions/user";
 import { signOut } from "../auth/action";

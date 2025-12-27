@@ -1,5 +1,6 @@
-import { getGroup } from "@/app/actions/group";
 import { notFound } from "next/navigation";
+
+import { getGroup } from "@/app/actions/group";
 
 interface AboutPageProps {
   params: Promise<{ slug: string }>;

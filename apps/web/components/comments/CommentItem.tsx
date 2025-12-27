@@ -1,5 +1,6 @@
 "use client";
 
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -11,22 +12,23 @@ import {
 import { Textarea } from "@repo/ui/components/textarea";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Edit2, Flag,MoreHorizontal, SendHorizontal,Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit2, Flag, MoreHorizontal, SendHorizontal, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 
 import { useGetCurrentUser } from "@/hooks/useAuth";
-
-import AlertDialog from "@repo/ui/components/AlertDialog";
 
 export interface Comment {
     id: string;
     content: string;
     user_id: string;
     post_id: string;
+    like_count: number;
+    reply_count: number;
+    is_liked?: boolean;
     created_at: string | null;
     updated_at: string | null;
     parent_id: string | null;
-    is_edited: boolean | null; // Added field
+    is_edited: boolean | null;
     author: {
         id: string;
         username: string;
@@ -41,15 +43,20 @@ interface CommentItemProps {
     onReply: (authorName: string, parentId: string) => void;
     onDelete: (commentId: string) => void;
     onEdit: (commentId: string, content: string) => void;
+    onLike: (commentId: string, isLiked: boolean) => void;
     depth?: number;
 }
 
-export function CommentItem({ comment, onReply, onDelete, onEdit, depth = 0 }: CommentItemProps) {
+// Configuration: number of replies to show before collapsing
+const REPLIES_THRESHOLD = 2;
+
+export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth = 0 }: CommentItemProps) {
     const { data: currentUser } = useGetCurrentUser();
     const isOwner = currentUser?.id === comment.user_id;
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
     const [openAlert, setOpenAlert] = useState(false);
+    const [showReplies, setShowReplies] = useState(false);
 
     const dateToUse = comment.updated_at || comment.created_at || new Date().toISOString();
     const timeAgo = formatDistanceToNow(new Date(dateToUse), { addSuffix: true, locale: vi });
@@ -60,9 +67,13 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, depth = 0 }: C
         setIsEditing(false);
     };
 
+    const childrenCount = comment.children?.length || 0;
+    const hasChildren = childrenCount > 0;
+    const shouldCollapse = childrenCount > REPLIES_THRESHOLD;
+
     return (
         <div className="flex gap-3">
-            <Avatar className="w-8 h-8 cursor-pointer">
+            <Avatar className="w-8 h-8 cursor-pointer shrink-0">
                 <AvatarImage src={comment.author.avatar_url || ""} />
                 <AvatarFallback>{comment.author.username?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
@@ -127,6 +138,15 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, depth = 0 }: C
                             {comment.is_edited && (
                                 <span className="text-xs text-muted-foreground italic">(đã chỉnh sửa)</span>
                             )}
+                            
+                            <button 
+                                onClick={() => onLike(comment.id, comment.is_liked || false)}
+                                className={`text-xs font-semibold cursor-pointer hover:underline flex items-center gap-1 ${comment.is_liked ? "text-red-500" : "text-muted-foreground"}`}
+                            >
+                                {comment.is_liked ? "Đã thích" : "Thích"}
+                                {(comment.like_count || 0) > 0 && <span>({comment.like_count})</span>}
+                            </button>
+
                             <span 
                                 className="text-xs font-semibold cursor-pointer hover:underline text-muted-foreground"
                                 onClick={() => onReply(comment.author.display_name || comment.author.username, comment.id)}
@@ -165,18 +185,47 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, depth = 0 }: C
                         </div>
                     </div>
 
-                {comment.children && comment.children.length > 0 && (
+                {/* Child comments with expand/collapse */}
+                {hasChildren && (
                     <div className={`mt-2 ${depth < 2 ? "pl-4 border-l-2 border-muted" : "-ml-[2.75rem]"}`}>
-                        {comment.children.map(child => (
-                            <CommentItem 
-                                key={child.id} 
-                                comment={child} 
-                                onReply={onReply}
-                                onDelete={onDelete}
-                                onEdit={onEdit}
-                                depth={depth + 1}
-                            />
-                        ))}
+                        {/* Show/Hide toggle button for many replies */}
+                        {shouldCollapse && !showReplies && (
+                            <button
+                                onClick={() => setShowReplies(true)}
+                                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline mb-2 py-1"
+                            >
+                                <ChevronDown className="w-3 h-3" />
+                                Xem {childrenCount} phản hồi
+                            </button>
+                        )}
+
+                        {/* Show replies if: few replies OR expanded */}
+                        {(!shouldCollapse || showReplies) && (
+                            <>
+                                {comment.children!.map(child => (
+                                    <CommentItem 
+                                        key={child.id} 
+                                        comment={child} 
+                                        onReply={onReply}
+                                        onDelete={onDelete}
+                                        onEdit={onEdit}
+                                        onLike={onLike}
+                                        depth={depth + 1}
+                                    />
+                                ))}
+                                
+                                {/* Collapse button when expanded */}
+                                {shouldCollapse && showReplies && (
+                                    <button
+                                        onClick={() => setShowReplies(false)}
+                                        className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary hover:underline mt-2 py-1"
+                                    >
+                                        <ChevronUp className="w-3 h-3" />
+                                        Ẩn phản hồi
+                                    </button>
+                                )}
+                            </>
+                        )}
                     </div>
                 )}
             </div>

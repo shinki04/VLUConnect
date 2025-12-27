@@ -1,8 +1,6 @@
 /* eslint-disable react/no-children-prop */ 
 "use client";
-import { useTransition } from "react";
-import { useForm } from "@tanstack/react-form";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { Membership_Mode, Privacy_Group } from "@repo/shared/types/group";
 import { Button } from "@repo/ui/components/button";
 import {
   Dialog,
@@ -14,7 +12,7 @@ import {
   DialogTrigger,
 } from "@repo/ui/components/dialog";
 import { Input } from "@repo/ui/components/input";
-import { Textarea } from "@repo/ui/components/textarea";
+import { Label } from "@repo/ui/components/label";
 import {
   Select,
   SelectContent,
@@ -22,12 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/select";
-import { Label } from "@repo/ui/components/label";
+import { Textarea } from "@repo/ui/components/textarea";
+import { useForm } from "@tanstack/react-form";
+import { Globe,Lock, Users } from "lucide-react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useTransition } from "react";
+import { toast } from "sonner";
+
 import { createGroup } from "@/app/actions/group";
 import { createGroupSchema } from "@/lib/validations/group";
-import { toast } from "sonner";
-import { Users, Lock, Globe } from "lucide-react";
-import { Membership_Mode, Privacy_Group } from "@repo/shared/types/group";
 
 export function CreateGroupDialog() {
   const [isPending, startTransition] = useTransition();
@@ -74,14 +75,14 @@ export function CreateGroupDialog() {
   });
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog >
+      <DialogTrigger asChild >
         <Button>
             <Users className="mr-2 h-4 w-4" />
             Create Group
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]"  onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Create a new Group</DialogTitle>
           <DialogDescription>

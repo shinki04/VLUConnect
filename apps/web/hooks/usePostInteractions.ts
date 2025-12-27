@@ -12,9 +12,9 @@ import {
   fetchComments,
   getPostLikeStatus,
   sharePost,
+  toggleCommentLike,
   updateComment,
-  updatePostLikeStatus,
-} from "@/app/actions/interactions";
+  updatePostLikeStatus} from "@/app/actions/interactions";
 
 import { useGetCurrentUser } from "./useAuth"; 
 
@@ -130,19 +130,29 @@ export function usePostInteractions(
   };
 }
 
-export function useComments(postId: string) {
+// ... imports provided at top of file
+// Remove duplicate block
+
+
+export function useComments(
+    postId: string, 
+    search?: string, 
+    sortBy: "newest" | "top" | "discussed" = "newest"
+) {
     const queryClient = useQueryClient();
-    
-    // Fetch comments using Infinite Query for "Load More"
+    const queryKey = ["post-comments", postId, search, sortBy]; // Capture current key
+
+    // Fetch ... (existing)
     const { 
         data: commentsData, 
         isLoading, 
         fetchNextPage, 
         hasNextPage, 
-        isFetchingNextPage 
+        isFetchingNextPage,
+        refetch
     } = useInfiniteQuery({
-        queryKey: ["post-comments", postId],
-        queryFn: ({ pageParam }) => fetchComments(postId, pageParam as number),
+        queryKey,
+        queryFn: ({ pageParam }) => fetchComments(postId, pageParam as number, 10, search, sortBy),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => {
             const currentTotal = allPages.flatMap(p => p.comments).length;
@@ -155,16 +165,65 @@ export function useComments(postId: string) {
 
     const { data: currentUser } = useGetCurrentUser();
 
+    // Like Comment
+    const { mutate: toggleLike } = useMutation({
+        mutationFn: ({ commentId, isLiked }: { commentId: string; isLiked: boolean }) => 
+            toggleCommentLike(commentId),
+        onMutate: async ({ commentId, isLiked }) => {
+             // Optimistic Update for Comment Like
+             // We need to update the infinite query data
+             await queryClient.cancelQueries({ queryKey });
+
+             const previousData = queryClient.getQueryData(queryKey);
+
+             queryClient.setQueryData(queryKey, (old: { pages: { comments: { id: string; is_liked: boolean; like_count: number }[]; total: number }[]; pageParams: number[] } | undefined) => {
+                 if (!old) return old;
+                 return {
+                     ...old,
+                     pages: old.pages.map((page) => ({
+                         ...page,
+                         comments: page.comments.map((c) => {
+                             if (c.id === commentId) {
+                                 return {
+                                     ...c,
+                                     is_liked: !isLiked,
+                                     like_count: isLiked ? (c.like_count - 1) : (c.like_count + 1)
+                                 };
+                             }
+                             return c;
+                         })
+                     }))
+                 };
+             });
+
+             return { previousData };
+        },
+        onError: (err, vars, context) => {
+             if (context?.previousData) {
+                 queryClient.setQueryData(queryKey, context.previousData);
+             }
+             toast.error("Lỗi cập nhật lượt thích.");
+        },
+        onSettled: () => {
+             // We typically don't refetch whole list for a like invoke, just keep optimistic
+             // But if we want strong consistency: queryClient.invalidateQueries({ queryKey });
+        }
+    });
+
     // Add Comment
     const { mutate: sendComment, isPending: isSending } = useMutation({
         mutationFn: ({ content, parentId }: { content: string; parentId?: string }) => 
             addComment(postId, content, parentId),
         onMutate: async ({ content, parentId }) => {
-             await queryClient.cancelQueries({ queryKey: ["post-comments", postId] });
+             await queryClient.cancelQueries({ queryKey });
              
-             const previousComments = queryClient.getQueryData(["post-comments", postId]);
+             const previousComments = queryClient.getQueryData(queryKey);
              
-             if (currentUser) {
+             // Only perform optimistic add if we are in "newest" mode and not searching
+             // Otherwise it's hard to know where to put it or if it matches search.
+             const shouldOptimisticUpdate = !search && sortBy === "newest";
+
+             if (currentUser && shouldOptimisticUpdate) {
                  const optimisticComment = {
                      id: `temp-${Date.now()}`,
                      content,
@@ -172,6 +231,9 @@ export function useComments(postId: string) {
                      post_id: postId,
                      user_id: currentUser.id,
                      parent_id: parentId || null,
+                     like_count: 0,
+                     reply_count: 0,
+                     is_liked: false,
                      author: {
                          id: currentUser.id,
                          username: currentUser.username,
@@ -179,8 +241,9 @@ export function useComments(postId: string) {
                          avatar_url: currentUser.avatar_url
                      }
                  };
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                 queryClient.setQueryData(["post-comments", postId], (old: { pages: any }) => {
+                 
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 queryClient.setQueryData(queryKey, (old: { pages: any }) => {
                      if (!old) {
                          return {
                              pages: [{
@@ -194,7 +257,7 @@ export function useComments(postId: string) {
                      const newPages = [...old.pages];
                      const firstPage = { ...newPages[0] };
                      
-                     // Prepend to first page (since we sort DESC - Newest First)
+                     // Prepend (Newest First)
                      firstPage.comments = [optimisticComment, ...firstPage.comments];
                      firstPage.total = (firstPage.total || 0) + 1;
                      
@@ -207,32 +270,34 @@ export function useComments(postId: string) {
                  });
              }
              
-             // Optimistic update for Feed (Post comment count)
+             // Optimistic update for Feed (Post comment count) stays same...
              const previousFeed = queryClient.getQueryData(["posts", "infinite"]);
-             queryClient.setQueryData(["posts", "infinite"], (oldFeed: { pages: { posts: Post[]; }[]; }) => {
-                 if (!oldFeed) return oldFeed;
-                 
-                 const newPages = oldFeed.pages.map((page: { posts: Post[]; }) => ({
-                     ...page,
-                     posts: page.posts.map((post: Post) => {
-                         if (post.id === postId) {
-                             return {
-                                 ...post,
-                                 comment_count: (post.comment_count || 0) + 1
-                             };
-                         }
-                         return post;
-                     })
-                 }));
-                 
-                 return { ...oldFeed, pages: newPages };
-             });
+             if (previousFeed) {
+                // ... (Feed logic omitted here for brevity if unchanged, but need to preserve if replacing whole function)
+                // Actually I should include it.
+                queryClient.setQueryData(["posts", "infinite"], (oldFeed: { pages: { posts: Post[]; }[]; }) => {
+                     if (!oldFeed) return oldFeed;
+                     const newPages = oldFeed.pages.map((page: { posts: Post[]; }) => ({
+                         ...page,
+                         posts: page.posts.map((post: Post) => {
+                             if (post.id === postId) {
+                                 return {
+                                     ...post,
+                                     comment_count: (post.comment_count || 0) + 1
+                                 };
+                             }
+                             return post;
+                         })
+                     }));
+                     return { ...oldFeed, pages: newPages };
+                 });
+             }
              
              return { previousComments, previousFeed };
         },
         onError: (err, variables, context) => {
              if (context?.previousComments) {
-                 queryClient.setQueryData(["post-comments", postId], context.previousComments);
+                 queryClient.setQueryData(queryKey, context.previousComments);
              }
              if (context?.previousFeed) {
                  queryClient.setQueryData(["posts", "infinite"], context.previousFeed);
@@ -240,8 +305,8 @@ export function useComments(postId: string) {
              toast.error("Không thể gửi bình luận. Thử lại?");
         },
         onSettled: () => {
-             queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
-             // Invalidate likes/stats if needed
+             // Always invalidate to get real ID and fresh state
+             queryClient.invalidateQueries({ queryKey });
              queryClient.invalidateQueries({ queryKey: ["post-likes", postId] }); 
         }
     });
@@ -253,7 +318,7 @@ export function useComments(postId: string) {
             toast.error("Xóa bình luận thất bại.");
         },
         onSettled: () => {
-             queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+             queryClient.invalidateQueries({ queryKey });
              queryClient.invalidateQueries({ queryKey: ["post-likes", postId] }); 
         }
      });
@@ -269,7 +334,7 @@ export function useComments(postId: string) {
             toast.error("Cập nhật thất bại.");
         },
         onSettled: () => {
-             queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+             queryClient.invalidateQueries({ queryKey });
         }
      });
 
@@ -280,6 +345,7 @@ export function useComments(postId: string) {
         isSending,
         removeComment,
         editComment,
+        toggleLike, // Export this
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage

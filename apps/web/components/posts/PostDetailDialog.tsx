@@ -26,14 +26,13 @@ export default function PostDetailDialog({ post, open, onOpenChange, currentUser
   const isOwner = currentUser?.id === post.author.id;
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [replyTo, setReplyTo] = useState<{ name: string; parentId: string } | null>(null);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["post-comments", post.id] }),
-        queryClient.invalidateQueries({ queryKey: ["post-likes", post.id] }), // if used locally
-        queryClient.invalidateQueries({ queryKey: ["posts", "infinite"] }) // Refresh feed to update main counts
+        queryClient.invalidateQueries({ queryKey: ["post-likes", post.id] }),
+        queryClient.invalidateQueries({ queryKey: ["posts", "infinite"] })
     ]);
     setTimeout(() => setIsRefreshing(false), 800);
   };
@@ -70,8 +69,8 @@ export default function PostDetailDialog({ post, open, onOpenChange, currentUser
                 updatedAt={post.updated_at}
                 privacyLevel={post.privacy_level}
                 isOwner={isOwner}
-                onDelete={() => {}} // Disabled in modal
-                onUpdate={() => {}} // Disabled in modal
+                onDelete={() => {}}
+                onUpdate={() => {}}
             />
             
             <div className="mt-4 mb-4">
@@ -96,26 +95,17 @@ export default function PostDetailDialog({ post, open, onOpenChange, currentUser
                         share_count: post.share_count || 0,
                         is_liked_by_viewer: post.is_liked_by_viewer || false
                     }}
-                    onCommentClick={() => {
-                        // Focus comment input logic if possible
-                    }}
+                    onCommentClick={() => {}}
                  />
             </div>
 
             <div className="mt-2">
-                <CommentSection 
-                    postId={post.id} 
-                    onReply={(name, parentId) => setReplyTo({ name, parentId })}
-                />
+                <CommentSection postId={post.id} />
             </div>
         </div>
         
-        <CommentInput 
-          postId={post.id} 
-          replyTo={replyTo} 
-          onCancelReply={() => setReplyTo(null)}
-          onCommentSent={() => {}}
-        />
+        {/* Comment Input - Sticky at bottom, separate from list */}
+        <CommentInput postId={post.id} />
       </DialogContent>
     </Dialog>
   );

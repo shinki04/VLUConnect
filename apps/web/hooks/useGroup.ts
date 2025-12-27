@@ -1,16 +1,17 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery,useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import {
-  updateMemberRole,
-  removeMember,
   approveMember,
-  rejectMember,
-  transferAdmin,
   getGroupMembers,
   getGroupPosts,
+  rejectMember,
+  removeMember,
+  transferAdmin,
+  updateMemberRole,
 } from "@/app/actions/group";
-import { toast } from "sonner";
 
 // ============================================================
 // Query Keys
@@ -23,11 +24,35 @@ export const groupKeys = {
   pendingMembers: (groupId: string) =>
     [...groupKeys.all, "pending", groupId] as const,
   posts: (groupId: string) => [...groupKeys.all, "posts", groupId] as const,
+  suggested: () => [...groupKeys.all, "suggested"] as const,
+  myGroups: () => [...groupKeys.all, "my"] as const,
 };
 
 // ============================================================
 // Hooks
 // ============================================================
+
+import { getMyGroups as fetchMyGroups,getSuggestedGroups } from "@/app/actions/group";
+
+/**
+ * Hook to fetch suggested groups
+ */
+export function useSuggestedGroups() {
+  return useQuery({
+    queryKey: groupKeys.suggested(),
+    queryFn: () => getSuggestedGroups(),
+  });
+}
+
+/**
+ * Hook to fetch my groups
+ */
+export function useMyGroups() {
+  return useQuery({
+    queryKey: groupKeys.myGroups(),
+    queryFn: () => fetchMyGroups(),
+  });
+}
 
 const POSTS_PER_PAGE = 10;
 
@@ -77,7 +102,7 @@ export function useGroupMembers(groupId: string) {
     queryKey: groupKeys.members(groupId),
     queryFn: () => getGroupMembers(groupId, { status: "active" }),
     enabled: !!groupId,
-    staleTime: 30000,
+    staleTime: 5000,
   });
 }
 

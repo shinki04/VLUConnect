@@ -30,7 +30,6 @@ export async function toggleLikePost(postId: string) {
 
   if (!user) throw new Error("Unauthorized");
 
-  // Check if liked
   const { data: existingLike } = await supabase
     .from("post_likes")
     .select()
@@ -50,9 +49,6 @@ export async function toggleLikePost(postId: string) {
       user_id: user.id,
     });
   }
-
-  // revalidatePath("/");
-  // revalidatePath(`/post/${postId}`);
 }
 
 export async function updatePostLikeStatus(postId: string, isLiked: boolean) {
@@ -64,9 +60,6 @@ export async function updatePostLikeStatus(postId: string, isLiked: boolean) {
     if (!user) throw new Error("Unauthorized");
   
     if (isLiked) {
-        // Want to Like -> Insert if not exists
-        // Supabase doesn't have "insert or ignore" easily without constraint violation error handling or extra check.
-        // Easiest is check then insert.
         const { data: existingLike } = await supabase
             .from("post_likes")
             .select("id")
@@ -81,7 +74,6 @@ export async function updatePostLikeStatus(postId: string, isLiked: boolean) {
              });
         }
     } else {
-        // Want to Unlike -> Delete
         await supabase
             .from("post_likes")
             .delete()
@@ -162,7 +154,7 @@ export async function updateComment(commentId: string, content: string) {
       .from("post_comments")
       .update({ content, updated_at: new Date().toISOString(), is_edited: true })
       .eq("id", commentId)
-      .eq("user_id", user.id); // Ensure ownership
+      .eq("user_id", user.id);
 
   if (error) throw new Error(error.message);
   
@@ -181,19 +173,56 @@ export async function deleteComment(commentId: string) {
       .from("post_comments")
       .delete()
       .eq("id", commentId)
-      .eq("user_id", user.id); // Ensure ownership
+      .eq("user_id", user.id);
   
     if (error) throw new Error(error.message);
     
     revalidatePath("/");
 }
 
-export async function fetchComments(postId: string, page = 1, limit = 10) {
+export async function toggleCommentLike(commentId: string) {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) throw new Error("Unauthorized");
+
+    const { data: existingLike } = await supabase
+        .from("comment_likes")
+        .select("id")
+        .eq("comment_id", commentId)
+        .eq("user_id", user.id)
+        .single();
+    
+    if (existingLike) {
+        await supabase
+            .from("comment_likes")
+            .delete()
+            .eq("comment_id", commentId)
+            .eq("user_id", user.id);
+    } else {
+        await supabase.from("comment_likes").insert({
+            comment_id: commentId,
+            user_id: user.id
+        });
+    }
+}
+
+export async function fetchComments(
+  postId: string, 
+  page = 1, 
+  limit = 10,
+  search?: string,
+  sortBy: "newest" | "top" | "discussed" = "newest"
+) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
   const start = (page - 1) * limit;
   const end = start + limit - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("post_comments")
     .select(
       `
@@ -207,11 +236,54 @@ export async function fetchComments(postId: string, page = 1, limit = 10) {
     `,
       { count: "exact" }
     )
-    .eq("post_id", postId)
-    .order("created_at", { ascending: false }) // Newest first
-    .range(start, end);
+    .eq("post_id", postId);
+
+  if (search) {
+     query = query.ilike("content", `%${search}%`);
+  }
+
+  switch (sortBy) {
+    case "top":
+      query = query.order("like_count", { ascending: false });
+      break;
+    case "discussed":
+      query = query.order("reply_count", { ascending: false });
+      break;
+    case "newest":
+    default:
+      query = query.order("created_at", { ascending: false });
+      break;
+  }
+  
+  if (sortBy !== "newest") {
+       query = query.order("created_at", { ascending: false });
+  }
+
+  const { data: comments, error, count } = await query.range(start, end);
 
   if (error) throw new Error(error.message);
 
-  return { comments: data, total: count || 0 };
+  let commentsWithLikeStatus = comments;
+  if (user && comments && comments.length > 0) {
+      const commentIds = comments.map(c => c.id);
+      const { data: likes } = await supabase
+          .from("comment_likes")
+          .select("comment_id")
+          .eq("user_id", user.id)
+          .in("comment_id", commentIds);
+      
+      const likedCommentIds = new Set(likes?.map(l => l.comment_id) || []);
+      
+      commentsWithLikeStatus = comments.map(c => ({
+          ...c,
+          is_liked: likedCommentIds.has(c.id)
+      }));
+  } else if (comments) {
+      commentsWithLikeStatus = comments.map(c => ({
+          ...c,
+          is_liked: false
+      }));
+  }
+
+  return { comments: commentsWithLikeStatus || [], total: count || 0 };
 }

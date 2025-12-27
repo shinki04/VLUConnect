@@ -1,5 +1,6 @@
-import { getGroup } from "@/app/actions/group";
 import { notFound } from "next/navigation";
+
+import { getGroup } from "@/app/actions/group";
 import { MemberList } from "@/components/groups/member-list";
 
 interface MembersPageProps {

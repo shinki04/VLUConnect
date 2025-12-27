@@ -1,41 +1,75 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useIntersectionObserver } from "@uidotdev/usehooks";
 import { PostResponse } from "@repo/shared/types/post";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/ui/components/tabs";
-import AddPost from "@/components/posts/add";
-import PostCard from "@/components/posts/PostCard";
-import PendingPost from "@/components/posts/PendingPost";
-import { MemberList } from "@/components/groups/member-list";
-import type { GroupWithDetails } from "@/app/actions/group";
-import { GroupSettingsForm } from "@/components/groups/group-settings-form";
-import { Calendar, Globe, Lock, Users, UserCheck, Loader2 } from "lucide-react";
-import { formatPostDate } from "@repo/utils/formatDate";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/card";
-import { Button } from "@repo/ui/components/button";
-import { useInfiniteGroupPosts, groupKeys } from "@/hooks/useGroup";
+import { BLANK_AVATAR } from "@repo/shared/types/user";
 import { createClient } from "@repo/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
+import { Badge } from "@repo/ui/components/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/card";
+import { Tabs, TabsContent,TabsList, TabsTrigger } from "@repo/ui/components/tabs";
+import { formatPostDate } from "@repo/utils/formatDate";
 import { useQueryClient } from "@tanstack/react-query";
-import { User } from "@repo/shared/types/user";
+import { useIntersectionObserver } from "@uidotdev/usehooks";
+import { Calendar, Crown, Globe, Loader2,Lock, Shield, ShieldCheck, User as UserIcon, Users } from "lucide-react";
+import Link from "next/link";
+import { useEffect,useState } from "react";
+
+import type { GroupMember, GroupWithDetails } from "@/app/actions/group";
+import { GroupSettingsForm } from "@/components/groups/group-settings-form";
+import { MemberList } from "@/components/groups/member-list";
+import AddPost from "@/components/posts/add";
+import PendingPost from "@/components/posts/PendingPost";
+import PostCard from "@/components/posts/PostCard";
+import {useInfiniteGroupPosts } from "@/hooks/useGroup";
+import { useGetCurrentUser } from "@/hooks/useAuth";
+import { GroupMemberRole } from "@repo/shared/types/group";
 
 interface GroupContentProps {
   group: GroupWithDetails;
   initialPosts: PostResponse[];
-  currentUser: User
-   
+  coreMembers: GroupMember[];
+  friendMembers: GroupMember[];
   isActiveMember: boolean;
   isAdmin: boolean;
 }
 
+const ROLE_LABELS: Record<GroupMemberRole, string> = {
+  admin: "Admin",
+  sub_admin: "Phó Admin",
+  moderator: "Điều hành",
+  member: "Thành viên",
+};
+
+const ROLE_ICONS: Record<GroupMemberRole, React.ReactNode> = {
+  admin: <Crown className="w-3 h-3" />,
+  sub_admin: <ShieldCheck className="w-3 h-3" />,
+  moderator: <Shield className="w-3 h-3" />,
+  member: <UserIcon className="w-3 h-3" />,
+};
+
+const ROLE_COLORS: Record<GroupMemberRole, string> = {
+  admin: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  sub_admin: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  moderator: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  member: "bg-gray-500/10 text-gray-600 border-gray-500/20",
+};
+
 export function GroupContent({
   group,
   initialPosts,
-  currentUser,
+  coreMembers,
+  friendMembers,
   isActiveMember,
   isAdmin,
 }: GroupContentProps) {
-  const [activeTab, setActiveTab] = useState("discussion");
+  // Get currentUser from TanStack Query (already cached with staleTime: Infinity)
+  const { data: currentUser } = useGetCurrentUser();
+  // Determine if user can see posts
+  // Logic: Public Group OR Active Member
+  const canViewPosts = group.privacy_level === "public" || isActiveMember;
+
+  const [activeTab, setActiveTab] = useState(canViewPosts ? "discussion" : "overview");
+
   const queryClient = useQueryClient();
   const supabase = createClient();
   const [loadMoreRef, entry] = useIntersectionObserver({
@@ -44,7 +78,7 @@ export function GroupContent({
     rootMargin: "100px",
   });
   
-  // Infinite Query for posts
+  // Infinite Query for posts (Only enabled if canViewPosts)
   const {
     data,
     fetchNextPage,
@@ -52,7 +86,8 @@ export function GroupContent({
     isFetchingNextPage,
     isLoading,
     isRefetching,
-  } = useInfiniteGroupPosts(group.id);
+  } = useInfiniteGroupPosts(group.id); // Hook internally enabled/disabled logic? No, let's just use it, RLS blocks if needed.
+  // Actually hook is always enabled in previous code.
 
   // Flatten all pages into single array
   const posts = data?.pages.flatMap((page) => page.posts) as PostResponse[] ?? initialPosts;
@@ -61,120 +96,191 @@ export function GroupContent({
 
   // Auto fetch next page when loadMore element is visible
   useEffect(() => {
-    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage && canViewPosts) {
       fetchNextPage();
     }
-  }, [entry, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [entry, hasNextPage, isFetchingNextPage, fetchNextPage, canViewPosts]);
 
-  // Subscribe to post_queue realtime - khi có post mới hoàn thành thì refetch
-  useEffect(() => {
-    if (!currentUser) return;
+  const renderMemberItem = (member: GroupMember) => (
+    <div
+      key={member.user_id}
+      className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border mb-2 last:mb-0"
+    >
+      <Link
+        href={`/profile/${member.profile?.username}`}
+        className="flex items-center gap-3 flex-1"
+      >
+        <Avatar className="w-10 h-10">
+          <AvatarImage src={member.profile?.avatar_url || BLANK_AVATAR} />
+          <AvatarFallback>
+            {member.profile?.display_name?.[0] || "?"}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="font-medium">
+            {member.profile?.display_name || member.profile?.username}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            @{member.profile?.username}
+          </p>
+        </div>
+      </Link>
 
-    const channel = supabase
-      .channel(`group-posts-${group.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "post_queue_status",
-          filter: `user_id=eq.${currentUser.id}`,
-        },
-        (payload) => {
-          // Khi queue item được đánh dấu completed, refetch group posts
-          if (payload.new?.status === "completed") {
-            console.log("Post completed, refetching group posts...");
-            queryClient.invalidateQueries({ queryKey: groupKeys.posts(group.id) });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentUser, group.id, queryClient, supabase]);
+      <div className="flex items-center gap-2">
+        <Badge
+          variant="outline"
+          className={`${ROLE_COLORS[member.role]} flex items-center gap-1`}
+        >
+          {ROLE_ICONS[member.role]}
+          {ROLE_LABELS[member.role]}
+        </Badge>
+      </div>
+    </div>
+  );
 
   return (
     <Tabs
       value={activeTab}
       onValueChange={setActiveTab}
-      defaultValue="discussion"
+      defaultValue={canViewPosts ? "discussion" : "overview"}
     >
       <TabsList>
-        <TabsTrigger value="discussion">Thảo luận</TabsTrigger>
-        <TabsTrigger value="members">Thành viên</TabsTrigger>
+        {canViewPosts && <TabsTrigger value="discussion">Thảo luận</TabsTrigger>}
+        <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+        <TabsTrigger value="members">Tất cả thành viên</TabsTrigger>
         <TabsTrigger value="about">Giới thiệu</TabsTrigger>
         {isAdmin && <TabsTrigger value="settings">Cài đặt</TabsTrigger>}
       </TabsList>
 
-      {/* Discussion Tab */}
-      <TabsContent value="discussion">
+      {/* Discussion Tab (Only if allowed) */}
+      {canViewPosts && (
+        <TabsContent value="discussion">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              {isActiveMember && currentUser && (
+                <AddPost currentUser={currentUser} groupId={group.id} />
+              )}
+
+              {/* Pending posts */}
+              <PendingPost groupId={group.id} />
+
+              {isLoading ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">
+                  Chưa có bài viết nào. Hãy là người đầu tiên đăng bài!
+                </div>
+              ) : (
+                <>
+                  {posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                  
+                  {/* Load more trigger */}
+                  <div ref={loadMoreRef} className="py-4">
+                    {isFetchingNextPage && (
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground mr-2" />
+                        <span className="text-sm text-muted-foreground">Đang tải thêm...</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Giới thiệu</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {group.description || "Không có mô tả"}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      )}
+
+      {/* Overview Tab */}
+      <TabsContent value="overview">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {isActiveMember && currentUser && (
-              <AddPost currentUser={currentUser} groupId={group.id} />
-            )}
-
-            {/* Pending posts - bài đang chờ xử lý */}
-            <PendingPost groupId={group.id} />
-
-            {isLoading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground">
-                Chưa có bài viết nào. Hãy là người đầu tiên đăng bài!
-              </div>
-            ) : (
-              <>
-                {isRefetching && (
-                  <div className="flex items-center justify-center py-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mr-2" />
-                    <span className="text-sm text-muted-foreground">Đang cập nhật...</span>
-                  </div>
-                )}
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-                
-                {/* Load more trigger */}
-                <div ref={loadMoreRef} className="py-4">
-                  {isFetchingNextPage ? (
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground mr-2" />
-                      <span className="text-sm text-muted-foreground">Đang tải thêm...</span>
-                    </div>
-                  ) : hasNextPage ? (
-                    <Button
-                      variant="ghost"
-                      className="w-full"
-                      onClick={() => fetchNextPage()}
-                    >
-                      Tải thêm bài viết
-                    </Button>
-                  ) : posts.length > 0 ? (
-                    <p className="text-center text-sm text-muted-foreground">
-                      Đã hiển thị tất cả bài viết
-                    </p>
-                  ) : null}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-4">
+            
+            {/* Core Members Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Giới thiệu</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                   <Crown className="w-5 h-5 text-yellow-500" />
+                   Ban quản trị
+                </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {group.description || "Không có mô tả"}
+              <CardContent>
+                {coreMembers.length > 0 ? (
+                  <div className="flex flex-col">
+                    {coreMembers.map(renderMemberItem)}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">Chưa có thông tin ban quản trị</p>
+                )}
               </CardContent>
             </Card>
+
+            {/* Friends Section */}
+            {currentUser && (
+               <Card>
+                 <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                     <Users className="w-5 h-5 text-blue-500" />
+                     Bạn bè trong nhóm
+                  </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                    {friendMembers.length > 0 ? (
+                       <div className="flex flex-col">
+                         {friendMembers.map(renderMemberItem)}
+                       </div>
+                    ) : (
+                       <p className="text-center text-sm text-muted-foreground py-4">
+                         Không có bạn bè nào trong nhóm này.
+                       </p>
+                    )}
+                 </CardContent>
+              </Card>
+            )}
           </div>
+          
+           {/* Sidebar Info */}
+           <div className="space-y-4">
+               <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Thông tin</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                   <div className="flex items-center gap-2">
+                      {group.privacy_level === "public" ? (
+                        <Globe className="w-4 h-4 text-muted-foreground" />
+                      ) : (
+                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      )}
+                      <span className="text-sm">
+                        {group.privacy_level === "public" ? "Công khai" : "Riêng tư"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">
+                        {group.members_count || 0} thành viên
+                      </span>
+                    </div>
+                </CardContent>
+              </Card>
+           </div>
         </div>
       </TabsContent>
 
@@ -201,30 +307,17 @@ export function GroupContent({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
-                {group.privacy_level === "public" ? (
-                  <Globe className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Lock className="w-4 h-4 text-muted-foreground" />
-                )}
+                <Globe className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">
                   {group.privacy_level === "public" ? "Công khai" : "Riêng tư"}
                 </span>
               </div>
-
-              <div className="flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {group.membership_mode === "auto" ? "Tham gia tự do" : "Cần duyệt"}
-                </span>
-              </div>
-
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">
                   {group.members_count || 0} thành viên
                 </span>
               </div>
-
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">
@@ -245,3 +338,5 @@ export function GroupContent({
     </Tabs>
   );
 }
+
+

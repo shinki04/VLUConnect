@@ -1,12 +1,14 @@
 "use client";
 
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import { Button } from "@repo/ui/components/button";
-import { Users, Globe, Lock } from "lucide-react";
-import { joinGroup, leaveGroup } from "@/app/actions/group";
-import { useTransition } from "react";
-import { toast } from "sonner";
+import { Globe, Lock,Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+
 import type { GroupWithDetails } from "@/app/actions/group";
+import { joinGroup, leaveGroup } from "@/app/actions/group";
 
 interface GroupHeaderProps {
   group: GroupWithDetails;
@@ -15,6 +17,7 @@ interface GroupHeaderProps {
 
 export function GroupHeader({ group, currentUser }: GroupHeaderProps) {
   const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
   const router = useRouter();
 
   // Simple membership check from clean data structure
@@ -47,13 +50,12 @@ export function GroupHeader({ group, currentUser }: GroupHeaderProps) {
     });
   };
 
+
   const handleLeave = () => {
     if (isAdmin) {
       toast.error("Admin không thể rời group. Hãy chuyển quyền admin trước.");
       return;
     }
-
-    if (!confirm("Bạn có chắc muốn rời khỏi group này?")) return;
 
     startTransition(async () => {
       try {
@@ -67,10 +69,12 @@ export function GroupHeader({ group, currentUser }: GroupHeaderProps) {
       } catch (e) {
         toast.error("Không thể rời group");
       }
+      setOpen(false);
     });
   };
 
   return (
+   <>
     <div className="bg-card border-b mb-6">
       {/* Cover Image */}
       <div className="h-48 md:h-72 bg-muted relative w-full overflow-hidden">
@@ -133,7 +137,7 @@ export function GroupHeader({ group, currentUser }: GroupHeaderProps) {
                   Đang chờ duyệt
                 </Button>
               ) : isActiveMember ? (
-                <Button variant="outline" onClick={handleLeave} disabled={isPending}>
+                <Button variant="outline" onClick={() => setOpen(true)} disabled={isPending}>
                   {isPending ? "Đang xử lý..." : "Rời Group"}
                 </Button>
               ) : (
@@ -146,5 +150,7 @@ export function GroupHeader({ group, currentUser }: GroupHeaderProps) {
         </div>
       </div>
     </div>
+    <AlertDialog open={open} onOpenChange={setOpen} title="Rời Group" description="Bạn có chắc chắn muốn rời khỏi group này?" onConfirm={handleLeave}/>
+   </>
   );
 }

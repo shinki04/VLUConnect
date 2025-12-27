@@ -1,6 +1,7 @@
 "use client";
 
 import { PostResponse } from "@repo/shared/types/post";
+import AlertDialog from "@repo/ui/components/AlertDialog";
 import { Card } from "@repo/ui/components/card";
 import React from "react";
 import { toast } from "sonner";
@@ -9,7 +10,6 @@ import { useGetCurrentUser } from "@/hooks/useAuth";
 import { useDeletePost } from "@/hooks/usePost";
 import { getFileInfo, isImageType, type MediaType } from "@/lib/mediaUtils";
 
-import AlertDialog from "@repo/ui/components/AlertDialog";
 import EditPost from "./EditPost";
 import FileLightbox from "./FileLightbox";
 import MediaGalleryModal from "./MediaGalleryModal";
