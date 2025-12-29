@@ -1,5 +1,6 @@
 "use client";
 
+import { GroupMemberRole } from "@repo/shared/types/group";
 import { PostResponse } from "@repo/shared/types/post";
 import { BLANK_AVATAR } from "@repo/shared/types/user";
 import { createClient } from "@repo/supabase/client";
@@ -20,9 +21,8 @@ import { MemberList } from "@/components/groups/member-list";
 import AddPost from "@/components/posts/add";
 import PendingPost from "@/components/posts/PendingPost";
 import PostCard from "@/components/posts/PostCard";
-import {useInfiniteGroupPosts } from "@/hooks/useGroup";
 import { useGetCurrentUser } from "@/hooks/useAuth";
-import { GroupMemberRole } from "@repo/shared/types/group";
+import {useInfiniteGroupPosts } from "@/hooks/useGroup";
 
 interface GroupContentProps {
   group: GroupWithDetails;

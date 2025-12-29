@@ -1,3 +1,4 @@
+import { PRIVACY_CONFIG } from "@repo/shared/types/post";
 import { Global_Roles } from "@repo/shared/types/user";
 import {
   Avatar,
@@ -8,10 +9,16 @@ import { formatPostDate } from "@repo/utils/formatDate";
 import { Globe, LockKeyhole, Users } from "lucide-react";
 import Link from "next/link";
 
-import { PostOwnerDropdown } from "./Dropdown";
-import { PostViewerDropdown } from "./Dropdown";
+import { PostOwnerDropdown, PostViewerDropdown } from "./Dropdown";
+
+const PRIVACY_ICONS = {
+  Globe,
+  Users,
+  LockKeyhole,
+} as const;
 
 interface PostHeaderProps {
+  postId: string;
   author: {
     id: string;
     username: string | null;
@@ -32,22 +39,10 @@ interface PostHeaderProps {
   } | null;
 }
 
-const PRIVACY_CONFIG = {
-  public: {
-    alt: "Công khai",
-    icon: Globe,
-  },
-  friends: {
-    alt: "Bạn bè",
-    icon: Users,
-  },
-  private: {
-    alt: "Riêng tư",
-    icon: LockKeyhole,
-  },
-} as const;
+
 
 export default function PostHeader({
+  postId,
   author,
   createdAt,
   updatedAt,
@@ -62,7 +57,7 @@ export default function PostHeader({
   const isEdited = !!updatedAt && updatedAt !== createdAt;
 
   const privacy = PRIVACY_CONFIG[privacyLevel];
-  const PrivacyIcon = privacy.icon;
+  const PrivacyIcon = PRIVACY_ICONS[privacy.icon as keyof typeof PRIVACY_ICONS];
 
   return (
     <div className="flex items-center justify-between mb-3">
@@ -106,7 +101,7 @@ export default function PostHeader({
         {isOwner ? (
           <PostOwnerDropdown onUpdate={onUpdate} onDelete={onDelete} />
         ) : (
-          <PostViewerDropdown />
+          <PostViewerDropdown postId={postId} />
         )}
       </div>
     </div>

@@ -1,22 +1,49 @@
-// Report types - flexible TypeScript types (not Supabase ENUM)
+
+import { Enums } from "./database.types";
 
 export const ReportType = {
   POST: 'post',
   COMMENT: 'comment',
   USER: 'user',
   MESSAGE: 'message',
+  GROUP: 'group',
 } as const;
 
 export type ReportType = (typeof ReportType)[keyof typeof ReportType];
 
-export const ReportStatus = {
-  PENDING: 'pending',
-  REVIEWED: 'reviewed',
-  RESOLVED: 'resolved',
-  DISMISSED: 'dismissed',
-} as const;
+export type ReportStatus = Enums<"report_status">;
 
-export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus];
+// export const ReportStatus = {
+//   PENDING: 'pending',
+//   REVIEWED: 'reviewed',
+//   RESOLVED: 'resolved',
+//   DISMISSED: 'dismissed',
+// } as const;
+export const REPORT_STATUS_UI: Record<
+  ReportStatus,
+  {
+    label: string;
+    color: 'default' | 'warning' | 'success' | 'danger';
+  }
+> = {
+  pending: {
+    label: 'Chờ xử lý',
+    color: 'warning',
+  },
+  reviewed: {
+    label: 'Đã xem',
+    color: 'default',
+  },
+  resolved: {
+    label: 'Đã giải quyết',
+    color: 'success',
+  },
+  dismissed: {
+    label: 'Đã bác bỏ',
+    color: 'danger',
+  },
+};
+
 
 export interface Report {
   id: string;
@@ -40,3 +67,11 @@ export interface ReportWithReporter extends Report {
     avatar_url: string | null;
   };
 }
+
+export const REPORT_TYPE_TABLE: Record<ReportType, string> = {
+  post: 'posts',
+  comment: 'comments',
+  user: 'users',
+  message: 'messages',
+  group: 'groups',
+};

@@ -32,6 +32,7 @@ interface ChatWindowProps {
   conversation: ConversationWithDetails;
   currentUserId: string;
   currentUser?: Tables<"profiles">;
+  isInitialLoading?: boolean; // Show skeleton during optimistic switch
   onLeave?: () => void;
   onAddFriend?: (userId: string) => void;
   className?: string;
@@ -52,6 +53,7 @@ export function ChatWindow({
   conversation,
   currentUserId,
   currentUser,
+  isInitialLoading = false,
   onLeave,
   onAddFriend,
   className,
@@ -72,6 +74,8 @@ export function ChatWindow({
     error,
     sendMessage,
     retryMessage,
+    editMessage,
+    recallMessage,
     loadMore,
     hasMore,
     isLoadingMore,
@@ -274,7 +278,7 @@ export function ChatWindow({
             onScroll={handleScroll}
             className="absolute inset-0 overflow-y-auto px-4 py-4"
           >
-            {isLoading ? (
+            {isInitialLoading || isLoading ? (
               <ChatWindowSkeleton />
             ) : error ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
@@ -314,6 +318,8 @@ export function ChatWindow({
                             isOwn={isOwn}
                             showAvatar={showAvatar}
                             onRetry={retryMessage}
+                            onEditMessage={editMessage}
+                            onRecallMessage={recallMessage}
                           />
                         );
                       })}

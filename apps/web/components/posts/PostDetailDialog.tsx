@@ -64,6 +64,7 @@ export default function PostDetailDialog({ post, open, onOpenChange, currentUser
         
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <PostHeader
+                postId={post.id}
                 author={post.author}
                 createdAt={post.created_at!}
                 updatedAt={post.updated_at}

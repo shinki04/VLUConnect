@@ -15,6 +15,7 @@ import { vi } from "date-fns/locale";
 import { ChevronDown, ChevronUp, Edit2, Flag, MoreHorizontal, SendHorizontal, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 
+import { ReportDialog } from "@/components/reports/ReportDialog";
 import { useGetCurrentUser } from "@/hooks/useAuth";
 
 export interface Comment {
@@ -57,6 +58,7 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
     const [editContent, setEditContent] = useState(comment.content);
     const [openAlert, setOpenAlert] = useState(false);
     const [showReplies, setShowReplies] = useState(false);
+    const [showReportDialog, setShowReportDialog] = useState(false);
 
     const dateToUse = comment.updated_at || comment.created_at || new Date().toISOString();
     const timeAgo = formatDistanceToNow(new Date(dateToUse), { addSuffix: true, locale: vi });
@@ -174,7 +176,7 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
                                                 </DropdownMenuItem>
                                             </>
                                         ) : (
-                                            <DropdownMenuItem onClick={() => console.log("Report")} className="text-red-500 hover:text-red-600">
+                                            <DropdownMenuItem onClick={() => setShowReportDialog(true)} className="text-red-500 hover:text-red-600">
                                                 <Flag className="w-4 h-4 mr-2" />
                                                 Báo cáo
                                             </DropdownMenuItem>
@@ -236,6 +238,13 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
                 title="Xóa bình luận?"
                 description="Bạn có chắc muốn xóa bình luận này không?"
                 onConfirm={() => onDelete(comment.id)}
+            />
+
+            <ReportDialog
+                type="comment"
+                targetId={comment.id}
+                open={showReportDialog}
+                onOpenChange={setShowReportDialog}
             />
         </div>
     );

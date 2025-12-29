@@ -11,8 +11,10 @@ import type { RealtimeChannel } from "@repo/supabase/types";
 import { useCallback, useEffect, useMemo,useRef, useState } from "react";
 
 import {
+  editMessage as editMessageAction,
   getMessages,
   markAsRead,
+  recallMessage as recallMessageAction,
   sendMessage as sendMessageAction,
 } from "@/app/actions/messaging";
 
@@ -29,6 +31,8 @@ interface UseMessagesReturn {
   error: Error | null;
   sendMessage: (content: string) => Promise<void>;
   retryMessage: (tempId: string) => Promise<void>;
+  editMessage: (messageId: string, newContent: string) => Promise<void>;
+  recallMessage: (messageId: string) => Promise<void>;
   loadMore: () => Promise<void>;
   hasMore: boolean;
   isLoadingMore: boolean;
@@ -36,9 +40,11 @@ interface UseMessagesReturn {
 
 // Broadcast event types
 interface BroadcastMessage {
-  type: "new_message" | "message_sent" | "message_failed";
+  type: "new_message" | "message_sent" | "message_failed" | "message_edited" | "message_recalled";
   tempId: string;
+  messageId?: string;
   message?: MessageWithSender;
+  newContent?: string;
   error?: string;
   senderId: string;
 }
@@ -394,20 +400,124 @@ export function useMessages({
             prev.filter((m) => m.tempId !== payload.tempId)
           );
           break;
+
+        case "message_edited":
+          // Update message content in server messages
+          if (payload.messageId && payload.newContent !== undefined) {
+            setServerMessages((prev) =>
+              prev.map((m) =>
+                m.id === payload.messageId
+                  ? { ...m, content: payload.newContent!, is_edited: true }
+                  : m
+              )
+            );
+          }
+          break;
+
+        case "message_recalled":
+          // Mark message as deleted
+          if (payload.messageId) {
+            setServerMessages((prev) =>
+              prev.map((m) =>
+                m.id === payload.messageId
+                  ? { ...m, content: "Tin nhắn đã được thu hồi", is_deleted: true }
+                  : m
+              )
+            );
+          }
+          break;
       }
     },
     [conversationId, currentUserId, supabase]
   );
 
-  // Subscribe to Broadcast channel
+  // Edit message with broadcast
+  const editMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      if (!newContent.trim() || !channelRef.current) return;
+
+      // Optimistic update locally
+      setServerMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, content: newContent.trim(), is_edited: true }
+            : m
+        )
+      );
+
+      // Broadcast edit to other users
+      channelRef.current.send({
+        type: "broadcast",
+        event: "message_edited",
+        payload: {
+          type: "message_edited",
+          tempId: "",
+          messageId,
+          newContent: newContent.trim(),
+          senderId: currentUserId,
+        } as BroadcastMessage,
+      });
+
+      // Save to database
+      try {
+        await editMessageAction(messageId, newContent);
+        console.log("✅ Message edited:", messageId);
+      } catch (err) {
+        console.error("❌ Error editing message:", err);
+        // Revert optimistic update could be added here
+        throw err;
+      }
+    },
+    [currentUserId]
+  );
+
+  // Recall message with broadcast
+  const recallMessage = useCallback(
+    async (messageId: string) => {
+      if (!channelRef.current) return;
+
+      // Optimistic update locally
+      setServerMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, content: "Tin nhắn đã được thu hồi", is_deleted: true }
+            : m
+        )
+      );
+
+      // Broadcast recall to other users
+      channelRef.current.send({
+        type: "broadcast",
+        event: "message_recalled",
+        payload: {
+          type: "message_recalled",
+          tempId: "",
+          messageId,
+          senderId: currentUserId,
+        } as BroadcastMessage,
+      });
+
+      // Save to database
+      try {
+        await recallMessageAction(messageId);
+        console.log("✅ Message recalled:", messageId);
+      } catch (err) {
+        console.error("❌ Error recalling message:", err);
+        throw err;
+      }
+    },
+    [currentUserId]
+  );
+
+  // Subscribe to Broadcast + Postgres Realtime channels
   useEffect(() => {
     if (!enabled || !conversationId) return;
 
     // Fetch initial messages from DB
     fetchMessages();
 
-    // Create Broadcast channel for this conversation
-    const channel = supabase.channel(`chat:${conversationId}`, {
+    // Channel 1: Broadcast for user actions (optimistic updates)
+    const broadcastChannel = supabase.channel(`chat:${conversationId}`, {
       config: {
         broadcast: {
           // Receive own broadcasts for consistency
@@ -417,7 +527,7 @@ export function useMessages({
     });
 
     // Listen for broadcast events
-    channel
+    broadcastChannel
       .on("broadcast", { event: "new_message" }, ({ payload }) => {
         handleBroadcastEvent(payload as BroadcastMessage);
       })
@@ -427,15 +537,53 @@ export function useMessages({
       .on("broadcast", { event: "message_failed" }, ({ payload }) => {
         handleBroadcastEvent(payload as BroadcastMessage);
       })
+      .on("broadcast", { event: "message_edited" }, ({ payload }) => {
+        handleBroadcastEvent(payload as BroadcastMessage);
+      })
+      .on("broadcast", { event: "message_recalled" }, ({ payload }) => {
+        handleBroadcastEvent(payload as BroadcastMessage);
+      })
       .subscribe((status) => {
         console.log("[Broadcast] Channel status:", status);
       });
 
-    channelRef.current = channel;
+    // Channel 2: Postgres changes for AI/admin actions
+    const dbChannel = supabase
+      .channel(`db:messages:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          console.log("[DB Update] Message changed:", payload.new.id);
+
+          // Update message in serverMessages (e.g., AI/admin recalled it)
+          // Skip if sender is current user (already handled by broadcast)
+          if (payload.new.sender_id !== currentUserId) {
+            setServerMessages((prev) =>
+              prev.map((m) =>
+                m.id === payload.new.id
+                  ? { ...m, ...payload.new as MessageWithSender }
+                  : m
+              )
+            );
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log("[DB Channel] Status:", status);
+      });
+
+    channelRef.current = broadcastChannel;
 
     return () => {
-      console.log("[Broadcast] Unsubscribing from channel");
-      supabase.removeChannel(channel);
+      console.log("[Realtime] Unsubscribing from channels");
+      supabase.removeChannel(broadcastChannel);
+      supabase.removeChannel(dbChannel);
     };
   }, [conversationId, enabled, fetchMessages, handleBroadcastEvent, supabase]);
 
@@ -445,6 +593,8 @@ export function useMessages({
     error,
     sendMessage,
     retryMessage,
+    editMessage,
+    recallMessage,
     loadMore,
     hasMore,
     isLoadingMore,

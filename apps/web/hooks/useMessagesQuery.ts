@@ -46,10 +46,13 @@ export function messagesQueryOptions(conversationId: string) {
 
 /**
  * Hook for fetching messages with infinite scroll (reverse - load older on scroll up)
+ * Uses placeholderData to show previous conversation data while fetching new one
  */
 export function useMessagesQuery(conversationId: string, enabled = true) {
   return useInfiniteQuery({
     ...messagesQueryOptions(conversationId),
     enabled: enabled && !!conversationId,
+    // Keep previous data while fetching new conversation - smoother transition
+    placeholderData: (previousData) => previousData,
   });
 }

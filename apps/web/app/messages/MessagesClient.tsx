@@ -41,6 +41,11 @@ export function MessagesClient({
   }, [conversationIdParam, initialConversation?.id]);
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  // Optimistic active conversation ID for instant UI switch
+  const [optimisticActiveId, setOptimisticActiveId] = useState<string | null>(null);
+
+  // Use optimistic ID if set, otherwise URL-based ID
+  const displayActiveId = optimisticActiveId || activeConversationId;
 
   // Fetch conversations
   const {
@@ -55,14 +60,14 @@ export function MessagesClient({
   // Global real-time notifications (messages, future: other notifications)
   useRealtimeNotifications({
     currentUserId: currentUser.id,
-    activeConversationId,
+    activeConversationId: displayActiveId,
   });
 
   // Fetch active conversation details (Client Side)
   // We use the hook for realtime updates and consistent API
   // BUT we initialize query data with 'initialConversation' if matches!
   const { conversation: activeConversation, leave } = useConversation(
-    activeConversationId || ""
+    displayActiveId || ""
   );
   
   // NOTE: optimization - we could hydrate the query cache with initialConversation here
@@ -72,13 +77,27 @@ export function MessagesClient({
   // But `activeConversation` from hook might be undefined initially if cache empty.
   // Let's use `activeConversation || (activeConversationId === initialConversation?.id ? initialConversation : undefined)`?
   
-  const displayConversation = activeConversation || (activeConversationId === initialConversation?.id ? initialConversation : null);
+  const displayConversation = activeConversation || (displayActiveId === initialConversation?.id ? initialConversation : null);
+  // Check if we're in optimistic loading state (clicked but data not loaded yet)
+  const isOptimisticLoading = optimisticActiveId !== null && optimisticActiveId !== activeConversationId;
 
-  // Handle selecting a conversation
+  // Handle selecting a conversation - optimistic UI
   const handleSelectConversation = useCallback((id: string) => {
+    // Update optimistic state IMMEDIATELY for instant UI switch
+    setOptimisticActiveId(id);
+    
     // URL is source of truth, router.push updates activeConversationId via useMemo
     router.push(`/messages?conversationId=${id}`);
+    
+    // Clear optimistic state once URL updates (useEffect)
   }, [router]);
+
+  // Clear optimistic state when URL updates
+  // useMemo(() => {
+  //   if (activeConversationId && optimisticActiveId && activeConversationId === optimisticActiveId) {
+  //     setOptimisticActiveId(null);
+  //   }
+  // }, [activeConversationId, optimisticActiveId]);
 
   // Handle creating direct conversation
   const handleCreateDirect = useCallback(
@@ -150,7 +169,7 @@ export function MessagesClient({
           <ConversationList
             conversations={conversations}
             currentUserId={currentUser.id}
-            activeConversationId={activeConversationId || undefined}
+            activeConversationId={displayActiveId || undefined}
             isLoading={isLoadingConversations}
             onSelectConversation={handleSelectConversation}
             onNewConversation={() => setIsCreateDialogOpen(true)}
@@ -159,14 +178,15 @@ export function MessagesClient({
 
         {/* Chat window - main area */}
         <div
-          className={cn("flex-1", !activeConversationId && "hidden md:flex")}
+          className={cn("flex-1", !displayActiveId && "hidden md:flex")}
         >
-          {displayConversation && activeConversationId ? (
+          {displayConversation && displayActiveId ? (
             <ChatWindow
-              key={activeConversationId} // Force remount on change
+              key={displayActiveId} // Force remount on change
               conversation={displayConversation}
               currentUserId={currentUser.id}
               currentUser={currentUser}
+              isInitialLoading={isOptimisticLoading}
               onLeave={handleLeave}
               onAddFriend={handleAddFriend}
               className="w-full"

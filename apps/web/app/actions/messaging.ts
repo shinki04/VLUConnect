@@ -469,16 +469,29 @@ export async function getMessages(
     throw new Error("Not a member of this conversation");
   }
 
+  // Optimized query: select only needed fields
   let query = supabase
     .from("messages")
     .select(
       `
-      *,
-      sender:profiles(*)
+      id,
+      conversation_id,
+      sender_id,
+      content,
+      message_type,
+      created_at,
+      is_edited,
+      is_deleted,
+      sender:profiles!sender_id(
+        id,
+        display_name,
+        username,
+        avatar_url
+      )
     `
     )
     .eq("conversation_id", conversationId)
-    .eq("is_deleted", false)
+    // Don't filter is_deleted - show deleted messages with "thu hồi" status
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -616,4 +629,82 @@ export async function getDirectConversationFriendship(
     isFriends,
     otherUser: otherMember.profile as Tables<"profiles">,
   };
+}
+
+/**
+ * Edit a message (only own messages)
+ */
+export async function editMessage(
+  messageId: string,
+  newContent: string
+): Promise<Message> {
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  if (!newContent.trim()) {
+    throw new Error("Nội dung tin nhắn không được để trống");
+  }
+
+  // Verify ownership
+  const { data: message } = await supabase
+    .from("messages")
+    .select("sender_id, conversation_id")
+    .eq("id", messageId)
+    .single();
+
+  if (!message || message.sender_id !== currentUserId) {
+    throw new Error("Bạn chỉ có thể chỉnh sửa tin nhắn của mình");
+  }
+
+  // Update message
+  const { data, error } = await supabase
+    .from("messages")
+    .update({
+      content: newContent.trim(),
+      is_edited: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", messageId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error editing message:", error);
+    throw new Error("Không thể chỉnh sửa tin nhắn");
+  }
+
+  return data;
+}
+
+/**
+ * Recall/delete a message (soft delete, only own messages)
+ */
+export async function recallMessage(messageId: string): Promise<void> {
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  // Verify ownership
+  const { data: message } = await supabase
+    .from("messages")
+    .select("sender_id")
+    .eq("id", messageId)
+    .single();
+
+  if (!message || message.sender_id !== currentUserId) {
+    throw new Error("Bạn chỉ có thể thu hồi tin nhắn của mình");
+  }
+
+  // Soft delete - keep original content, only mark as deleted
+  const { error } = await supabase
+    .from("messages")
+    .update({
+      is_deleted: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", messageId);
+
+  if (error) {
+    console.error("Error recalling message:", error);
+    throw new Error("Không thể thu hồi tin nhắn");
+  }
 }

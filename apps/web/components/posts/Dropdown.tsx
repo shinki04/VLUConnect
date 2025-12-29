@@ -7,7 +7,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
-import { MoreHorizontalIcon, Pencil, Trash2Icon } from "lucide-react";
+import { Flag, MoreHorizontalIcon, Pencil, Trash2Icon } from "lucide-react";
+import { useState } from "react";
+
+import { ReportDialog } from "@/components/reports/ReportDialog";
 
 interface PostOwnerDropdownProps {
   onDelete: () => void;
@@ -51,20 +54,38 @@ export function PostOwnerDropdown({
   );
 }
 
-export function PostViewerDropdown() {
+interface PostViewerDropdownProps {
+  postId: string;
+}
+
+export function PostViewerDropdown({ postId }: PostViewerDropdownProps) {
+  const [showReportDialog, setShowReportDialog] = useState(false);
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" aria-label="More Options">
-          <MoreHorizontalIcon />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Báo cáo</DropdownMenuItem>
-          <DropdownMenuItem>Archive</DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" aria-label="More Options">
+            <MoreHorizontalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuGroup>
+            <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+              <Flag className="mr-2 h-4 w-4" />
+              Báo cáo
+            </DropdownMenuItem>
+            <DropdownMenuItem>Archive</DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ReportDialog
+        type="post"
+        targetId={postId}
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+      />
+    </>
   );
 }

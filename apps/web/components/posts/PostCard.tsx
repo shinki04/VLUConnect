@@ -106,6 +106,7 @@ export default function PostCard({ post, isPending = false }: PostCardProps) {
 
         <div className="p-4">
           <PostHeader
+            postId={post.id}
             author={post.author}
             createdAt={post.created_at!}
             updatedAt={post.updated_at}

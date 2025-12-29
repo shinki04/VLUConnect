@@ -15,6 +15,7 @@ import {
   saveHashtagsFromContent,
   syncHashtagsForPost,
 } from "./hashtag";
+import { checkBlockedKeywords } from "./keyword";
 
 export async function deletePost(postId: string): Promise<void> {
   const supabase = createServiceClient();
@@ -76,28 +77,45 @@ export async function processPostCreation(payload: PostJobPayload) {
       await updateQueueStatus(payload.queueId, "processing");
     }
 
-    // Step 1: Using AI for sentiment check
-    const sentiment = await sentimentModel(payload.content);
-    console.log("Sentiment: ", sentiment);
-    if (sentiment.length === 0) {
-      throw new Error("Failed to get sentiment");
-    }
-
-    // Find NEG sentiment score
-    const negSentiment = sentiment.find((s) => s.label === "NEG");
-    const negScore = negSentiment?.score ?? 0;
-
-    // Determine moderation status based on NEG score
     let moderationStatus: ModerationStatus = "approved";
     let moderationReason: string | null = null;
+    let keywordMatch: string | null = null;
+    let aiScore = 0;
+    let aiLabel = "NEU";
+    let sentimentResults: any[] = [];
 
-    if (negScore >= 0.9) {
+    // Step 0: Check blocked keywords
+    const matchedKeyword = await checkBlockedKeywords(payload.content, payload.groupId || undefined);
+
+    if (matchedKeyword) {
+      console.log(`🚫 Keyword matched in post: "${matchedKeyword}"`);
       moderationStatus = "rejected";
-      moderationReason = `AI đã phát hiện nội dung tiêu cực với độ tin cậy ${(negScore * 100).toFixed(1)}%`;
-      console.log(`🚫 Post rejected: NEG score ${negScore}`);
-    } else if (negScore > 0.7) {
-      moderationStatus = "flagged";
-      console.log(`⚠️ Post flagged: NEG score ${negScore}`);
+      moderationReason = `Bài viết chứa từ khóa bị chặn: "${matchedKeyword}"`;
+      keywordMatch = matchedKeyword;
+    } else {
+      // Step 1: Using AI for sentiment check ONLY if no keyword block
+      const sentiment = await sentimentModel(payload.content);
+      // console.log("Sentiment: ", sentiment);
+      if (sentiment.length === 0) {
+        throw new Error("Failed to get sentiment");
+      }
+      sentimentResults = sentiment;
+
+      // Find NEG sentiment score
+      const negSentiment = sentiment.find((s) => s.label === "NEG");
+      const negScore = negSentiment?.score ?? 0;
+      aiScore = negScore;
+      aiLabel = sentiment[0]?.label || "UNKNOWN";
+
+      // Determine moderation status based on NEG score
+      if (negScore >= 0.9) {
+        moderationStatus = "rejected";
+        moderationReason = `AI đã phát hiện nội dung tiêu cực với độ tin cậy ${(negScore * 100).toFixed(1)}%`;
+        console.log(`🚫 Post rejected: NEG score ${negScore}`);
+      } else if (negScore > 0.7) {
+        moderationStatus = "flagged";
+        console.log(`⚠️ Post flagged: NEG score ${negScore}`);
+      }
     }
 
     // Step 2: Create post in database
@@ -130,6 +148,49 @@ export async function processPostCreation(payload: PostJobPayload) {
     }
 
     console.log("✅ Post created successfully:", post.id);
+
+    // Step 2.1: Log Moderation Actions
+    if (keywordMatch) {
+      await (supabase.from("moderation_actions") as any).insert({
+        target_type: "post",
+        target_id: post.id,
+        action_type: "keyword_blocked",
+        reason: moderationReason,
+        matched_keyword: keywordMatch,
+        created_by: null, // System
+      });
+    } else if (moderationStatus === "rejected" || moderationStatus === "flagged") {
+      // Log AI action
+      await (supabase.from("moderation_actions") as any).insert({
+        target_type: "post",
+        target_id: post.id,
+        action_type: "ai_flagged",
+        reason: moderationReason || (moderationStatus === "flagged" ? "AI flagged potential issue" : "AI rejected content"),
+        ai_score: aiScore,
+        created_by: null, // System
+      });
+    }
+
+    // Step 2.5: Save AI analysis to logs
+    try {
+      await supabase.from("ai_analysis_logs").insert({
+        target_type: "post",
+        target_id: post.id,
+        model_name: matchedKeyword ? "keyword_filter" : "5CD-AI/Vietnamese-Sentiment-visobert",
+        analysis_type: matchedKeyword ? "keyword_match" : "sentiment",
+        label: matchedKeyword ? "BLOCKED" : aiLabel,
+        score: matchedKeyword ? 1.0 : (sentimentResults[0]?.score || 0),
+        confidence: matchedKeyword ? 1.0 : aiScore,
+        metadata: {
+          all_labels: sentimentResults,
+          matched_keyword: matchedKeyword
+        },
+      });
+      console.log("📊 Analysis logged for post:", post.id);
+    } catch (logError) {
+      console.error("⚠️ Failed to log AI analysis:", logError);
+      // Don't fail post creation if logging fails
+    }
 
     // Step 3: Extract and save hashtags
     try {

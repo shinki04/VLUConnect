@@ -30,3 +30,18 @@ export type PostResponse = {
   } | null;
 };
 
+// Privacy configuration for UI display
+export const PRIVACY_CONFIG = {
+  public: {
+    alt: "Công khai",
+    icon: "Globe",
+  },
+  friends: {
+    alt: "Bạn bè",
+    icon: "Users",
+  },
+  private: {
+    alt: "Riêng tư",
+    icon: "LockKeyhole",
+  },
+} as const;
