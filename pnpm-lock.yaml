@@ -65,39 +65,18 @@ importers:
       '@tailwindcss/line-clamp':
         specifier: ^0.4.4
         version: 0.4.4(tailwindcss@4.1.17)
-      '@tanstack/react-form':
-        specifier: ^1.25.0
-        version: 1.27.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tanstack/react-query':
         specifier: ^5.90.9
         version: 5.90.12(react@19.2.3)
       '@tanstack/react-query-devtools':
         specifier: ^5.90.2
         version: 5.91.1(@tanstack/react-query@5.90.12(react@19.2.3))(react@19.2.3)
-      '@tanstack/react-table':
-        specifier: ^8.21.3
-        version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6
       '@uidotdev/usehooks':
         specifier: ^2.4.1
         version: 2.4.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@uppy/core':
-        specifier: ^5.1.1
-        version: 5.2.0
-      '@uppy/dashboard':
-        specifier: ^5.0.4
-        version: 5.1.0(@uppy/core@5.2.0)
-      '@uppy/locales':
-        specifier: ^5.0.1
-        version: 5.1.0
-      '@uppy/react':
-        specifier: ^5.1.1
-        version: 5.1.1(@uppy/core@5.2.0)(@uppy/dashboard@5.1.0(@uppy/core@5.2.0))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@uppy/tus':
-        specifier: ^5.0.2
-        version: 5.1.0(@uppy/core@5.2.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -134,9 +113,6 @@ importers:
       lucide-react:
         specifier: ^0.548.0
         version: 0.548.0(react@19.2.3)
-      media-chrome:
-        specifier: ^4.16.1
-        version: 4.16.1(react@19.2.3)
       next:
         specifier: 16.0.10
         version: 16.0.10(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -176,9 +152,6 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.17)
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.13
       zustand:
         specifier: ^5.0.8
         version: 5.0.9(@types/react@19.2.7)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
@@ -204,9 +177,6 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.17
-      '@types/amqplib':
-        specifier: ^0.10.8
-        version: 0.10.8
       '@types/node':
         specifier: ^20
         version: 20.19.25
