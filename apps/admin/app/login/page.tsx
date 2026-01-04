@@ -9,7 +9,7 @@ async function LoginPage() {
   const supabase = await createClient();
   // Lấy user hiện tại
   const { data } = await supabase.auth.getUser();
-
+ 
   return (
     <div
       className="relative min-h-screen flex items-center justify-center bg-cover"
@@ -17,7 +17,7 @@ async function LoginPage() {
     >
       <div className="absolute inset-0" aria-hidden="true" />
       <div className="relative z-10 w-full max-w-xl flex flex-col items-center">
-        {!data.user ? <LoginForm /> : <LoggedForm />}
+        {data.user?.app_metadata.global_role !== "admin" ? <LoginForm /> : <LoggedForm />}
 
         {/* {error && (
           <div className="text-red-600 font-medium mt-2">{error.message}</div>

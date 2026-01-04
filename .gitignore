@@ -53,7 +53,6 @@ build
 dist
 
 # Temp
-supabase/*
 temp/*
 sequence-diagram/*
 .idea

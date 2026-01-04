@@ -68,16 +68,16 @@ export function MessageInput({
     if (!content.trim() || disabled || isSending) return;
 
     const messageContent = content.trim();
-    setContent(""); // Clear immediately for optimistic feel
+    // Capture reply info before clearing
+    const replyInfo = replyTo ? { id: replyTo.id, content: replyTo.content, sender: { display_name: replyTo.senderName } } : undefined;
+    
+    // Clear immediately for optimistic feel
+    setContent("");
+    onCancelReply?.(); // Clear reply immediately when Enter is pressed
     setIsSending(true);
 
     try {
-      await onSend(
-        messageContent,
-        replyTo ? { id: replyTo.id, content: replyTo.content, sender: { display_name: replyTo.senderName } } : undefined
-      );
-      // Clear reply after successful send
-      onCancelReply?.();
+      await onSend(messageContent, replyInfo);
     } catch (error) {
       // Restore content if send failed
       setContent(messageContent);

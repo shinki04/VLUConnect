@@ -19,10 +19,19 @@ interface PostDetailDialogProps {
   post: PostResponse;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentUser?: User; 
+  currentUser?: User;
+  allowAnonymousComments?: boolean;
+  isGlobalAdmin?: boolean;
 }
 
-export default function PostDetailDialog({ post, open, onOpenChange, currentUser }: PostDetailDialogProps) {
+export default function PostDetailDialog({ 
+  post, 
+  open, 
+  onOpenChange, 
+  currentUser, 
+  allowAnonymousComments = false,
+  isGlobalAdmin = false 
+}: PostDetailDialogProps) {
   const isOwner = currentUser?.id === post.author.id;
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -101,12 +110,12 @@ export default function PostDetailDialog({ post, open, onOpenChange, currentUser
             </div>
 
             <div className="mt-2">
-                <CommentSection postId={post.id} />
+                <CommentSection postId={post.id} isGlobalAdmin={isGlobalAdmin} />
             </div>
         </div>
         
         {/* Comment Input - Sticky at bottom, separate from list */}
-        <CommentInput postId={post.id} />
+        <CommentInput postId={post.id} allowAnonymousComments={allowAnonymousComments} />
       </DialogContent>
     </Dialog>
   );

@@ -2,7 +2,7 @@ import { createServerClient, Database } from "@repo/supabase/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  const publicPaths = ["/", "/login", "/auth/callback"];
+  const publicPaths = ["/", "/login", "/auth/callback", "/account-banned"];
 
   // Nếu request nằm trong public path → bỏ qua check user
   const isPublic = publicPaths.some(
@@ -46,12 +46,12 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
 
   const user = data?.claims;
+  // console.log("METADATA", user);
 
-  if (!user && !isPublic) {
+  if (!user && !isPublic) { 
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-
     const res = NextResponse.redirect(url);
     res.cookies.set("access_error", "Bạn không có quyền truy cập", {
       path: "/",
@@ -62,24 +62,34 @@ export async function updateSession(request: NextRequest) {
     return res;
   }
 
-  // Check role admin nếu truy cập /admin
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    const role = user?.app_metadata?.global_role; // custom claims
-    if (role !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard"; // redirect nếu không phải admin
-      const res = NextResponse.redirect(url);
-
-      // Set cookie tạm để gửi message
-      res.cookies.set("access_error", "Bạn không có quyền truy cập", {
-        path: "/",
-        httpOnly: false, // client đọc được
-        sameSite: "lax",
-        maxAge: 10, // 10 giây là đủ
-      });
-      return res;
-    }
+  if (user?.app_metadata?.global_role === "banned" && request.nextUrl.pathname !== "/account-banned") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/account-banned";
+    return NextResponse.redirect(url);
   }
+
+
+
+  // Check role admin nếu truy cập /admin
+  // if (request.nextUrl.pathname.startsWith("/admin")) {
+  //   const role = user?.app_metadata?.global_role; // custom claims
+  //   if (role !== "admin") {
+  //     const url = request.nextUrl.clone();
+  //     url.pathname = "/dashboard"; // redirect nếu không phải admin
+  //     const res = NextResponse.redirect(url);
+
+  //     // Set cookie tạm để gửi message
+  //     res.cookies.set("access_error", "Bạn không có quyền truy cập", {
+  //       path: "/",
+  //       httpOnly: false, // client đọc được
+  //       sameSite: "lax",
+  //       maxAge: 10, // 10 giây là đủ
+  //     });
+  //     return res;
+  //   }
+  // }
+
+
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:

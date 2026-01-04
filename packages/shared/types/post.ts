@@ -22,6 +22,7 @@ export type PostResponse = {
   share_count: number | null;
   is_liked_by_viewer?: boolean;
   privacy_level: privacyPost;
+  is_anonymous?: boolean | null; // Anonymous post flag
   group_id?: string | null;
   group?: {
     id: string;

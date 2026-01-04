@@ -23,9 +23,10 @@ import ReadMore from "./ReadMore";
 interface PostCardProps {
   post: PostResponse;
   isPending?: boolean;
+  allowAnonymousComments?: boolean;
 }
 
-export default function PostCard({ post, isPending = false }: PostCardProps) {
+export default function PostCard({ post, isPending = false, allowAnonymousComments = false }: PostCardProps) {
   const { mutate: mutateDelete } = useDeletePost();
   const currentUser = useGetCurrentUser();
 
@@ -115,6 +116,8 @@ export default function PostCard({ post, isPending = false }: PostCardProps) {
             onDelete={() => setOpenAlert(true)}
             onUpdate={() => setOpenEditDialog(true)}
             group={post.group}
+            isAnonymous={post.is_anonymous ?? false}
+            isGlobalAdmin={currentUser.data?.global_role === "admin"}
           />
 
           <div className="mb-3">
@@ -144,6 +147,8 @@ export default function PostCard({ post, isPending = false }: PostCardProps) {
         open={showDetailDialog}
         onOpenChange={setShowDetailDialog}
         currentUser={currentUser.data}
+        allowAnonymousComments={allowAnonymousComments}
+        isGlobalAdmin={currentUser.data?.global_role === "admin"}
       />
 
       {showGalleryModal && (

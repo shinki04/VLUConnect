@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useDebounce } from "@uidotdev/usehooks";
 import { Loader2, Search } from "lucide-react";
 import React from "react";
-import { useInView } from "react-intersection-observer";
+import { Virtuoso } from "react-virtuoso";
 
 import { useComments } from "@/hooks/usePostInteractions";
 import { SortBy, useCommentStore } from "@/stores/commentStore";
@@ -12,9 +12,15 @@ import { Comment, CommentItem } from "./CommentItem";
 
 interface CommentSectionProps {
   postId: string;
+  isGlobalAdmin?: boolean;
 }
 
-export function CommentSection({ postId }: CommentSectionProps) {
+/**
+ * Virtualized comments section
+ * Only root-level comments are virtualized, children are rendered normally within CommentItem
+ * This preserves the expand/collapse UX while improving performance for long lists
+ */
+export function CommentSection({ postId, isGlobalAdmin = false }: CommentSectionProps) {
   const filters = useCommentStore((state) => state.getFilters(postId));
   const setSearch = useCommentStore((state) => state.setSearch);
   const setSortBy = useCommentStore((state) => state.setSortBy);
@@ -32,20 +38,13 @@ export function CommentSection({ postId }: CommentSectionProps) {
       hasNextPage, 
       isFetchingNextPage 
   } = useComments(postId, debouncedSearch, filters.sortBy);
-
-  const { ref, inView } = useInView();
-
-  React.useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
   
   const rawComments = React.useMemo(() => {
       const flat = commentsData?.pages.flatMap(page => page.comments) || [];
       return flat;
   }, [commentsData]);
 
+  // Build tree structure for root comments only
   const commentTree = React.useMemo(() => {
     const map = new Map<string, Comment>();
     const roots: Comment[] = [];
@@ -62,24 +61,36 @@ export function CommentSection({ postId }: CommentSectionProps) {
         if (node.parent_id && map.has(node.parent_id)) {
             map.get(node.parent_id)!.children!.push(node);
         } else {
-            if (debouncedSearch) {
-                roots.push(node);
-            } else {
-                if (!node.parent_id) roots.push(node);
-            }
+            roots.push(node);
         }
     });
 
+    // In search mode, show all matching comments flat
     return debouncedSearch ? nodes : roots;
   }, [rawComments, debouncedSearch]);
   
-  const handleDelete = (commentId: string) => {
+  const handleDelete = React.useCallback((commentId: string) => {
       removeComment(commentId); 
-  };
+  }, [removeComment]);
 
-  const handleReply = (authorName: string, parentId: string) => {
+  const handleReply = React.useCallback((authorName: string, parentId: string) => {
       setReplyTo(postId, { name: authorName, parentId });
-  };
+  }, [postId, setReplyTo]);
+
+  const handleEdit = React.useCallback((id: string, content: string) => {
+      editComment({ commentId: id, content });
+  }, [editComment]);
+
+  const handleLike = React.useCallback((id: string, isLiked: boolean) => {
+      toggleLike({ commentId: id, isLiked });
+  }, [toggleLike]);
+
+  // Handle infinite scroll
+  const handleEndReached = React.useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="space-y-4">
@@ -109,7 +120,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
            </div>
        </div>
 
-       <div className="space-y-4">
+       <div>
            {isLoading && !rawComments.length && (
                <div className="flex justify-center p-4">
                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -124,23 +135,34 @@ export function CommentSection({ postId }: CommentSectionProps) {
                </div>
            )}
 
-           {/* Comments List */}
-           {commentTree.map((comment) => (
-               <CommentItem 
-                 key={comment.id} 
-                 comment={comment} 
-                 onReply={handleReply} 
-                 onDelete={handleDelete}
-                 onEdit={(id, content) => editComment({ commentId: id, content })}
-                 onLike={(id, isLiked) => toggleLike({ commentId: id, isLiked })}
-               />
-           ))}
-
-           {/* Load More at Bottom */}
-           {hasNextPage && (
-               <div ref={ref} className="flex justify-center pt-2 pb-4">
-                   <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-               </div>
+           {/* Virtualized Root Comments - children rendered normally within each CommentItem */}
+           {commentTree.length > 0 && (
+             <Virtuoso
+               useWindowScroll
+               data={commentTree}
+               endReached={handleEndReached}
+               overscan={100}
+               components={{
+                 Footer: () =>
+                   isFetchingNextPage ? (
+                     <div className="flex justify-center pt-2 pb-4">
+                       <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                     </div>
+                   ) : null,
+               }}
+               itemContent={(_, comment) => (
+                 <div className="py-2">
+                   <CommentItem 
+                     comment={comment} 
+                     onReply={handleReply} 
+                     onDelete={handleDelete}
+                     onEdit={handleEdit}
+                     onLike={handleLike}
+                     isGlobalAdmin={isGlobalAdmin}
+                   />
+                 </div>
+               )}
+             />
            )}
        </div>
     </div>

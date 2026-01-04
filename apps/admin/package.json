@@ -24,12 +24,12 @@
     "@repo/supabase": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tailwindcss/line-clamp": "^0.4.4",
+    "@tanstack/react-query": "^5.90.9",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/js-cookie": "^3.0.6",
     "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-      "@tanstack/react-query": "^5.90.9",
-      "@tanstack/react-query-devtools": "^5.90.2",
     "cmdk": "^1.1.1",
     "concurrently": "^9.2.1",
     "date-fns": "^4.1.0",
@@ -53,7 +53,6 @@
     "styled-jsx": "^5.1.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -68,6 +67,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "babel-plugin-react-compiler": "^1.0.0",
     "baseline-browser-mapping": "^2.8.32",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.1",

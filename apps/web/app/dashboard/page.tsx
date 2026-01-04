@@ -8,7 +8,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import Tepm from "@/components/dashboard/temp";
-import AddPost from "@/components/posts/add";
+import AddPost from "@/components/posts/AddPost";
 import ListPosts from "@/components/posts/ListPosts";
 import PendingPost from "@/components/posts/PendingPost";
 

@@ -1,9 +1,11 @@
 "use client";
 
 import { Button } from "@repo/ui/components/button";
+import { Label } from "@repo/ui/components/label";
+import { Switch } from "@repo/ui/components/switch";
 import { Textarea } from "@repo/ui/components/textarea"; 
 import { useDebounce } from "@uidotdev/usehooks";
-import { Loader2, SendHorizontal } from "lucide-react";
+import { EyeOff, Loader2, SendHorizontal } from "lucide-react";
 import React, { useRef, useState } from "react";
 
 import { useComments } from "@/hooks/usePostInteractions";
@@ -11,9 +13,10 @@ import { useCommentStore } from "@/stores/commentStore";
 
 interface CommentInputProps {
   postId: string;
+  allowAnonymousComments?: boolean;
 }
 
-export function CommentInput({ postId }: CommentInputProps) {
+export function CommentInput({ postId, allowAnonymousComments = false }: CommentInputProps) {
   const replyTo = useCommentStore((state) => state.replyTargets[postId]);
   const clearReplyTo = useCommentStore((state) => state.clearReplyTo);
   const filters = useCommentStore((state) => state.getFilters(postId));
@@ -23,6 +26,7 @@ export function CommentInput({ postId }: CommentInputProps) {
   const { sendComment, isSending } = useComments(postId, debouncedSearch, filters.sortBy);
   
   const [content, setContent] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Focus input when replyTo changes
@@ -36,12 +40,14 @@ export function CommentInput({ postId }: CommentInputProps) {
       if (!content.trim()) return;
       
       const currentContent = content;
+      const currentIsAnonymous = isAnonymous;
       
       // Clear immediately
       setContent("");
+      setIsAnonymous(false);
       clearReplyTo(postId);
       
-      sendComment({ content: currentContent, parentId: replyTo?.parentId }, {
+      sendComment({ content: currentContent, parentId: replyTo?.parentId, isAnonymous: currentIsAnonymous }, {
           onSuccess: () => {},
           onError: () => {
               setContent(currentContent);
@@ -57,6 +63,24 @@ export function CommentInput({ postId }: CommentInputProps) {
                    <button onClick={() => clearReplyTo(postId)} className="hover:text-red-500 font-medium">Hủy</button>
                </div>
            )}
+           
+           {/* Anonymous comment toggle */}
+           {allowAnonymousComments && (
+             <div className="flex items-center justify-between p-2 mb-2 bg-muted/30 rounded-lg">
+               <div className="flex items-center gap-2">
+                 <EyeOff className="w-3 h-3 text-muted-foreground" />
+                 <Label htmlFor="comment-anon" className="text-xs cursor-pointer">
+                   Bình luận ẩn danh
+                 </Label>
+               </div>
+               <Switch
+                 id="comment-anon"
+                 checked={isAnonymous}
+                 onCheckedChange={setIsAnonymous}
+               />
+             </div>
+           )}
+           
            <div className="flex gap-2 items-end">
                <Textarea 
                  ref={inputRef}

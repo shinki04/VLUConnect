@@ -107,7 +107,8 @@ export async function sharePost(postId: string) {
 export async function addComment(
   postId: string,
   content: string,
-  parentId?: string
+  parentId?: string,
+  isAnonymous?: boolean
 ) {
   const supabase = await createClient();
   const {
@@ -123,6 +124,7 @@ export async function addComment(
       user_id: user.id,
       content,
       parent_id: parentId || null,
+      is_anonymous: isAnonymous ?? false,
     })
     .select(`
       *,

@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     },
     proxyClientMaxBodySize: "50mb",
   },
+  reactCompiler: true,
   images: {
     loaderFile: "./lib/supabase/supabase-image-loader.ts",
     remotePatterns: [

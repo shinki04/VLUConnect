@@ -38,15 +38,13 @@ export async function signInWithAzure() {
     provider: "azure",
     options: {
       redirectTo: `${origin}/auth/callback`,
-      // scopes: "email",
       scopes: "openid profile email User.Read",
     },
   });
-
   if (error) {
     redirect("/error");
   }
-
+  console.log(data);
   revalidatePath("/", "layout");
 
   if (data.url) {

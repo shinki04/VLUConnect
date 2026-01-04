@@ -5,8 +5,9 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@repo/ui/components/avatar";
+import { Badge } from "@repo/ui/components/badge";
 import { formatPostDate } from "@repo/utils/formatDate";
-import { Globe, LockKeyhole, Users } from "lucide-react";
+import { EyeOff, Globe, LockKeyhole, Users } from "lucide-react";
 import Link from "next/link";
 
 import { PostOwnerDropdown, PostViewerDropdown } from "./Dropdown";
@@ -16,6 +17,8 @@ const PRIVACY_ICONS = {
   Users,
   LockKeyhole,
 } as const;
+
+const ANONYMOUS_AVATAR = "https://api.dicebear.com/7.x/shapes/svg?seed=anonymous";
 
 interface PostHeaderProps {
   postId: string;
@@ -37,6 +40,8 @@ interface PostHeaderProps {
     name: string;
     slug: string;
   } | null;
+  isAnonymous?: boolean;
+  isGlobalAdmin?: boolean;
 }
 
 
@@ -51,6 +56,8 @@ export default function PostHeader({
   onDelete,
   onUpdate,
   group,
+  isAnonymous = false,
+  isGlobalAdmin = false,
 }: PostHeaderProps) {
   const displayTime = updatedAt || createdAt;
   const formattedDate = formatPostDate(displayTime);
@@ -59,24 +66,41 @@ export default function PostHeader({
   const privacy = PRIVACY_CONFIG[privacyLevel];
   const PrivacyIcon = PRIVACY_ICONS[privacy.icon as keyof typeof PRIVACY_ICONS];
 
+  // Determine display values based on anonymous status
+  const shouldHideIdentity = isAnonymous && !isGlobalAdmin;
+  const displayName = shouldHideIdentity ? "Thành viên ẩn danh" : (author?.display_name || author?.username);
+  const displayAvatar = shouldHideIdentity ? ANONYMOUS_AVATAR : (author?.avatar_url || "/next.svg");
+  const profileLink = shouldHideIdentity ? null : `/profile/${author?.username}`;
+
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center space-x-3">
         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
           <Avatar>
             <AvatarImage
-              src={author?.avatar_url || "/next.svg"}
-              alt={author?.display_name || author?.username || "User Avatar"}
+              src={displayAvatar}
+              alt={displayName || "User Avatar"}
             />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{shouldHideIdentity ? "?" : "U"}</AvatarFallback>
           </Avatar>
         </div>
         <div>
           {/* Author name with optional group context - like Facebook style */}
-          <p className="font-semibold text-sm">
-            <Link href={`/profile/${author?.username}`} className="hover:underline">
-              {author?.display_name || author?.username}
-            </Link>
+          <div className="font-semibold text-sm flex items-center gap-1 flex-wrap">
+            {profileLink ? (
+              <Link href={profileLink} className="hover:underline">
+                {displayName}
+              </Link>
+            ) : (
+              <span className="text-muted-foreground">{displayName}</span>
+            )}
+            {/* Show badge for global admin viewing anonymous post */}
+            {isAnonymous && isGlobalAdmin && (
+              <Badge variant="outline" className="text-xs ml-1 gap-1">
+                <EyeOff className="w-3 h-3" />
+                Ẩn danh
+              </Badge>
+            )}
             {group && (
               <>
                 <span className="text-muted-foreground font-normal mx-1">đã đăng trong</span>
@@ -85,7 +109,7 @@ export default function PostHeader({
                 </Link>
               </>
             )}
-          </p>
+          </div>
           <div className="flex flex-row items-center gap-1">
             <p className="text-xs text-gray-500">
               {formattedDate}

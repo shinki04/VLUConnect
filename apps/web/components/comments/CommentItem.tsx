@@ -26,6 +26,7 @@ export interface Comment {
     like_count: number;
     reply_count: number;
     is_liked?: boolean;
+    is_anonymous?: boolean | null;
     created_at: string | null;
     updated_at: string | null;
     parent_id: string | null;
@@ -39,6 +40,8 @@ export interface Comment {
     children?: Comment[];
 }
 
+const ANONYMOUS_AVATAR = "https://api.dicebear.com/7.x/shapes/svg?seed=anonymous-comment";
+
 interface CommentItemProps {
     comment: Comment;
     onReply: (authorName: string, parentId: string) => void;
@@ -46,12 +49,13 @@ interface CommentItemProps {
     onEdit: (commentId: string, content: string) => void;
     onLike: (commentId: string, isLiked: boolean) => void;
     depth?: number;
+    isGlobalAdmin?: boolean;
 }
 
 // Configuration: number of replies to show before collapsing
 const REPLIES_THRESHOLD = 2;
 
-export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth = 0 }: CommentItemProps) {
+export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth = 0, isGlobalAdmin = false }: CommentItemProps) {
     const { data: currentUser } = useGetCurrentUser();
     const isOwner = currentUser?.id === comment.user_id;
     const [isEditing, setIsEditing] = useState(false);
@@ -59,6 +63,13 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
     const [openAlert, setOpenAlert] = useState(false);
     const [showReplies, setShowReplies] = useState(false);
     const [showReportDialog, setShowReportDialog] = useState(false);
+
+    // Anonymous display logic
+    const isAnonymousComment = comment.is_anonymous ?? false;
+    const shouldHideIdentity = isAnonymousComment && !isGlobalAdmin;
+    const displayName = shouldHideIdentity ? "Thành viên ẩn danh" : (comment.author.display_name || comment.author.username);
+    const displayAvatar = shouldHideIdentity ? ANONYMOUS_AVATAR : (comment.author.avatar_url || "");
+    const avatarFallback = shouldHideIdentity ? "?" : (comment.author.username?.[0]?.toUpperCase());
 
     const dateToUse = comment.updated_at || comment.created_at || new Date().toISOString();
     const timeAgo = formatDistanceToNow(new Date(dateToUse), { addSuffix: true, locale: vi });
@@ -76,15 +87,18 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
     return (
         <div className="flex gap-3">
             <Avatar className="w-8 h-8 cursor-pointer shrink-0">
-                <AvatarImage src={comment.author.avatar_url || ""} />
-                <AvatarFallback>{comment.author.username?.[0]?.toUpperCase()}</AvatarFallback>
+                <AvatarImage src={displayAvatar} />
+                <AvatarFallback>{avatarFallback}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
                     <div className="group">
                         <div className="bg-muted/50 dark:bg-muted/30 rounded-2xl px-3 py-2 w-fit max-w-full">
                             <div className="flex flex-col w-full">
-                                <span className="font-semibold text-sm cursor-pointer hover:underline mb-1">
-                                    {comment.author.display_name || comment.author.username}
+                                <span className={`font-semibold text-sm ${shouldHideIdentity ? '' : 'cursor-pointer hover:underline'} mb-1`}>
+                                    {displayName}
+                                    {isAnonymousComment && isGlobalAdmin && (
+                                        <span className="ml-1 text-xs text-muted-foreground">(Ẩn danh)</span>
+                                    )}
                                 </span>
                                 {isEditing ? (
                                     <div className="w-full mt-1">
@@ -151,7 +165,7 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
 
                             <span 
                                 className="text-xs font-semibold cursor-pointer hover:underline text-muted-foreground"
-                                onClick={() => onReply(comment.author.display_name || comment.author.username, comment.id)}
+                                onClick={() => onReply(displayName, comment.id)}
                             >
                                 Trả lời
                             </span>
@@ -213,6 +227,7 @@ export function CommentItem({ comment, onReply, onDelete, onEdit, onLike, depth 
                                         onEdit={onEdit}
                                         onLike={onLike}
                                         depth={depth + 1}
+                                        isGlobalAdmin={isGlobalAdmin}
                                     />
                                 ))}
                                 

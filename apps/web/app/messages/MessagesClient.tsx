@@ -58,7 +58,7 @@ export function MessagesClient({
   } = useConversations();
 
   // Global real-time notifications (messages, future: other notifications)
-  useRealtimeNotifications({
+  const { markConversationAsRead } = useRealtimeNotifications({
     currentUserId: currentUser.id,
     activeConversationId: displayActiveId,
   });
@@ -173,6 +173,7 @@ export function MessagesClient({
             isLoading={isLoadingConversations}
             onSelectConversation={handleSelectConversation}
             onNewConversation={() => setIsCreateDialogOpen(true)}
+            onMarkAsRead={markConversationAsRead}
           />
         </div>
 

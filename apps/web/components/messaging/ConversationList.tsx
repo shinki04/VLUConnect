@@ -5,8 +5,9 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { ConversationItem, ConversationListEmpty } from "./ConversationItem";
 
@@ -17,11 +18,15 @@ interface ConversationListProps {
   isLoading?: boolean;
   onSelectConversation: (id: string) => void;
   onNewConversation?: () => void;
+  onMarkAsRead?: (conversationId: string) => void;
   className?: string;
 }
 
+// Fixed height for conversation items
+const ITEM_HEIGHT = 72;
+
 /**
- * List of conversations with search and new conversation button
+ * Virtualized list of conversations with search and new conversation button
  */
 export function ConversationList({
   conversations,
@@ -30,9 +35,11 @@ export function ConversationList({
   isLoading = false,
   onSelectConversation,
   onNewConversation,
+  onMarkAsRead,
   className,
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Filter conversations by search query
   const filteredConversations = useMemo(() => {
@@ -59,6 +66,16 @@ export function ConversationList({
       return false;
     });
   }, [conversations, searchQuery]);
+
+  // Setup virtualizer
+  const virtualizer = useVirtualizer({
+    count: filteredConversations.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ITEM_HEIGHT,
+    overscan: 5,
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
@@ -93,8 +110,8 @@ export function ConversationList({
         </div>
       </div>
 
-      {/* Conversations list */}
-      <div className="flex-1 overflow-y-auto p-2">
+      {/* Virtualized conversations list */}
+      <div ref={parentRef} className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
           <ConversationListSkeleton />
         ) : filteredConversations.length === 0 ? (
@@ -106,16 +123,37 @@ export function ConversationList({
             <ConversationListEmpty />
           )
         ) : (
-          <div className="space-y-1">
-            {filteredConversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                currentUserId={currentUserId}
-                isActive={conversation.id === activeConversationId}
-                onClick={() => onSelectConversation(conversation.id)}
-              />
-            ))}
+          <div
+            style={{
+              height: virtualizer.getTotalSize(),
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {virtualItems.map((virtualItem) => {
+              const conversation = filteredConversations[virtualItem.index]!;
+              return (
+                <div
+                  key={conversation.id}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                >
+                  <ConversationItem
+                    conversation={conversation}
+                    currentUserId={currentUserId}
+                    isActive={conversation.id === activeConversationId}
+                    onClick={() => onSelectConversation(conversation.id)}
+                    onMarkAsRead={onMarkAsRead}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

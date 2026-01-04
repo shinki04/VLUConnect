@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { conversationKeys } from "./useConversations";
+import { markAsRead } from "@/app/actions/messaging";
 
 interface UseRealtimeNotificationsOptions {
   currentUserId: string;
@@ -82,10 +83,15 @@ export function useRealtimeNotifications({
     );
   }, [queryClient]);
 
-  // Clear unread when active conversation changes
+  // Mark as read when active conversation changes (BOTH cache and server)
   useEffect(() => {
     if (activeConversationId) {
+      // Immediately clear cache for instant UI feedback
       clearUnreadCount(activeConversationId);
+      // Persist to server so it survives refetch
+      markAsRead(activeConversationId).catch((error) => {
+        console.error("[RealtimeNotifications] Error marking conversation as read:", error);
+      });
     }
   }, [activeConversationId, clearUnreadCount]);
 
@@ -173,5 +179,20 @@ export function useRealtimeNotifications({
     };
   }, [currentUserId, enabled, queryClient, supabase]);
 
-  return { clearUnreadCount };
+  // Mark conversation as read (both server and cache)
+  const markConversationAsRead = useCallback(async (conversationId: string) => {
+    try {
+      // Optimistically clear cache first for instant UI update
+      clearUnreadCount(conversationId);
+      // Then persist to server
+      await markAsRead(conversationId);
+      console.log("[RealtimeNotifications] Successfully marked as read:", conversationId);
+    } catch (error) {
+      console.error("[RealtimeNotifications] Error marking as read:", error);
+      // Refetch conversations to revert optimistic update on failure
+      queryClient.invalidateQueries({ queryKey: conversationKeys.list() });
+    }
+  }, [clearUnreadCount, queryClient]);
+
+  return { clearUnreadCount, markConversationAsRead };
 }

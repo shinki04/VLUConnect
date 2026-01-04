@@ -5,10 +5,11 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@repo/ui"],
   experimental: {
     serverActions: {
-      bodySizeLimit: "50mb", // Increase for file uploads
+      bodySizeLimit: "10mb", // Increase for file uploads
     },
-    proxyClientMaxBodySize: "50mb",
+    proxyClientMaxBodySize: "10mb",
   },
+  reactCompiler: true,
   images: {
     loaderFile: "./lib/supabase/supabase-image-loader.ts",
     remotePatterns: [
@@ -17,6 +18,15 @@ const nextConfig: NextConfig = {
         protocol: "https",
       },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/dashboard',
+        permanent: true,
+      },
+    ]
   },
 };
 

@@ -22,6 +22,7 @@ export interface PostJobPayload {
   queueStatus?: PostQueueStatus;
   queueOperations?: PostQueueOperations;
   groupId?: string | null; // Group ID for group posts
+  isAnonymous?: boolean; // Anonymous posting flag
 }
 
 export interface UpdatePostJobPayload {

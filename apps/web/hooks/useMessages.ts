@@ -226,6 +226,8 @@ export function useMessages({
           } as BroadcastMessage,
         });
 
+        // Mark as read after sending (ensures unread count is 0 for sender)
+        await markAsRead(conversationId);
         // Update local state: remove optimistic, add server message with reply_to preserved
         setOptimisticMessages((prev) =>
           prev.filter((m) => m.tempId !== tempId)

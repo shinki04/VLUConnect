@@ -99,6 +99,7 @@ export async function fetchPosts(
       comment_count,
       share_count,
       privacy_level,
+      is_anonymous,
       group_id,
       group: groups!group_id(
         id,
@@ -238,7 +239,8 @@ export async function fetchPostById(postId: string) {
           like_count,
           comment_count,
           share_count,
-          privacy_level
+          privacy_level,
+          is_anonymous
           `
       )
       .eq("id", postId)
@@ -332,7 +334,8 @@ export async function fetchPostByAuthor(
       like_count,
       comment_count,
       share_count,
-      privacy_level
+      privacy_level,
+      is_anonymous
       `
     )
     .eq("author_id", authorId)

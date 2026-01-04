@@ -128,6 +128,7 @@ export async function processPostCreation(payload: PostJobPayload) {
         privacy_level: payload.privacyLevel,
         media_urls: payload.media_urls || [],
         moderation_status: moderationStatus,
+        is_anonymous: payload.isAnonymous ?? false,
         ...(moderationReason && { moderation_reason: moderationReason }),
         ...(payload.groupId && { group_id: payload.groupId }),
       })

@@ -618,6 +618,7 @@ export async function getGroupPosts(groupId: string, page = 1, pageSize = 10) {
       comment_count,
       share_count,
       privacy_level,
+      is_anonymous,
       group_id,
       group:groups!group_id(
         id,

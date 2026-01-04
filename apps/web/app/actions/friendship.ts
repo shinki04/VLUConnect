@@ -408,3 +408,62 @@ export async function unblockUser(targetUserId: string): Promise<void> {
 
   revalidatePath(`/profile/${targetUserId}`);
 }
+
+/**
+ * Search friends by display_name or username for @mention
+ */
+export async function searchFriendsForMention(query: string) {
+  if (!query || query.length < 1) return [];
+
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  // Get all friends
+  const { data: friendships, error } = await supabase
+    .from("friendships")
+    .select(
+      `
+      requester_id,
+      addressee_id,
+      requester:profiles!friendships_requester_id_fkey(id, display_name, username, avatar_url),
+      addressee:profiles!friendships_addressee_id_fkey(id, display_name, username, avatar_url)
+    `
+    )
+    .or(`requester_id.eq.${currentUserId},addressee_id.eq.${currentUserId}`)
+    .eq("status", "friends");
+
+  if (error) {
+    console.error("Error searching friends for mention:", error);
+    throw new Error("Failed to search friends");
+  }
+
+  if (!friendships) return [];
+
+  // Extract friend profiles and filter by query
+  const lowerQuery = query.toLowerCase();
+  const friends = friendships
+    .map((f) => {
+      if (f.requester_id === currentUserId) {
+        return f.addressee as {
+          id: string;
+          display_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+        };
+      }
+      return f.requester as {
+        id: string;
+        display_name: string | null;
+        username: string | null;
+        avatar_url: string | null;
+      };
+    })
+    .filter((friend) => {
+      const name = friend.display_name?.toLowerCase() || "";
+      const username = friend.username?.toLowerCase() || "";
+      return name.includes(lowerQuery) || username.includes(lowerQuery);
+    })
+    .slice(0, 5); // Limit to 5 results
+
+  return friends;
+}

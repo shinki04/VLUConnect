@@ -17,7 +17,7 @@ import type { GroupMember, GroupWithDetails } from "@/app/actions/group";
 import { BlockedKeywordsForm } from "@/components/groups/blocked-keywords-form";
 import { GroupSettingsForm } from "@/components/groups/group-settings-form";
 import { MemberList } from "@/components/groups/member-list";
-import AddPost from "@/components/posts/add";
+import AddPost from "@/components/posts/AddPost";
 import PendingPost from "@/components/posts/PendingPost";
 import PostCard from "@/components/posts/PostCard";
 import { useGetCurrentUser } from "@/hooks/useAuth";
@@ -158,7 +158,11 @@ export function GroupContent({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {isActiveMember && currentUser && (
-                <AddPost currentUser={currentUser} groupId={group.id} />
+                <AddPost 
+                  currentUser={currentUser} 
+                  groupId={group.id} 
+                  allowAnonymousPosts={group.allow_anonymous_posts ?? false}
+                />
               )}
 
               {/* Pending posts */}
@@ -175,7 +179,11 @@ export function GroupContent({
               ) : (
                 <>
                   {posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
+                    <PostCard 
+                      key={post.id} 
+                      post={post} 
+                      allowAnonymousComments={group.allow_anonymous_comments ?? false}
+                    />
                   ))}
                   
                   {/* Load more trigger */}
