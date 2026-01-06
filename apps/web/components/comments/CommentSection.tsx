@@ -1,7 +1,7 @@
 import { Input } from "@repo/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ui/components/select";
 import { useDebounce } from "@uidotdev/usehooks";
-import { Loader2, Search } from "lucide-react";
+import { AlertCircle, Loader2, Search } from "lucide-react";
 import React from "react";
 import { Virtuoso } from "react-virtuoso";
 
@@ -30,7 +30,8 @@ export function CommentSection({ postId, isGlobalAdmin = false }: CommentSection
 
   const { 
       commentsData, 
-      isLoading, 
+      isLoading,
+      error,
       removeComment, 
       editComment,
       toggleLike,
@@ -127,7 +128,17 @@ export function CommentSection({ postId, isGlobalAdmin = false }: CommentSection
                </div>
            )}
            
-           {!isLoading && rawComments.length === 0 && (
+           {error && (
+               <div className="py-8 text-center text-destructive">
+                   <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+                   <p className="font-medium">Không thể tải bình luận</p>
+                   <p className="text-sm text-muted-foreground mt-1">
+                       {error instanceof Error ? error.message : 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'}
+                   </p>
+               </div>
+           )}
+
+           {!isLoading && !error && rawComments.length === 0 && (
                <div className="py-8 text-center text-muted-foreground">
                    {debouncedSearch ? 
                     <p>Không tìm thấy bình luận nào.</p> : 

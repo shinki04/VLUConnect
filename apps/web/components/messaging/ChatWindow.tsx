@@ -2,10 +2,9 @@
 
 import { Tables } from "@repo/shared/types/database.types";
 import type {
+  ConversationWithDetails,
   MessageWithSender,
-  OptimisticMessage,
-  ConversationWithDetails
-} from "@repo/shared/types/messaging";
+  OptimisticMessage} from "@repo/shared/types/messaging";
 import {
   Avatar,
   AvatarFallback,

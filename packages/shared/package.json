@@ -6,7 +6,8 @@
     "access": "public"
   },
   "exports": {
-    "./types/*": "./types/*.ts"
+    "./types/*": "./types/*.ts",
+    "./queryKeys": "./queryKeys.ts"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"

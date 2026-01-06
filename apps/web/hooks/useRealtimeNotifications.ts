@@ -5,8 +5,9 @@ import type { RealtimePostgresInsertPayload } from "@repo/supabase/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
-import { conversationKeys } from "./useConversations";
 import { markAsRead } from "@/app/actions/messaging";
+
+import { conversationKeys } from "./useConversations";
 
 interface UseRealtimeNotificationsOptions {
   currentUserId: string;
@@ -41,6 +42,10 @@ interface ConversationCacheItem {
     conversation_id: string;
   };
   last_message_at?: string | null;
+  members?: Array<{
+    user_id: string;
+    last_read_at: string | null;
+  }>;
 }
 
 /**
@@ -61,37 +66,59 @@ export function useRealtimeNotifications({
   
   // Keep refs to avoid stale closures
   const activeConversationIdRef = useRef(activeConversationId);
+  // Track if markAsRead is in progress to prevent race conditions
+  const markAsReadInProgressRef = useRef<Set<string>>(new Set());
   
   // Update ref in an effect to avoid "Cannot update ref during render"
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId;
   }, [activeConversationId]);
 
-  // Clear unread count for a conversation
-  const clearUnreadCount = useCallback((conversationId: string) => {
+  // Clear unread count for a conversation and update last_read_at in cache
+  const clearUnreadCount = useCallback((conversationId: string, timestamp?: string) => {
+    const readAt = timestamp || new Date().toISOString();
     queryClient.setQueryData(
       conversationKeys.list(),
       (oldData: unknown) => {
         if (!oldData || !Array.isArray(oldData)) return oldData;
         return oldData.map((conv: ConversationCacheItem) => {
           if (conv.id === conversationId) {
-            return { ...conv, unreadCount: 0 };
+            // Update both unreadCount and last_read_at in cached members
+            const updatedMembers = conv.members?.map((member) => {
+              if (member.user_id === currentUserId) {
+                return { ...member, last_read_at: readAt };
+              }
+              return member;
+            });
+            return { ...conv, unreadCount: 0, members: updatedMembers || conv.members };
           }
           return conv;
         });
       }
     );
-  }, [queryClient]);
+  }, [queryClient, currentUserId]);
 
   // Mark as read when active conversation changes (BOTH cache and server)
   useEffect(() => {
     if (activeConversationId) {
-      // Immediately clear cache for instant UI feedback
-      clearUnreadCount(activeConversationId);
-      // Persist to server so it survives refetch
-      markAsRead(activeConversationId).catch((error) => {
-        console.error("[RealtimeNotifications] Error marking conversation as read:", error);
-      });
+      const timestamp = new Date().toISOString();
+      // Mark as in progress to prevent race conditions
+      markAsReadInProgressRef.current.add(activeConversationId);
+      // Immediately clear cache for instant UI feedback (with timestamp)
+      clearUnreadCount(activeConversationId, timestamp);
+
+      // Persist to server - use async IIFE to properly await
+      (async () => {
+        try {
+          await markAsRead(activeConversationId);
+          console.log("[RealtimeNotifications] Successfully marked as read on server:", activeConversationId);
+        } catch (error) {
+          console.error("[RealtimeNotifications] Error marking conversation as read:", error);
+        } finally {
+          // Remove from in-progress set after server call completes
+          markAsReadInProgressRef.current.delete(activeConversationId);
+        }
+      })();
     }
   }, [activeConversationId, clearUnreadCount]);
 
@@ -142,7 +169,9 @@ export function useRealtimeNotifications({
                   };
 
                   // Only increment unread count for messages from others when not viewing
-                  if (!isOwnMessage && !isViewingConversation) {
+                  // AND when markAsRead is not in progress for this conversation
+                  const isMarkingAsRead = markAsReadInProgressRef.current.has(newMessage.conversation_id);
+                  if (!isOwnMessage && !isViewingConversation && !isMarkingAsRead) {
                     updated.unreadCount = (conv.unreadCount || 0) + 1;
                   }
 

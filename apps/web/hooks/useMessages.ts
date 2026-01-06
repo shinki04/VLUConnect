@@ -13,7 +13,6 @@ import { useCallback, useEffect, useMemo,useRef, useState } from "react";
 import {
   editMessage as editMessageAction,
   getMessages,
-  markAsRead,
   recallMessage as recallMessageAction,
   sendMessage as sendMessageAction,
 } from "@/app/actions/messaging";
@@ -123,8 +122,7 @@ export function useMessages({
         cursorRef.current = data[0]?.created_at || undefined;
       }
 
-      // Mark conversation as read
-      await markAsRead(conversationId);
+      // Note: markAsRead is handled by useRealtimeNotifications when activeConversationId changes
     } catch (err) {
       setError(
         err instanceof Error ? err : new Error("Failed to fetch messages")
@@ -226,8 +224,7 @@ export function useMessages({
           } as BroadcastMessage,
         });
 
-        // Mark as read after sending (ensures unread count is 0 for sender)
-        await markAsRead(conversationId);
+        // Note: markAsRead is handled by useRealtimeNotifications when conversation is active
         // Update local state: remove optimistic, add server message with reply_to preserved
         setOptimisticMessages((prev) =>
           prev.filter((m) => m.tempId !== tempId)
@@ -411,8 +408,7 @@ export function useMessages({
               });
             });
           }
-          // Mark as read
-          markAsRead(conversationId);
+          // Note: markAsRead is handled by useRealtimeNotifications when conversation is active
           break;
 
         case "message_failed":

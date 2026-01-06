@@ -1,7 +1,10 @@
+import { ConversationWithDetails } from "@repo/shared/types/messaging";
+import { conversationKeys } from "@repo/shared/types/queryKeys";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 
 import { getFriends } from "@/app/actions/friendship";
-import { getConversation } from "@/app/actions/messaging";
+import { getConversation, getConversations } from "@/app/actions/messaging";
 import { getCurrentUser } from "@/app/actions/user";
 
 import { MessagesClient } from "./MessagesClient";
@@ -23,59 +26,40 @@ export default async function MessagesPage({
     redirect("/login");
   }
 
-  // Get friends list for creating new conversations
-  //TODO Get all user for creating new conversations
-  // Get initial conversation if selected
+  const queryClient = new QueryClient();
 
-  // const queryClient = new QueryClient();
-  // const [friends, conversation] = await Promise.all([
-  //   queryClient.prefetchQuery({
-  //     queryKey: ["users"],
-  //     queryFn: () =>  getFriends(currentUser.id),
-  //   }),
-  //   queryClient.prefetchQuery({
-  //     queryKey: ["conversations"],
-  //     queryFn: () =>  getConversation(currentUser.id),
-  //   }),
-  // ]);
- 
+  // Prefetch conversations list + friends in parallel
+  const [friends] = await Promise.all([
+    getFriends(currentUser.id),
+    queryClient.prefetchQuery({
+      queryKey: conversationKeys.list(),
+      queryFn: getConversations,
+    }),
+  ]);
 
-
-  // let initialConversation = queryClient.getQueryData([
-  //   "conversations",
-  //   currentUser.id,
-  // ]);
-  // let initialFriends = queryClient.getQueryData([
-  //   "users",
-  //   currentUser.id,
-  // ]);
-
-  let initialConversation = null;
-  
-  const friends = await getFriends(currentUser.id); 
-
+  // Prefetch conversation detail if conversationId is provided
+  let initialConversation: ConversationWithDetails | null = null;
   if (params.conversationId) {
     try {
-      initialConversation = await getConversation(params.conversationId);
+      await queryClient.prefetchQuery({
+        queryKey: conversationKeys.detail(params.conversationId),
+        queryFn: () => getConversation(params.conversationId!),
+      });
+      initialConversation = queryClient.getQueryData<ConversationWithDetails>(
+        conversationKeys.detail(params.conversationId)
+      ) ?? null;
     } catch (e) {
       console.error("Failed to load initial conversation", e);
     }
   }
 
   return (
-    //  <HydrationBoundary state={dehydrate(queryClient)}> 
-    //  <MessagesClient
-    //   currentUser={currentUser}
-    //   initialFriends={initialFriends}
-    //   initialConversation={initialConversation}
-    // />
-    // </HydrationBoundary>
-   
-    <MessagesClient
-      currentUser={currentUser}
-      initialFriends={friends}
-      initialConversation={initialConversation}
-    />
-    
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <MessagesClient
+        currentUser={currentUser}
+        initialFriends={friends}
+        initialConversation={initialConversation}
+      />
+    </HydrationBoundary>
   );
 }

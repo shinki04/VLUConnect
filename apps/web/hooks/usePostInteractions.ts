@@ -145,7 +145,8 @@ export function useComments(
     // Fetch ... (existing)
     const { 
         data: commentsData, 
-        isLoading, 
+        isLoading,
+        error,
         fetchNextPage, 
         hasNextPage, 
         isFetchingNextPage,
@@ -342,6 +343,7 @@ export function useComments(
     return {
         commentsData,
         isLoading,
+        error,
         sendComment,
         isSending,
         removeComment,

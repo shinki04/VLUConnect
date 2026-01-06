@@ -1,5 +1,6 @@
 "use client";
 
+import { conversationKeys } from "@repo/shared/types/queryKeys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -12,14 +13,8 @@ import {
   leaveConversation,
 } from "@/app/actions/messaging";
 
-// Query keys
-export const conversationKeys = {
-  all: ["conversations"] as const,
-  list: () => [...conversationKeys.all, "list"] as const,
-  detail: (id: string) => [...conversationKeys.all, "detail", id] as const,
-  friendship: (id: string) =>
-    [...conversationKeys.all, "friendship", id] as const,
-};
+// Re-export for backward compatibility
+export { conversationKeys };
 
 /**
  * Hook for managing conversations list
@@ -30,7 +25,7 @@ export function useConversations() {
   const query = useQuery({
     queryKey: conversationKeys.list(),
     queryFn: getConversations,
-    staleTime: 30000, // 30 seconds
+    staleTime: 120000, // 2 minutes - prevents premature refetches that could overwrite optimistic updates
     refetchOnWindowFocus: true,
   });
 

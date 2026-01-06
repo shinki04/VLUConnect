@@ -583,11 +583,9 @@ export async function markAsRead(conversationId: string): Promise<void> {
   const currentUserId = await getCurrentUserId();
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("conversation_members")
-    .update({ last_read_at: new Date().toISOString() })
-    .eq("conversation_id", conversationId)
-    .eq("user_id", currentUserId);
+  const { error } = await supabase.rpc("mark_conversation_as_read", {
+    conversation_id: conversationId,
+  });
 
   if (error) {
     console.error("Error marking as read:", error);
