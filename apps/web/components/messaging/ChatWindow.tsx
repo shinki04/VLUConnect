@@ -36,7 +36,6 @@ interface ChatWindowProps {
   currentUserId: string;
   currentUser?: Tables<"profiles">;
   isInitialLoading?: boolean;
-  initialMessages?: MessageWithSender[];
   onLeave?: () => void;
   onAddFriend?: (userId: string) => void;
   className?: string;
@@ -56,7 +55,6 @@ export function ChatWindow({
   currentUserId,
   currentUser,
   isInitialLoading = false,
-  initialMessages,
   onLeave,
   onAddFriend,
   className,
@@ -88,7 +86,6 @@ export function ChatWindow({
     conversationId: conversation.id,
     currentUserId,
     currentUser,
-    initialMessages,
     enabled: !!conversation.id,
   });
 

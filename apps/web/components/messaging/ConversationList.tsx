@@ -5,9 +5,12 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Plus, Search } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+import { messagesQueryOptions } from "@/hooks/useMessagesQuery";
 
 import { ConversationItem, ConversationListEmpty } from "./ConversationItem";
 
@@ -38,8 +41,17 @@ export function ConversationList({
   onMarkAsRead,
   className,
 }: ConversationListProps) {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const parentRef = useRef<HTMLDivElement>(null);
+
+  // Prefetch messages on hover for instant loading
+  const handleMouseEnter = useCallback(
+    (conversationId: string) => {
+      queryClient.prefetchInfiniteQuery(messagesQueryOptions(conversationId));
+    },
+    [queryClient]
+  );
 
   // Filter conversations by search query
   const filteredConversations = useMemo(() => {
@@ -143,6 +155,7 @@ export function ConversationList({
                     height: `${virtualItem.size}px`,
                     transform: `translateY(${virtualItem.start}px)`,
                   }}
+                  onMouseEnter={() => handleMouseEnter(conversation.id)}
                 >
                   <ConversationItem
                     conversation={conversation}

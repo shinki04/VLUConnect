@@ -21,7 +21,6 @@ interface UseMessagesOptions {
   conversationId: string;
   currentUserId: string;
   currentUser?: Tables<"profiles">;
-  initialMessages?: MessageWithSender[];
   enabled?: boolean;
 }
 
@@ -60,26 +59,22 @@ export function useMessages({
   conversationId,
   currentUserId,
   currentUser,
-  initialMessages,
   enabled = true,
 }: UseMessagesOptions): UseMessagesReturn {
   const supabase = useMemo(() => createClient(), []);
 
-  // Server messages (confirmed from DB) - use initialMessages for SSR hydration
-  const [serverMessages, setServerMessages] = useState<MessageWithSender[]>(
-    () => initialMessages || []
-  );
+  // Server messages (confirmed from DB)
+  const [serverMessages, setServerMessages] = useState<MessageWithSender[]>([]);
   // Optimistic messages (pending/failed - from broadcast)
   const [optimisticMessages, setOptimisticMessages] = useState<
     OptimisticMessage[]
   >([]);
 
-  // If we have initialMessages, skip loading state
-  const [isLoading, setIsLoading] = useState(!initialMessages?.length);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasFetchedOnce, setHasFetchedOnce] = useState(!!initialMessages?.length);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const cursorRef = useRef<string | undefined>(undefined);
@@ -530,17 +525,9 @@ export function useMessages({
     [currentUserId]
   );
 
-  // Fetch messages when conversation changes (skip if SSR data exists)
+  // Fetch messages when conversation changes
   useEffect(() => {
     if (!enabled || !conversationId) return;
-
-    // If we have SSR-prefetched data, set cursor and skip fetch
-    if (initialMessages?.length) {
-      cursorRef.current = initialMessages[0]?.created_at || undefined;
-      setHasMore(initialMessages.length === MESSAGES_PER_PAGE);
-      return;
-    }
-
     fetchMessages();
   }, [conversationId, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 

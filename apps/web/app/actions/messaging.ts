@@ -81,91 +81,20 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
   const currentUserId = await getCurrentUserId();
   const supabase = await createClient();
 
-  // Get all conversation IDs for current user
-  const { data: memberData, error: memberError } = await supabase
-    .from("conversation_members")
-    .select("conversation_id")
-    .eq("user_id", currentUserId);
-
-  if (memberError) {
-    console.error("Error fetching conversation memberships:", memberError);
-    throw new Error("Failed to fetch conversations");
-  }
-
-  if (!memberData || memberData.length === 0) {
-    return [];
-  }
-
-  const conversationIds = memberData.map((m) => m.conversation_id);
-
-  // Get conversations with members and last message
-  const { data: conversations, error: convError } = await supabase
-    .from("conversations")
-    .select(
-      `
-      *,
-      members:conversation_members(
-        *,
-        profile:profiles(*)
-      )
-    `
-    )
-    .in("id", conversationIds)
-    .order("last_message_at", { ascending: false });
-
-  if (convError) {
-    console.error("Error fetching conversations:", convError);
-    throw new Error("Failed to fetch conversations");
-  }
-
-  // Get last message for each conversation
-  const conversationsWithMessages = await Promise.all(
-    (conversations || []).map(async (conv) => {
-      const { data: lastMessage } = await supabase
-        .from("messages")
-        .select(
-          `
-          *,
-          sender:profiles(*)
-        `
-        )
-        .eq("conversation_id", conv.id)
-        .eq("is_deleted", false)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      // Get unread count
-      const currentMember = conv.members.find(
-        (m: ConversationMember) => m.user_id === currentUserId
-      );
-      let unreadCount = 0;
-
-      // Calculate unread: messages from others after last_read_at
-      // If last_read_at is null, treat it as "never read" - count all messages from others
-      let query = supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("conversation_id", conv.id)
-        .neq("sender_id", currentUserId)
-        .eq("is_deleted", false);
-
-      if (currentMember?.last_read_at) {
-        query = query.gt("created_at", currentMember.last_read_at);
-      }
-
-      const { count } = await query;
-      unreadCount = count || 0;
-
-      return {
-        ...conv,
-        lastMessage: lastMessage || undefined,
-        unreadCount,
-      } as ConversationWithDetails;
-    })
+  // Use RPC function to fetch all data in a single query
+  // This avoids the N+1 problem where we were making 2 queries per conversation
+  const { data, error } = await supabase.rpc(
+    "get_conversations_with_details",
+    { p_user_id: currentUserId }
   );
 
-  return conversationsWithMessages;
+  if (error) {
+    console.error("Error fetching conversations:", error);
+    throw new Error("Failed to fetch conversations");
+  }
+
+  // The RPC returns data in the correct structure, just need to cast it
+  return (data as unknown) as ConversationWithDetails[];
 }
 
 /**
