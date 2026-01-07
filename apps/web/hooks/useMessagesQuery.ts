@@ -38,7 +38,9 @@ export function messagesQueryOptions(conversationId: string) {
       return lastPage[0]?.created_at;
     },
     initialPageParam: undefined as string | undefined,
-    staleTime: 60 * 1000, // 1 minute
+    // Instant loading: cache for 5 minutes, keep in memory for 30 minutes
+    staleTime: 5 * 60 * 1000,  // 5 minutes - don't refetch within this time
+    gcTime: 30 * 60 * 1000,     // 30 minutes - keep in cache
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });

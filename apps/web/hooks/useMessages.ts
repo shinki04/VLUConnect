@@ -79,6 +79,14 @@ export function useMessages({
   const channelRef = useRef<RealtimeChannel | null>(null);
   const cursorRef = useRef<string | undefined>(undefined);
 
+  // Stable refs for callbacks to prevent effect re-runs
+  const currentUserIdRef = useRef(currentUserId);
+  const conversationIdRef = useRef(conversationId);
+
+  // Keep refs in sync
+  currentUserIdRef.current = currentUserId;
+  conversationIdRef.current = conversationId;
+
   // Combine server and optimistic messages
   const messages = useMemo(() => {
     const combined = [
@@ -344,34 +352,24 @@ export function useMessages({
     [conversationId, currentUser, optimisticMessages]
   );
 
-  // Handle broadcast events from other users
+  // Handle broadcast events from other users - using stable ref pattern
   const handleBroadcastEvent = useCallback(
-    async (payload: BroadcastMessage) => {
+    (payload: BroadcastMessage) => {
       console.log("[Broadcast] Received:", payload.type, payload);
 
       // Skip own messages (already handled locally)
-      if (payload.senderId === currentUserId) {
+      if (payload.senderId === currentUserIdRef.current) {
         return;
       }
 
       switch (payload.type) {
         case "new_message":
           // Add message from other user immediately
+          // OPTIMIZATION: Use sender from broadcast payload directly, no extra fetch
           if (payload.message) {
             const newMessage = payload.message;
-            
-            // Fetch sender info if not included
-            let senderProfile = newMessage.sender;
-            if (!senderProfile && newMessage.sender_id) {
-              const { data: sender } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", newMessage.sender_id)
-                .single();
-              senderProfile = sender || undefined;
-            }
 
-            // Add as optimistic for now (will be replaced when we fetch from DB)
+            // Add as optimistic for now (will be replaced when confirmed)
             setOptimisticMessages((prev) => {
               // Check if already exists
               if (prev.find((m) => m.tempId === payload.tempId)) {
@@ -383,7 +381,8 @@ export function useMessages({
                   ...newMessage,
                   tempId: payload.tempId,
                   status: "sending" as MessageStatus,
-                  sender: senderProfile,
+                  // Use sender from broadcast - already included
+                  sender: newMessage.sender,
                 },
               ];
             });
@@ -445,7 +444,7 @@ export function useMessages({
           break;
       }
     },
-    [conversationId, currentUserId, supabase]
+    [] // Empty deps - uses refs for stable reference
   );
 
   // Edit message with broadcast
@@ -526,12 +525,16 @@ export function useMessages({
     [currentUserId]
   );
 
-  // Subscribe to Broadcast + Postgres Realtime channels
+  // Fetch messages when conversation changes
   useEffect(() => {
     if (!enabled || !conversationId) return;
-
-    // Fetch initial messages from DB
     fetchMessages();
+  }, [conversationId, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Subscribe to Broadcast + Postgres Realtime channels
+  // Separate effect to prevent re-subscription when fetchMessages changes
+  useEffect(() => {
+    if (!enabled || !conversationId) return;
 
     // Channel 1: Broadcast for user actions (optimistic updates)
     const broadcastChannel = supabase.channel(`chat:${conversationId}`, {
@@ -580,7 +583,7 @@ export function useMessages({
 
           // Update message in serverMessages (e.g., AI/admin recalled it)
           // Skip if sender is current user (already handled by broadcast)
-          if (payload.new.sender_id !== currentUserId) {
+          if (payload.new.sender_id !== currentUserIdRef.current) {
             setServerMessages((prev) =>
               prev.map((m) =>
                 m.id === payload.new.id
@@ -602,7 +605,7 @@ export function useMessages({
       supabase.removeChannel(broadcastChannel);
       supabase.removeChannel(dbChannel);
     };
-  }, [conversationId, enabled, fetchMessages, handleBroadcastEvent, supabase]);
+  }, [conversationId, enabled, supabase, handleBroadcastEvent]);
 
   return {
     messages,

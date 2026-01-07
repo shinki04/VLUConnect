@@ -29,6 +29,7 @@ export default async function MessagesPage({
   const queryClient = new QueryClient();
 
   // Prefetch conversations list + friends in parallel
+  // Messages are fetched CLIENT-SIDE with caching for instant switching
   const [friends] = await Promise.all([
     getFriends(currentUser.id),
     queryClient.prefetchQuery({
@@ -37,14 +38,16 @@ export default async function MessagesPage({
     }),
   ]);
 
-  // Prefetch conversation detail if conversationId is provided
+  // Only prefetch conversation detail (metadata, not messages)
   let initialConversation: ConversationWithDetails | null = null;
+  
   if (params.conversationId) {
     try {
       await queryClient.prefetchQuery({
         queryKey: conversationKeys.detail(params.conversationId),
         queryFn: () => getConversation(params.conversationId!),
       });
+      
       initialConversation = queryClient.getQueryData<ConversationWithDetails>(
         conversationKeys.detail(params.conversationId)
       ) ?? null;
@@ -63,3 +66,4 @@ export default async function MessagesPage({
     </HydrationBoundary>
   );
 }
+

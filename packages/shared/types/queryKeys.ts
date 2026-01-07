@@ -6,3 +6,9 @@ export const conversationKeys = {
   friendship: (id: string) =>
     [...conversationKeys.all, "friendship", id] as const,
 };
+
+// Query keys for messages - shared between server and client
+export const messageKeys = {
+  all: ["messages"] as const,
+  list: (conversationId: string) => [...messageKeys.all, "list", conversationId] as const,
+};

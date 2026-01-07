@@ -61,6 +61,7 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [atBottom, setAtBottom] = useState(true);
+  const prevMessagesLengthRef = useRef(0);
 
   // Reply state
   const [replyingTo, setReplyingTo] = useState<{
@@ -193,6 +194,18 @@ export function ChatWindow({
     setReplyingTo(null);
   }, []);
 
+  // Wrapper for sendMessage that scrolls immediately
+  const handleSendMessage = useCallback(async (...args: Parameters<typeof sendMessage>) => {
+    // Scroll to bottom IMMEDIATELY when user sends
+    virtuosoRef.current?.scrollToIndex({
+      index: virtualizedItems.length, // Use length (not length-1) to account for new message being added
+      behavior: "smooth",
+    });
+    
+    // Then actually send the message
+    return sendMessage(...args);
+  }, [sendMessage, virtualizedItems.length]);
+
   // Scroll to bottom helper
   const scrollToBottom = useCallback(() => {
     virtuosoRef.current?.scrollToIndex({
@@ -210,6 +223,33 @@ export function ChatWindow({
       });
     }
   }, [conversation.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    const currentLength = messages.length;
+    const prevLength = prevMessagesLengthRef.current;
+
+    // Only auto-scroll if:
+    // 1. New messages were added (not removed via load more at top)
+    // 2. User is at bottom OR the new message is from the current user
+    if (currentLength > prevLength && prevLength > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const isOwnMessage = lastMessage?.sender_id === currentUserId;
+      
+      // Always scroll if user sent the message, or if they're already at bottom
+      if (isOwnMessage || atBottom) {
+        // Use setTimeout to ensure DOM has updated with new message
+        setTimeout(() => {
+          virtuosoRef.current?.scrollToIndex({
+            index: virtualizedItems.length - 1,
+            behavior: "smooth",
+          });
+        }, 50);
+      }
+    }
+
+    prevMessagesLengthRef.current = currentLength;
+  }, [messages, currentUserId, atBottom, virtualizedItems.length]);
 
   // Render individual virtualized item
   const itemContent = useCallback(
@@ -316,7 +356,7 @@ export function ChatWindow({
                 data={virtualizedItems}
                 itemContent={itemContent}
                 startReached={handleStartReached}
-                followOutput="smooth"
+                followOutput={(isAtBottom) => isAtBottom ? "smooth" : false}
                 atBottomStateChange={setAtBottom}
                 initialTopMostItemIndex={virtualizedItems.length - 1}
                 alignToBottom
@@ -355,7 +395,7 @@ export function ChatWindow({
 
         {/* Message input */}
         <MessageInput
-          onSend={sendMessage}
+          onSend={handleSendMessage}
           disabled={isLoading}
           replyTo={replyingTo}
           onCancelReply={handleCancelReply}

@@ -4,7 +4,7 @@ import { Tables } from "@repo/shared/types/database.types";
 import { ConversationWithDetails } from "@repo/shared/types/messaging";
 import { MessageCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { ChatWindow } from "@/components/messaging/ChatWindow";
@@ -33,19 +33,29 @@ export function MessagesClient({
 }: MessagesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const conversationIdParam = searchParams.get("conversationId");
-
-  // Derive active conversation ID from URL (primary source of truth) or initial prop
-  const activeConversationId = useMemo(() => {
-    return conversationIdParam || initialConversation?.id || null;
-  }, [conversationIdParam, initialConversation?.id]);
+  
+  // Local state for active conversation ID (for shallow routing)
+  // Initialize from URL param or initial prop
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(() => {
+    const paramId = searchParams.get("conversationId");
+    return paramId || initialConversation?.id || null;
+  });
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  // Optimistic active conversation ID for instant UI switch
-  const [optimisticActiveId, setOptimisticActiveId] = useState<string | null>(null);
 
-  // Use optimistic ID if set, otherwise URL-based ID
-  const displayActiveId = optimisticActiveId || activeConversationId;
+  // Sync with browser back/forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const convId = params.get("conversationId");
+      setActiveConversationId(convId || null);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Display active ID is just the local state now (no need for optimistic layer)
 
   // Fetch conversations
   const {
@@ -60,44 +70,28 @@ export function MessagesClient({
   // Global real-time notifications (messages, future: other notifications)
   const { markConversationAsRead } = useRealtimeNotifications({
     currentUserId: currentUser.id,
-    activeConversationId: displayActiveId,
+    activeConversationId,
   });
 
   // Fetch active conversation details (Client Side)
-  // We use the hook for realtime updates and consistent API
-  // BUT we initialize query data with 'initialConversation' if matches!
   const { conversation: activeConversation, leave } = useConversation(
-    displayActiveId || ""
+    activeConversationId || ""
   );
   
-  // NOTE: optimization - we could hydrate the query cache with initialConversation here
-  // but for simplicity we assume `initialConversation` is passed as fallback if hook is loading?
-  // Actually, useConversation uses useQuery. We can't easily inject initialData conditionally without passing it to hook.
-  // For now, let's rely on the fact that if we have initialConversation, we can render efficiently.
-  // But `activeConversation` from hook might be undefined initially if cache empty.
-  // Let's use `activeConversation || (activeConversationId === initialConversation?.id ? initialConversation : undefined)`?
-  
-  const displayConversation = activeConversation || (displayActiveId === initialConversation?.id ? initialConversation : null);
-  // Check if we're in optimistic loading state (clicked but data not loaded yet)
-  const isOptimisticLoading = optimisticActiveId !== null && optimisticActiveId !== activeConversationId;
+  // Fallback to initial conversation if hook hasn't loaded yet
+  const displayConversation = activeConversation || 
+    (activeConversationId === initialConversation?.id ? initialConversation : null);
 
-  // Handle selecting a conversation - optimistic UI
+  // Handle selecting a conversation - shallow routing for instant switch
   const handleSelectConversation = useCallback((id: string) => {
-    // Update optimistic state IMMEDIATELY for instant UI switch
-    setOptimisticActiveId(id);
+    // Update local state IMMEDIATELY for instant UI switch
+    setActiveConversationId(id);
     
-    // URL is source of truth, router.push updates activeConversationId via useMemo
-    router.push(`/messages?conversationId=${id}`);
-    
-    // Clear optimistic state once URL updates (useEffect)
-  }, [router]);
-
-  // Clear optimistic state when URL updates
-  // useMemo(() => {
-  //   if (activeConversationId && optimisticActiveId && activeConversationId === optimisticActiveId) {
-  //     setOptimisticActiveId(null);
-  //   }
-  // }, [activeConversationId, optimisticActiveId]);
+    // Use shallow routing to avoid server-side re-render
+    // This prevents Next.js from re-running page.tsx data fetching
+    const url = `/messages?conversationId=${id}`;
+    window.history.pushState({}, '', url);
+  }, []);
 
   // Handle creating direct conversation
   const handleCreateDirect = useCallback(
@@ -140,13 +134,14 @@ export function MessagesClient({
 
     try {
       await leave();
-      // Clear URL param - this updates activeConversationId via useMemo
-      router.push("/messages");
+      // Clear active conversation and URL using shallow routing
+      setActiveConversationId(null);
+      window.history.pushState({}, '', '/messages');
       toast.success("Đã rời khỏi nhóm");
     } catch (error) {
       toast.error("Không thể rời nhóm");
     }
-  }, [activeConversationId, leave, router]);
+  }, [activeConversationId, leave]);
 
   // Handle adding friend from chat banner
   const handleAddFriend = useCallback(
@@ -169,7 +164,7 @@ export function MessagesClient({
           <ConversationList
             conversations={conversations}
             currentUserId={currentUser.id}
-            activeConversationId={displayActiveId || undefined}
+            activeConversationId={activeConversationId || undefined}
             isLoading={isLoadingConversations}
             onSelectConversation={handleSelectConversation}
             onNewConversation={() => setIsCreateDialogOpen(true)}
@@ -179,15 +174,15 @@ export function MessagesClient({
 
         {/* Chat window - main area */}
         <div
-          className={cn("flex-1", !displayActiveId && "hidden md:flex")}
+          className={cn("flex-1", !activeConversationId && "hidden md:flex")}
         >
-          {displayConversation && displayActiveId ? (
+          {displayConversation && activeConversationId ? (
             <ChatWindow
-              key={displayActiveId} // Force remount on change
+              key={activeConversationId} // Force remount on change
               conversation={displayConversation}
               currentUserId={currentUser.id}
               currentUser={currentUser}
-              isInitialLoading={isOptimisticLoading}
+              isInitialLoading={false}
               onLeave={handleLeave}
               onAddFriend={handleAddFriend}
               className="w-full"
