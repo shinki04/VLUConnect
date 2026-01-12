@@ -67,7 +67,8 @@ export function ConversationList({
         const profile = m.profile;
         return (
           profile?.display_name?.toLowerCase().includes(query) ||
-          profile?.username?.toLowerCase().includes(query)
+          profile?.slug?.toLowerCase().includes(query) ||
+          profile?.username?.toLowerCase().includes(query) 
         );
       });
       if (memberMatch) return true;
