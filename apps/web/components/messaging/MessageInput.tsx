@@ -1,14 +1,16 @@
 "use client";
 
 import { Button } from "@repo/ui/components/button";
+import SendIcon from "@repo/ui/components/send-icon";
 import { Textarea } from "@repo/ui/components/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@repo/ui/components/tooltip";
+import type { AnimatedIconHandle } from "@repo/ui/components/types";
 import { cn } from "@repo/ui/lib/utils";
-import { Paperclip, Reply, Send, X } from "lucide-react";
+import { Paperclip, Reply, X } from "lucide-react";
 import {
   ChangeEvent,
   DragEvent,
@@ -58,6 +60,7 @@ export function MessageInput({
   const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sendIconRef = useRef<AnimatedIconHandle>(null);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -264,6 +267,8 @@ export function MessageInput({
             type="button"
             size="icon"
             onClick={() => handleSend()}
+            onMouseEnter={() => sendIconRef.current?.startAnimation()}
+            onMouseLeave={() => sendIconRef.current?.stopAnimation()}
             className={cn(
               "shrink-0 h-10 w-10 rounded-full transition-all duration-200",
               canSend
@@ -271,7 +276,9 @@ export function MessageInput({
                 : "bg-muted scale-90"
             )}
           >
-            <Send className="h-5 w-5" />
+            {/* <Send className="h-5 w-5" /> */}
+            <SendIcon ref={sendIconRef} className="h-5 w-5" size={26} />
+          
           </Button>
         </div>
 

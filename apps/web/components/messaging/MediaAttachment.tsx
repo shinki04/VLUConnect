@@ -13,10 +13,8 @@ import {
   FileVideo,
   Image as ImageIcon,
   Loader2,
-  Play,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import { memo, useState } from "react";
 
 // Simple Progress component
@@ -63,7 +61,6 @@ export const MediaAttachment = memo(function MediaAttachment({
   onRemove,
 }: MediaAttachmentProps) {
   const [imageError, setImageError] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Determine file info
   const fileUrl = pendingFile?.localPreview || pendingFile?.url || url;
@@ -82,14 +79,13 @@ export const MediaAttachment = memo(function MediaAttachment({
   // Render image attachment
   if (isImage && fileUrl && !imageError) {
     return (
-      <div className="relative group rounded-lg overflow-hidden max-w-[280px]">
-        <Image
+      <div className="relative group rounded-lg overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={fileUrl}
           alt={fileName || "Image"}
-          width={280}
-          height={200}
           className={cn(
-            "object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity",
+            "max-w-[200px] max-h-[200px] w-auto h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity object-cover",
             isUploading && "opacity-50"
           )}
           onError={() => setImageError(true)}
@@ -133,44 +129,23 @@ export const MediaAttachment = memo(function MediaAttachment({
   // Render video attachment
   if (isVideo && fileUrl) {
     return (
-      <div className="relative group rounded-lg overflow-hidden max-w-[320px]">
-        {isVideoPlaying ? (
-          <video
-            src={fileUrl}
-            controls
-            autoPlay
-            className="rounded-lg max-h-[240px]"
-            onEnded={() => setIsVideoPlaying(false)}
-          />
-        ) : (
-          <div
-            className={cn(
-              "relative cursor-pointer",
-              isUploading && "opacity-50"
-            )}
-            onClick={() => !isUploading && setIsVideoPlaying(true)}
-          >
-            {/* Video thumbnail - use first frame or placeholder */}
-            <div className="bg-muted rounded-lg aspect-video flex items-center justify-center min-w-[200px]">
-              <FileVideo className="h-12 w-12 text-muted-foreground" />
-            </div>
-            
-            {/* Play button */}
-            {!isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black/60 rounded-full p-3">
-                  <Play className="h-8 w-8 text-white fill-white" />
-                </div>
-              </div>
-            )}
+      <div className="relative group rounded-lg overflow-hidden max-w-[250px]">
+        <video
+          src={fileUrl}
+          controls
+          preload="metadata"
+          className={cn(
+            "max-w-full max-h-[180px] rounded-lg",
+            isUploading && "opacity-50"
+          )}
+          onError={() => console.error("Video load error")}
+        />
 
-            {/* Upload progress */}
-            {isUploading && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
-                <Loader2 className="h-6 w-6 animate-spin text-white mb-2" />
-                <span className="text-white text-sm font-medium">{progress}%</span>
-              </div>
-            )}
+        {/* Upload progress overlay */}
+        {isUploading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+            <Loader2 className="h-6 w-6 animate-spin text-white mb-2" />
+            <span className="text-white text-sm font-medium">{progress}%</span>
           </div>
         )}
 
@@ -183,7 +158,7 @@ export const MediaAttachment = memo(function MediaAttachment({
         </p>
 
         {/* Remove button */}
-        {pendingFile && onRemove && !isVideoPlaying && (
+        {pendingFile && onRemove && (
           <Button
             size="icon"
             variant="destructive"

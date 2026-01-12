@@ -3,9 +3,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
-import { LogOut, MoreVertical, User } from "lucide-react";
+import { LogOut, MoreVertical, Settings, User } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -40,9 +41,10 @@ export function ChatDropdownDirect({ userId }: ChatDropdownDirectProps) {
 
 interface ChatDropdownGroupProps {
   onLeave?: () => void;
+  onOpenSettings?: () => void;
 }
 
-export function ChatDropdownGroup({ onLeave }: ChatDropdownGroupProps) {
+export function ChatDropdownGroup({ onLeave, onOpenSettings }: ChatDropdownGroupProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -51,6 +53,15 @@ export function ChatDropdownGroup({ onLeave }: ChatDropdownGroupProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {onOpenSettings && (
+          <DropdownMenuItem onClick={onOpenSettings}>
+            <Settings className="h-4 w-4 mr-2" />
+            Cài đặt nhóm
+          </DropdownMenuItem>
+        )}
+        
+        {onOpenSettings && onLeave && <DropdownMenuSeparator />}
+        
         {onLeave && (
           <DropdownMenuItem
             onClick={onLeave}

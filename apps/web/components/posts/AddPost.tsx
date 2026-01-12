@@ -21,7 +21,7 @@ import { useForm } from "@tanstack/react-form";
 import { Dropzone, FilesGrid, UppyContextProvider } from "@uppy/react";
 import { EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 
 import { createQueueStatus } from "@/app/actions/post-queue";
@@ -159,17 +159,8 @@ function AddPost({ currentUser, groupId, allowAnonymousPosts = false }: AddPostP
   //     });
   //   }, [uppy]);
 
-  // Cleanup khi rời component
-  // useEffect(() => {
-  //   return () => {
-  //     uppy;
-  //   };
-  // }, [uppy]);
-  useEffect(() => {
-    return () => {
-      uppy.cancelAll();
-    };
-  }, [uppy]);
+  // NOTE: Removed uppy.cancelAll() on unmount to allow background uploads
+  // Uploads will continue even if user navigates away from this page
 
   return (
     <Card className="rounded-lg shadow p-6 my-6">

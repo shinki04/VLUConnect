@@ -235,6 +235,12 @@ export function useMessages({
       // Allow sending if there's content OR files
       if ((!content.trim() && (!files || files.length === 0)) || !channelRef.current) return;
 
+      // Limit to 10 files per message
+      const MAX_FILES = 10;
+      if (files && files.length > MAX_FILES) {
+        throw new Error(`Chỉ được gửi tối đa ${MAX_FILES} file mỗi lần`);
+      }
+
       const tempId = generateTempId();
       const now = new Date().toISOString();
 
@@ -295,124 +301,162 @@ export function useMessages({
         } as BroadcastMessage,
       });
 
-      // Upload files first if any, then save message to DB
-      try {
-        let mediaUrls: string[] | undefined;
+      // Handle file uploads in background (won't be cancelled when switching conversations)
+      if (files && files.length > 0) {
+        // Import and use the global upload manager
+        const { uploadManager } = await import("@/stores/uploadStore");
 
-        if (files && files.length > 0) {
-          // Upload files to Supabase storage
-          const uploadPromises = files.map(async (file) => {
-            const timestamp = Date.now();
-            const randomStr = Math.random().toString(36).substring(2, 9);
-            const extension = file.name.split(".").pop() || "";
-            const objectName = `${conversationId}/${timestamp}-${randomStr}.${extension}`;
-
-            const { error } = await supabase.storage
-              .from("messages")
-              .upload(objectName, file, {
-                contentType: file.type,
-                upsert: false,
-              });
-
-            if (error) {
-              console.error("Upload failed for", file.name, error);
-              throw new Error(`Upload failed: ${file.name}`);
-            }
-
-            const { data: urlData } = supabase.storage
-              .from("messages")
-              .getPublicUrl(objectName);
-
-            return urlData.publicUrl;
-          });
-
-          mediaUrls = await Promise.all(uploadPromises);
-
-          // Revoke blob URLs after upload
-          pendingFilesForDisplay.forEach((pf) => {
-            if (pf.localPreview) {
-              URL.revokeObjectURL(pf.localPreview);
-            }
-          });
-        }
-
-        const serverMessage = await sendMessageAction(
+        // Start background upload - this continues even if user switches conversations
+        uploadManager.uploadFiles(
           conversationId,
-          content,
-          files?.length ? "file" : "text",
           tempId,
+          files,
+          content,
           replyTo?.id,
-          mediaUrls
-        );
+          // On complete
+          (urls) => {
+            // Broadcast success
+            channelRef.current?.send({
+              type: "broadcast",
+              event: "message_sent",
+              payload: {
+                type: "message_sent",
+                tempId,
+                message: {
+                  id: tempId, // Will be replaced with real ID
+                  content,
+                  media_urls: urls,
+                  sender: currentUser,
+                  conversation_id: conversationId,
+                  sender_id: currentUserId,
+                  created_at: now,
+                  message_type: "file",
+                  is_deleted: false,
+                  is_edited: false,
+                },
+                senderId: currentUserId,
+              } as BroadcastMessage,
+            });
 
-        // Broadcast success - update status
-        channelRef.current?.send({
-          type: "broadcast",
-          event: "message_sent",
-          payload: {
-            type: "message_sent",
-            tempId,
-            message: { ...serverMessage, sender: currentUser },
-            senderId: currentUserId,
-          } as BroadcastMessage,
-        });
+            // Revoke blob URLs
+            pendingFilesForDisplay.forEach((pf) => {
+              if (pf.localPreview) {
+                URL.revokeObjectURL(pf.localPreview);
+              }
+            });
 
-        // Note: markAsRead is handled by useRealtimeNotifications when conversation is active
-        // Update local state: remove optimistic, add server message with reply_to preserved
-        setOptimisticMessages((prev) =>
-          prev.filter((m) => m.tempId !== tempId)
-        );
-        setServerMessages((prev) => {
-          if (prev.find((m) => m.id === serverMessage.id)) {
-            return prev; // Already exists
+            // Update local state
+            setOptimisticMessages((prev) =>
+              prev.filter((m) => m.tempId !== tempId)
+            );
+          },
+          // On error
+          (error) => {
+            // Broadcast failure
+            channelRef.current?.send({
+              type: "broadcast",
+              event: "message_failed",
+              payload: {
+                type: "message_failed",
+                tempId,
+                error,
+                senderId: currentUserId,
+              } as BroadcastMessage,
+            });
+
+            // Mark as failed locally
+            setOptimisticMessages((prev) =>
+              prev.map((m) =>
+                m.tempId === tempId
+                  ? {
+                    ...m,
+                    status: "failed" as MessageStatus,
+                    error,
+                    retryCount: (m.retryCount || 0) + 1,
+                  }
+                  : m
+              )
+            );
           }
-          // Preserve reply_to from optimistic message via replyTo param
-          const newMessages = [
-            ...prev,
-            {
-              ...serverMessage,
-              sender: currentUser,
-              reply_to: replyTo ? {
-                id: replyTo.id,
-                content: replyTo.content,
-                sender_id: null,
-                sender: replyTo.sender ? { display_name: replyTo.sender.display_name } as Tables<"profiles"> : undefined,
-              } : undefined,
-            } as MessageWithSender,
-          ];
-          return newMessages.sort((a, b) => {
-            const dateA = new Date(a.created_at || 0).getTime();
-            const dateB = new Date(b.created_at || 0).getTime();
-            return dateA - dateB;
-          });
-        });
-      } catch (err) {
-        // Broadcast failure
-        channelRef.current?.send({
-          type: "broadcast",
-          event: "message_failed",
-          payload: {
-            type: "message_failed",
+        );
+      } else {
+        // No files - send text message directly
+        try {
+          const serverMessage = await sendMessageAction(
+            conversationId,
+            content,
+            "text",
             tempId,
-            error: err instanceof Error ? err.message : "Failed to send",
-            senderId: currentUserId,
-          } as BroadcastMessage,
-        });
+            replyTo?.id
+          );
 
-        // Mark as failed locally
-        setOptimisticMessages((prev) =>
-          prev.map((m) =>
-            m.tempId === tempId
-              ? {
+          // Broadcast success
+          channelRef.current?.send({
+            type: "broadcast",
+            event: "message_sent",
+            payload: {
+              type: "message_sent",
+              tempId,
+              message: { ...serverMessage, sender: currentUser },
+              senderId: currentUserId,
+            } as BroadcastMessage,
+          });
+
+          // Update local state
+          setOptimisticMessages((prev) =>
+            prev.filter((m) => m.tempId !== tempId)
+          );
+          setServerMessages((prev) => {
+            if (prev.find((m) => m.id === serverMessage.id)) {
+              return prev;
+            }
+            const newMessages = [
+              ...prev,
+              {
+                ...serverMessage,
+                sender: currentUser,
+                reply_to: replyTo ? {
+                  id: replyTo.id,
+                  content: replyTo.content,
+                  sender_id: null,
+                  sender: replyTo.sender ? { display_name: replyTo.sender.display_name } as Tables<"profiles"> : undefined,
+                } : undefined,
+              } as MessageWithSender,
+            ];
+            return newMessages.sort((a, b) => {
+              const dateA = new Date(a.created_at || 0).getTime();
+              const dateB = new Date(b.created_at || 0).getTime();
+              return dateA - dateB;
+            });
+          });
+        } catch (err) {
+          // Broadcast failure
+          channelRef.current?.send({
+            type: "broadcast",
+            event: "message_failed",
+            payload: {
+              type: "message_failed",
+              tempId,
+              error: err instanceof Error ? err.message : "Failed to send",
+              senderId: currentUserId,
+            } as BroadcastMessage,
+          });
+
+          // Mark as failed locally
+          setOptimisticMessages((prev) =>
+            prev.map((m) =>
+              m.tempId === tempId
+                ? {
                   ...m,
                   status: "failed" as MessageStatus,
                   error: err instanceof Error ? err.message : "Failed to send",
                   retryCount: (m.retryCount || 0) + 1,
                 }
-              : m
-          )
-        );
-        console.error("Error sending message:", err);
+                : m
+            )
+          );
+          console.error("Error sending message:", err);
+        }
       }
     },
     [conversationId, currentUserId, currentUser, generateTempId, supabase]

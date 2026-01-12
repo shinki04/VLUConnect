@@ -27,6 +27,7 @@ import { useConversationFriendship } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 
 import { ChatDropdownDirect, ChatDropdownGroup } from "./ChatDropdown";
+import { GroupSettingsSheet } from "./GroupSettingsSheet";
 import { MessageBubble, MessageDateSeparator } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
 import { NotFriendsBanner } from "./NotFriendsBanner";
@@ -63,12 +64,14 @@ export function ChatWindow({
   const [atBottom, setAtBottom] = useState(true);
   const prevMessagesLengthRef = useRef(0);
 
-  // Reply state
   const [replyingTo, setReplyingTo] = useState<{
     id: string;
     content: string | null;
     senderName: string | null;
   } | null>(null);
+
+  // Group settings sheet state
+  const [showGroupSettings, setShowGroupSettings] = useState(false);
 
   const {
     messages,
@@ -200,15 +203,30 @@ export function ChatWindow({
     replyTo?: { id: string; content: string | null; sender?: { display_name: string | null } },
     files?: File[]
   ) => {
-    // Scroll to bottom IMMEDIATELY when user sends
-    virtuosoRef.current?.scrollToIndex({
-      index: virtualizedItems.length, // Use length (not length-1) to account for new message being added
-      behavior: "smooth",
-    });
+    // Send message first (this adds optimistic message to state)
+    const sendPromise = sendMessage(content, replyTo, files);
     
-    // Then actually send the message
-    return sendMessage(content, replyTo, files);
-  }, [sendMessage, virtualizedItems.length]);
+    // Force scroll to bottom after a small delay to ensure optimistic message is rendered
+    // Use multiple timeouts to handle both immediate add and file upload states
+    setTimeout(() => {
+      virtuosoRef.current?.scrollToIndex({
+        index: "LAST",
+        behavior: "smooth",
+        align: "end",
+      });
+    }, 50);
+    
+    // Second scroll after 200ms to handle any state updates from file processing
+    setTimeout(() => {
+      virtuosoRef.current?.scrollToIndex({
+        index: "LAST", 
+        behavior: "smooth",
+        align: "end",
+      });
+    }, 200);
+    
+    return sendPromise;
+  }, [sendMessage]);
 
   // Scroll to bottom helper
   const scrollToBottom = useCallback(() => {
@@ -322,7 +340,10 @@ export function ChatWindow({
 
           <div className="flex items-center gap-1">
             {isGroup ? (
-              <ChatDropdownGroup onLeave={onLeave} />
+              <ChatDropdownGroup
+                onLeave={onLeave}
+                onOpenSettings={() => setShowGroupSettings(true)}
+              />
             ) : (
               <ChatDropdownDirect userId={friendshipData?.otherUser?.id} />
             )}
@@ -405,6 +426,16 @@ export function ChatWindow({
           onCancelReply={handleCancelReply}
         />
       </div>
+
+      {/* Group Settings Sheet */}
+      {isGroup && (
+        <GroupSettingsSheet
+          open={showGroupSettings}
+          onOpenChange={setShowGroupSettings}
+          conversation={conversation}
+          currentUserId={currentUserId}
+        />
+      )}
     </TooltipProvider>
   );
 }
