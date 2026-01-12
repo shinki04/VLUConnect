@@ -1,6 +1,6 @@
 "use server";
 
-import { Tables, TablesInsert } from "@repo/shared/types/database.types";
+import { Tables } from "@repo/shared/types/database.types";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -265,25 +265,46 @@ export async function createGroupConversation(
     throw new Error("Failed to create group");
   }
 
-  // Add members (creator is admin)
-  const membersToInsert: TablesInsert<"conversation_members">[] = [
-    { conversation_id: newConv.id, user_id: currentUserId, role: "admin" },
-    ...memberIds.map((id) => ({
-      conversation_id: newConv.id,
-      user_id: id,
-      role: "member",
-    })),
-  ];
-
-  const { error: membersError } = await supabase
+  // Add members (creator is admin) - Insert Creator FIRST to establish admin rights for RLS
+  const { error: adminError } = await supabase
     .from("conversation_members")
-    .insert(membersToInsert);
+    .insert({
+      conversation_id: newConv.id,
+      user_id: currentUserId,
+      role: "admin"
+    });
 
-  if (membersError) {
-    console.error("Error adding group members:", membersError);
+  if (adminError) {
+    console.error("Error adding admin:", adminError);
     await supabase.from("conversations").delete().eq("id", newConv.id);
     throw new Error("Failed to create group");
   }
+
+  // Insert other members
+  if (memberIds.length > 0) {
+    const otherMembers = memberIds.map((id) => ({
+      conversation_id: newConv.id,
+      user_id: id,
+      role: "member" as const,
+    }));
+
+    const { error: membersError } = await supabase
+      .from("conversation_members")
+      .insert(otherMembers);
+
+    if (membersError) {
+      console.error("Error adding group members:", membersError);
+      // Optional: Clean up? Or just return partial success?
+      // For now, fail hard to ensure consistency, but realize admin is already in.
+      // Ideally we would wrap this in a transaction if Supabase client supported it easily,
+      // but splitting is necessary for RLS.
+      // We will try to delete the conversation if this fails.
+      await supabase.from("conversations").delete().eq("id", newConv.id);
+      throw new Error("Failed to add members to group");
+    }
+  }
+
+
 
   revalidatePath("/messages");
   return newConv;
@@ -374,6 +395,375 @@ export async function leaveConversation(conversationId: string): Promise<void> {
   }
 
   revalidatePath("/messages");
+}
+
+// ============================================================
+// Group Management Functions
+// ============================================================
+
+export type MemberRole = "admin" | "sub_admin" | "moderator" | "member";
+
+/**
+ * Remove a member from a group conversation (admin/sub_admin only)
+ */
+export async function removeMemberFromGroup(
+  conversationId: string,
+  userId: string
+): Promise<void> {
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  // Cannot remove yourself - use leaveConversation instead
+  if (userId === currentUserId) {
+    throw new Error("Không thể xóa bản thân. Hãy sử dụng chức năng rời nhóm.");
+  }
+
+  // Check if conversation is a group
+  const { data: conv } = await supabase
+    .from("conversations")
+    .select("type")
+    .eq("id", conversationId)
+    .single();
+
+  if (!conv || conv.type !== "group") {
+    throw new Error("Chỉ có thể xóa thành viên khỏi nhóm");
+  }
+
+  // Check if current user is admin/sub_admin
+  const { data: currentMember } = await supabase
+    .from("conversation_members")
+    .select("role")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId)
+    .single();
+
+  if (!currentMember || !["admin", "sub_admin"].includes(currentMember.role || "")) {
+    throw new Error("Chỉ quản trị viên mới có thể xóa thành viên");
+  }
+
+  // Check target member exists and their role
+  const { data: targetMember } = await supabase
+    .from("conversation_members")
+    .select("role")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", userId)
+    .single();
+
+  if (!targetMember) {
+    throw new Error("Thành viên không tồn tại trong nhóm");
+  }
+
+  // Sub-admin cannot remove admin
+  if (currentMember.role === "sub_admin" && targetMember.role === "admin") {
+    throw new Error("Phó quản trị không thể xóa quản trị viên chính");
+  }
+
+  // Remove the member
+  const { error } = await supabase
+    .from("conversation_members")
+    .delete()
+    .eq("conversation_id", conversationId)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error removing member:", error);
+    throw new Error("Không thể xóa thành viên");
+  }
+
+  revalidatePath(`/messages/${conversationId}`);
+}
+
+/**
+ * Transfer admin role to another member (admin only)
+ */
+export async function transferAdmin(
+  conversationId: string,
+  newAdminId: string
+): Promise<void> {
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  if (newAdminId === currentUserId) {
+    throw new Error("Bạn đã là quản trị viên");
+  }
+
+  // Verify current user is admin
+  const { data: currentMember } = await supabase
+    .from("conversation_members")
+    .select("role")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId)
+    .single();
+
+  if (!currentMember || currentMember.role !== "admin") {
+    throw new Error("Chỉ quản trị viên chính mới có thể chuyển quyền");
+  }
+
+  // Verify target is a member
+  const { data: targetMember } = await supabase
+    .from("conversation_members")
+    .select("id")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", newAdminId)
+    .single();
+
+  if (!targetMember) {
+    throw new Error("Người dùng không phải thành viên của nhóm");
+  }
+
+  // Update new admin's role
+  const { error: newAdminError } = await supabase
+    .from("conversation_members")
+    .update({ role: "admin" })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", newAdminId);
+
+  if (newAdminError) {
+    console.error("Error setting new admin:", newAdminError);
+    throw new Error("Không thể chuyển quyền quản trị");
+  }
+
+  // Downgrade current admin to member
+  const { error: oldAdminError } = await supabase
+    .from("conversation_members")
+    .update({ role: "member" })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId);
+
+  if (oldAdminError) {
+    console.error("Error downgrading old admin:", oldAdminError);
+    // Try to rollback
+    await supabase
+      .from("conversation_members")
+      .update({ role: "admin" })
+      .eq("conversation_id", conversationId)
+      .eq("user_id", currentUserId);
+    throw new Error("Không thể chuyển quyền quản trị");
+  }
+
+  revalidatePath(`/messages/${conversationId}`);
+}
+
+/**
+ * Update a member's role (admin/sub_admin only)
+ */
+export async function updateMemberRole(
+  conversationId: string,
+  userId: string,
+  newRole: MemberRole
+): Promise<void> {
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  // Cannot change own role
+  if (userId === currentUserId) {
+    throw new Error("Không thể thay đổi vai trò của bản thân");
+  }
+
+  // Validate role
+  const validRoles: MemberRole[] = ["sub_admin", "moderator", "member"];
+  if (!validRoles.includes(newRole)) {
+    throw new Error("Vai trò không hợp lệ. Sử dụng transferAdmin để chuyển quyền admin.");
+  }
+
+  // Check current user's role
+  const { data: currentMember } = await supabase
+    .from("conversation_members")
+    .select("role")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId)
+    .single();
+
+  if (!currentMember || !["admin", "sub_admin"].includes(currentMember.role || "")) {
+    throw new Error("Chỉ quản trị viên mới có thể thay đổi vai trò");
+  }
+
+  // Check target member
+  const { data: targetMember } = await supabase
+    .from("conversation_members")
+    .select("role")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", userId)
+    .single();
+
+  if (!targetMember) {
+    throw new Error("Thành viên không tồn tại trong nhóm");
+  }
+
+  // Sub-admin cannot change admin's role
+  if (currentMember.role === "sub_admin" && targetMember.role === "admin") {
+    throw new Error("Phó quản trị không thể thay đổi vai trò của quản trị viên");
+  }
+
+  // Sub-admin cannot promote to sub_admin
+  if (currentMember.role === "sub_admin" && newRole === "sub_admin") {
+    throw new Error("Chỉ quản trị viên chính mới có thể bổ nhiệm phó quản trị");
+  }
+
+  // Update role
+  const { error } = await supabase
+    .from("conversation_members")
+    .update({ role: newRole })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error updating role:", error);
+    throw new Error("Không thể thay đổi vai trò");
+  }
+
+  revalidatePath(`/messages/${conversationId}`);
+}
+
+// Media item type for getConversationMedia
+export interface ConversationMediaItem {
+  id: string;
+  messageId: string;
+  url: string;
+  signedUrl: string;
+  fileName: string;
+  fileType: "image" | "video" | "file";
+  senderId: string | null;
+  senderName: string | null;
+  senderAvatar: string | null;
+  createdAt: string | null;
+}
+
+/**
+ * Get all media shared in a conversation with signed URLs
+ */
+export async function getConversationMedia(
+  conversationId: string,
+  limit: number = 50,
+  before?: string
+): Promise<{ items: ConversationMediaItem[]; hasMore: boolean }> {
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  // Verify user is a member
+  const { data: membership } = await supabase
+    .from("conversation_members")
+    .select("id")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId)
+    .maybeSingle();
+
+  if (!membership) {
+    throw new Error("Bạn không phải thành viên của cuộc trò chuyện này");
+  }
+
+  // Build query for messages with media
+  let query = supabase
+    .from("messages")
+    .select(`
+      id,
+      media_urls,
+      message_type,
+      created_at,
+      sender_id,
+      sender:profiles!sender_id(display_name, username, avatar_url)
+    `)
+    .eq("conversation_id", conversationId)
+    .not("media_urls", "is", null)
+    .eq("is_deleted", false)
+    .order("created_at", { ascending: false })
+    .limit(limit + 1); // +1 to check if there are more
+
+  if (before) {
+    query = query.lt("created_at", before);
+  }
+
+  const { data: messages, error } = await query;
+
+  if (error) {
+    console.error("Error fetching media:", error);
+    throw new Error("Không thể tải media");
+  }
+
+  if (!messages || messages.length === 0) {
+    return { items: [], hasMore: false };
+  }
+
+  // Check if there are more items
+  const hasMore = messages.length > limit;
+  const messagesToProcess = hasMore ? messages.slice(0, limit) : messages;
+
+  // Extract all file paths from media_urls
+  const allPaths: { path: string; messageId: string; message: typeof messagesToProcess[0] }[] = [];
+
+  for (const msg of messagesToProcess) {
+    if (msg.media_urls && Array.isArray(msg.media_urls)) {
+      for (const url of msg.media_urls) {
+        // Extract path from full URL
+        // URL format: https://xxx.supabase.co/storage/v1/object/public/messages/chat_id/filename
+        // or just the path: chat_id/filename
+        let path = url;
+        if (url.includes("/storage/v1/object/")) {
+          const match = url.match(/\/storage\/v1\/object\/(?:public|sign)\/messages\/(.+)/);
+          if (match && match[1]) {
+            path = match[1];
+          }
+        }
+        allPaths.push({ path, messageId: msg.id, message: msg });
+      }
+    }
+  }
+
+  if (allPaths.length === 0) {
+    return { items: [], hasMore };
+  }
+
+  // Create signed URLs for all paths
+  const { data: signedUrls, error: signError } = await supabase.storage
+    .from("messages")
+    .createSignedUrls(
+      allPaths.map((p) => p.path),
+      3600 // 1 hour expiry
+    );
+
+  if (signError) {
+    console.error("Error creating signed URLs:", signError);
+    throw new Error("Không thể tạo liên kết truy cập media");
+  }
+
+  // Build result items
+  const items: ConversationMediaItem[] = [];
+
+  for (let i = 0; i < allPaths.length; i++) {
+    const pathItem = allPaths[i];
+    const signedData = signedUrls?.[i];
+
+    if (!pathItem || !signedData?.signedUrl) continue;
+
+    const { path, messageId, message } = pathItem;
+    const fileName = path.split("/").pop() || "file";
+    const ext = fileName.split(".").pop()?.toLowerCase() || "";
+
+    // Determine file type
+    let fileType: "image" | "video" | "file" = "file";
+    if (["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext)) {
+      fileType = "image";
+    } else if (["mp4", "webm", "mov", "avi", "mkv"].includes(ext)) {
+      fileType = "video";
+    }
+
+    const sender = message.sender as { display_name: string | null; username: string | null; avatar_url: string | null } | null;
+
+    items.push({
+      id: `${messageId}-${i}`,
+      messageId,
+      url: path,
+      signedUrl: signedData.signedUrl,
+      fileName,
+      fileType,
+      senderId: message.sender_id,
+      senderName: sender?.display_name || sender?.username || null,
+      senderAvatar: sender?.avatar_url || null,
+      createdAt: message.created_at,
+    });
+  }
+
+  return { items, hasMore };
 }
 
 // ============================================================

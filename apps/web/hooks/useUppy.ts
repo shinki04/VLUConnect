@@ -49,8 +49,7 @@ export const useUppyWithSupabase = (bucketName: string, instanceId?: string) => 
       if (!uppy.getPlugin("Tus")) {
         uppy.use(Tus, {
           id: "Tus", // Explicitly set ID
-          endpoint: `${process.env
-            .NEXT_PUBLIC_SUPABASE_URL!}/storage/v1/upload/resumable`,
+          endpoint: `https://${process.env.NEXT_PUBLIC_SUPABASE_ID!}.storage.supabase.co/storage/v1/upload/resumable`,
           retryDelays: [0, 3000, 5000, 10000, 20000],
           chunkSize: 6 * 1024 * 1024,
           uploadDataDuringCreation: true,
@@ -82,10 +81,9 @@ export const useUppyWithSupabase = (bucketName: string, instanceId?: string) => 
           }
 
           // Only set upload metadata for new files
-          const timestamp = Date.now();
-          const randomStr = Math.random().toString(36).substring(2, 9);
-          const extension = file.name.split(".").pop() || "";
-          const uniqueName = `${session?.user.id}/${timestamp}-${randomStr}.${extension}`;
+          // Keep original filename, use unique folder to avoid duplicates
+          const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+          const uniqueName = `${session?.user.id}/${uniqueId}/${file.name}`;
 
           file.meta = {
             ...file.meta,

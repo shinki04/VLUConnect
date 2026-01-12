@@ -74,9 +74,21 @@ export function MessagesClient({
   });
 
   // Fetch active conversation details (Client Side)
-  const { conversation: activeConversation, leave } = useConversation(
-    activeConversationId || ""
-  );
+  const { 
+    conversation: activeConversation, 
+    leave, 
+    isLoading: isLoadingConversation, 
+    isFetching: isFetchingConversation,
+    error: conversationError,
+    refetch: refetchConversation
+  } = useConversation(activeConversationId || "");
+  
+  // Debug logging
+  console.log('[MessagesClient] activeConversationId:', activeConversationId);
+  console.log('[MessagesClient] activeConversation:', activeConversation);
+  console.log('[MessagesClient] isLoadingConversation:', isLoadingConversation);
+  console.log('[MessagesClient] isFetchingConversation:', isFetchingConversation);
+  console.log('[MessagesClient] conversationError:', conversationError);
   
   // Fallback to initial conversation if hook hasn't loaded yet
   const displayConversation = activeConversation || 
@@ -176,17 +188,25 @@ export function MessagesClient({
         <div
           className={cn("flex-1", !activeConversationId && "hidden md:flex")}
         >
-          {displayConversation && activeConversationId ? (
-            <ChatWindow
-              key={activeConversationId} // Force remount on change
-              conversation={displayConversation}
-              currentUserId={currentUser.id}
-              currentUser={currentUser}
-              isInitialLoading={false}
-              onLeave={handleLeave}
-              onAddFriend={handleAddFriend}
-              className="w-full"
-            />
+          {activeConversationId ? (
+            // Show loading only when actually fetching and no data yet
+            (isLoadingConversation || (isFetchingConversation && !displayConversation)) ? (
+              <ChatWindowLoading />
+            ) : displayConversation ? (
+              <ChatWindow
+                key={activeConversationId} // Force remount on change
+                conversation={displayConversation}
+                currentUserId={currentUser.id}
+                currentUser={currentUser}
+                isInitialLoading={false}
+                onLeave={handleLeave}
+                onAddFriend={handleAddFriend}
+                className="w-full"
+              />
+            ) : (
+              // Fallback: show error or retry state
+              <ChatWindowLoading />
+            )
           ) : (
             <EmptyState onNewConversation={() => setIsCreateDialogOpen(true)} />
           )}
@@ -225,6 +245,50 @@ function EmptyState({ onNewConversation }: { onNewConversation: () => void }) {
       >
         Tin nhắn mới
       </button>
+    </div>
+  );
+}
+
+/**
+ * Loading state when conversation is being fetched
+ */
+function ChatWindowLoading() {
+  return (
+    <div className="flex flex-col h-full w-full bg-background">
+      {/* Header skeleton */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b">
+        <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+          <div className="h-3 w-20 bg-muted animate-pulse rounded" />
+        </div>
+      </div>
+      
+      {/* Messages skeleton */}
+      <div className="flex-1 p-4 space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex items-end gap-2",
+              i % 2 === 0 ? "" : "flex-row-reverse"
+            )}
+          >
+            {i % 2 === 0 && <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />}
+            <div
+              className={cn(
+                "h-12 rounded-2xl bg-muted animate-pulse",
+                i % 2 === 0 ? "w-48 rounded-bl-md" : "w-64 rounded-br-md"
+              )}
+            />
+          </div>
+        ))}
+      </div>
+      
+      {/* Input skeleton */}
+      <div className="p-4 border-t">
+        <div className="h-10 w-full bg-muted animate-pulse rounded-full" />
+      </div>
     </div>
   );
 }

@@ -11,7 +11,29 @@ export default function supabaseLoader({
   width: number;
   quality?: number;
 }) {
-  return `${
-    process.env.NEXT_PUBLIC_SUPABASE_URL
-  }/storage/v1/object/public/${src}?width=${width}&quality=${quality || 75}`;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  // If src is already a full URL, use it directly
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    // Check if it's a Supabase URL
+    if (src.includes('.supabase.co/storage/')) {
+      // Already a Supabase storage URL, add transform params
+      const url = new URL(src);
+      url.searchParams.set('width', width.toString());
+      url.searchParams.set('quality', (quality || 75).toString());
+      return url.toString();
+    }
+    // External URL, return as-is
+    return src;
+  }
+
+  // Relative path - construct full URL
+  // Encode the path segments properly to handle special characters
+  const encodedPath = src
+    .split('/')
+    .map(segment => encodeURIComponent(segment))
+    .join('/');
+
+  return `${supabaseUrl}/storage/v1/object/public/${encodedPath}?width=${width}&quality=${quality || 75}`;
 }
+

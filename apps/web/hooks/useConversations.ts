@@ -46,8 +46,12 @@ export function useConversations() {
       name: string;
       memberIds: string[];
     }) => createGroupConversation(name, memberIds),
-    onSuccess: () => {
+    onSuccess: (newConv) => {
       queryClient.invalidateQueries({ queryKey: conversationKeys.list() });
+      // Also invalidate the detail query to ensure fresh fetch for the new conversation
+      if (newConv?.id) {
+        queryClient.invalidateQueries({ queryKey: conversationKeys.detail(newConv.id) });
+      }
     },
   });
 
@@ -99,6 +103,7 @@ export function useConversation(conversationId: string) {
   return {
     conversation: query.data ?? null,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
     error: query.error,
     refetch: query.refetch,
 
