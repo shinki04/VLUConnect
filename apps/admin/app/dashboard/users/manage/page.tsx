@@ -9,12 +9,12 @@ export default async function UsersManagePage() {
 
   return (
     <PageHeader
-      title="Manage Users"
-      description="View and manage all registered users"
+      title="Danh sách người dùng"
+      description="Xem và quản lý tất cả người dùng đã đăng ký"
       breadcrumbs={[
-        { label: "Dashboard", href: ADMIN_ROUTES.DASHBOARD },
-        { label: "Users", href: ADMIN_ROUTES.USERS },
-        { label: "Manage Users" },
+        { label: "Bảng điều khiển", href: ADMIN_ROUTES.DASHBOARD },
+        { label: "Người dùng", href: ADMIN_ROUTES.USERS },
+        { label: "Danh sách người dùng" },
       ]}
     >
       <UsersDataTable initialData={initialData} />

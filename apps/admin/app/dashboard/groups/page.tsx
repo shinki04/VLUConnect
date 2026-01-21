@@ -28,25 +28,25 @@ export default async function GroupsAnalyticsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Groups Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê nhóm</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AnalyticsHeader
-          title="Groups Analytics"
-          description="Group creation trends and statistics"
+          title="Thống kê nhóm"
+          description="Xu hướng tạo nhóm và số liệu thống kê"
         />
 
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Groups</CardTitle>
+              <CardTitle className="text-sm font-medium">Tổng số nhóm</CardTitle>
               <Grid className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -55,7 +55,7 @@ export default async function GroupsAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">New Today</CardTitle>
+              <CardTitle className="text-sm font-medium">Mới hôm nay</CardTitle>
               <Grid className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -64,7 +64,7 @@ export default async function GroupsAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Public Groups</CardTitle>
+              <CardTitle className="text-sm font-medium">Nhóm công khai</CardTitle>
               <Globe className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
@@ -73,13 +73,13 @@ export default async function GroupsAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Private Groups</CardTitle>
+              <CardTitle className="text-sm font-medium">Nhóm riêng tư</CardTitle>
               <Lock className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-500">{stats.private}</div>
               <Link href={ADMIN_ROUTES.GROUPS_MANAGE} className="text-xs text-primary hover:underline">
-                Manage groups →
+                Quản lý nhóm →
               </Link>
             </CardContent>
           </Card>

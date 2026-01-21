@@ -28,25 +28,25 @@ export default async function UsersAnalyticsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Users Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê người dùng</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AnalyticsHeader
-          title="Users Analytics"
-          description="User registration trends and statistics"
+          title="Thống kê người dùng"
+          description="Xu hướng đăng ký người dùng và số liệu thống kê"
         />
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium">Tổng số người dùng</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -55,7 +55,7 @@ export default async function UsersAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">New Today</CardTitle>
+              <CardTitle className="text-sm font-medium">Mới hôm nay</CardTitle>
               <Users className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -64,11 +64,11 @@ export default async function UsersAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Manage</CardTitle>
+              <CardTitle className="text-sm font-medium">Quản lý</CardTitle>
             </CardHeader>
             <CardContent>
               <Link href={ADMIN_ROUTES.USERS_MANAGE} className="text-primary hover:underline">
-                View all users →
+                Xem tất cả người dùng →
               </Link>
             </CardContent>
           </Card>

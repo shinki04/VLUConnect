@@ -177,37 +177,37 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Filters:</span>
+            <span className="text-sm text-muted-foreground">Bộ lọc:</span>
           </div>
 
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ReportFilterStatusType); setPage(1); }}>
             <SelectTrigger className="w-[140px] h-9">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="reviewed">Reviewed</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-              <SelectItem value="dismissed">Dismissed</SelectItem>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="pending">Đang chờ</SelectItem>
+              <SelectItem value="reviewed">Đã xem xét</SelectItem>
+              <SelectItem value="resolved">Đã giải quyết</SelectItem>
+              <SelectItem value="dismissed">Bỏ qua</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v as ReportFilterType); setPage(1); }}>
             <SelectTrigger className="w-[140px] h-9">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder="Loại" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="post">Post</SelectItem>
-              <SelectItem value="comment">Comment</SelectItem>
-              <SelectItem value="user">User</SelectItem>
-              <SelectItem value="message">Message</SelectItem>
+              <SelectItem value="all">Tất cả loại</SelectItem>
+              <SelectItem value="post">Bài viết</SelectItem>
+              <SelectItem value="comment">Bình luận</SelectItem>
+              <SelectItem value="user">Người dùng</SelectItem>
+              <SelectItem value="message">Tin nhắn</SelectItem>
             </SelectContent>
           </Select>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Rows:</span>
+            <span className="text-sm text-muted-foreground">Dòng:</span>
             <Select value={String(rowsPerPage)} onValueChange={handleRowsPerPageChange}>
               <SelectTrigger className="w-[70px] h-9">
                 <SelectValue />
@@ -225,13 +225,13 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Reporter</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Reported ID</TableHead>
-                <TableHead className="min-w-[200px]">Reason</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                <TableHead>Người tố cáo</TableHead>
+                <TableHead>Loại</TableHead>
+                <TableHead>ID bị tố cáo</TableHead>
+                <TableHead className="min-w-[200px]">Lý do</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead>Ngày tạo</TableHead>
+                <TableHead className="w-[100px]">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -246,7 +246,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
               ) : reports.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                    No reports found
+                    Không tìm thấy tố cáo nào
                   </TableCell>
                 </TableRow>
               ) : (
@@ -264,7 +264,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                             {(report.reporter?.display_name || "U")[0]?.toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm">{report.reporter?.display_name || "Anonymous"}</span>
+                        <span className="text-sm">{report.reporter?.display_name || "Ẩn danh"}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -285,7 +285,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusColors[report.status ?? ""] || "outline"}>
-                        {report.status ?? "Unknown"}
+                        {report.status ?? "Không rõ"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
@@ -310,19 +310,19 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                            <DropdownMenuLabel>Cập nhật trạng thái</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleStatusChange(report.id, "reviewed")}>
                               <Eye className="h-4 w-4 mr-2" />
-                              Mark as Reviewed
+                              Đánh dấu đã xem xét
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleStatusChange(report.id, "resolved")}>
                               <CheckCircle className="h-4 w-4 mr-2" />
-                              Mark as Resolved
+                              Đánh dấu đã giải quyết
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleStatusChange(report.id, "dismissed")}>
                               <XCircle className="h-4 w-4 mr-2" />
-                              Dismiss
+                              Bỏ qua
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -338,7 +338,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
         {/* Pagination */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages || 1}
+            Trang {page} / {totalPages || 1}
           </span>
           <div className="flex items-center space-x-1">
             <Button
@@ -347,7 +347,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
               onClick={() => setPage(1)}
               disabled={page <= 1}
             >
-              First
+              Đầu
             </Button>
             <Button
               variant="outline"
@@ -388,7 +388,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
               onClick={() => setPage(totalPages)}
               disabled={page >= totalPages}
             >
-              Last
+              Cuối
             </Button>
           </div>
         </div>
@@ -435,7 +435,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Report Details
+            Chi tiết tố cáo
             <Badge variant={statusColors[report.status ?? ""] || "outline"}>
               {report.status}
             </Badge>
@@ -445,7 +445,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
         <div className="space-y-4">
           {/* Reporter Info */}
           <div className="rounded-lg border p-4 space-y-3">
-            <h4 className="font-semibold text-sm">Reporter</h4>
+            <h4 className="font-semibold text-sm">Người tố cáo</h4>
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={report.reporter?.avatar_url || undefined} />
@@ -454,7 +454,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{report.reporter?.display_name || "Anonymous"}</p>
+                <p className="font-medium">{report.reporter?.display_name || "Ẩn danh"}</p>
                 {report.reporter?.username && (
                   <p className="text-sm text-muted-foreground">@{report.reporter.username}</p>
                 )}
@@ -464,9 +464,9 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
 
           {/* Reported Target */}
           <div className="rounded-lg border p-4 space-y-3">
-            <h4 className="font-semibold text-sm">Reported Target</h4>
+            <h4 className="font-semibold text-sm">Đối tượng bị tố cáo</h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-muted-foreground">Type:</div>
+              <div className="text-muted-foreground">Loại:</div>
               <div>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${typeColors[report.reported_type] || "bg-gray-100"}`}>
                   {report.reported_type}
@@ -479,7 +479,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
               <Button variant="outline" size="sm" className="w-full" asChild>
                 <a href={targetUrl}>
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  View {report.reported_type}
+                  Xem {report.reported_type}
                 </a>
               </Button>
             )}
@@ -487,11 +487,11 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
 
           {/* Reason & Description */}
           <div className="rounded-lg border p-4 space-y-2">
-            <h4 className="font-semibold text-sm">Reason</h4>
+            <h4 className="font-semibold text-sm">Lý do</h4>
             <p className="text-sm font-medium">{report.reason}</p>
             {report.description && (
               <>
-                <h4 className="font-semibold text-sm pt-2">Description</h4>
+                <h4 className="font-semibold text-sm pt-2">Mô tả</h4>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{report.description}</p>
               </>
             )}
@@ -499,13 +499,13 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
 
           {/* Metadata */}
           <div className="rounded-lg border p-4 space-y-3">
-            <h4 className="font-semibold text-sm">Metadata</h4>
+            <h4 className="font-semibold text-sm">Thông tin khác</h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-muted-foreground">Created At:</div>
+              <div className="text-muted-foreground">Ngày tạo:</div>
               <div>
                 {report.created_at ? format(new Date(report.created_at), "PPpp") : "-"}
               </div>
-              <div className="text-muted-foreground">Report ID:</div>
+              <div className="text-muted-foreground">ID tố cáo:</div>
               <div className="font-mono text-xs break-all">{report.id}</div>
             </div>
           </div>
@@ -521,7 +521,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
               }}
             >
               <Eye className="h-4 w-4 mr-2" />
-              Reviewed
+              Đã xem xét
             </Button>
             <Button
               variant="outline"
@@ -532,7 +532,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
               }}
             >
               <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-              Resolved
+              Đã giải quyết
             </Button>
             <Button
               variant="destructive"
@@ -542,7 +542,7 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
               }}
             >
               <XCircle className="h-4 w-4 mr-2" />
-              Dismiss
+              Bỏ qua
             </Button>
           </div>
         </div>

@@ -104,7 +104,7 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search users..."
+            placeholder="Tìm kiếm người dùng..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -119,10 +119,10 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
+              <TableHead>Người dùng</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Joined</TableHead>
+              <TableHead>Vai trò</TableHead>
+              <TableHead>Ngày tham gia</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -138,7 +138,7 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No users found
+                  Không tìm thấy người dùng
                 </TableCell>
               </TableRow>
             ) : (
@@ -153,15 +153,15 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user.display_name || user.username || "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">@{user.username || "unknown"}</p>
+                        <p className="font-medium">{user.display_name || user.username || "Không rõ"}</p>
+                        <p className="text-xs text-muted-foreground">@{user.username || "không rõ"}</p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.email || "-"}</TableCell>
                   <TableCell>
                     <Badge variant={roleBadgeVariants[user.global_role || ""] || "outline"}>
-                      {user.global_role || "No role"}
+                      {user.global_role || "Chưa có vai trò"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
@@ -175,10 +175,10 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
-                          Change Role
+                          Đổi vai trò
                         </DropdownMenuLabel>
                         {ROLES.map((role) => (
                           <DropdownMenuItem
@@ -201,7 +201,7 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
+          Trang {page} / {totalPages}
         </p>
         <div className="flex gap-2">
           <Button

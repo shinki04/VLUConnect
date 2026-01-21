@@ -22,7 +22,7 @@ export default async function HashtagGrowthPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem className="hidden md:block">
@@ -30,16 +30,16 @@ export default async function HashtagGrowthPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Growth Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê tăng trưởng</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Hashtag Growth Analytics</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Thống kê tăng trưởng Hashtag</h1>
           <p className="text-muted-foreground">
-            Analyze hashtag usage trends over time with advanced filtering options
+            Phân tích xu hướng sử dụng hashtag theo thời gian với các tùy chọn lọc nâng cao
           </p>
         </div>
         <HashtagGrowthContent />

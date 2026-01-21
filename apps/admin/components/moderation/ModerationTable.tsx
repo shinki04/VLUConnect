@@ -417,7 +417,7 @@ function ModerationDetailDialog({ action, open, onOpenChange }: ModerationDetail
           {/* Reason */}
           <div className="rounded-lg border p-4 space-y-2">
             <h4 className="font-semibold text-sm">Reason</h4>
-            <p className="text-sm whitespace-pre-wrap">{action.reason || "No reason provided"}</p>
+            <p className="text-sm whitespace-pre-wrap">{action.reason || "Không có lý do"}</p>
           </div>
 
           {/* Additional Details */}

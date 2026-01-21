@@ -28,19 +28,19 @@ export default async function GroupsManagePage({
 
   return (
     <PageHeader
-      title="Manage Groups"
-      description="View and manage all groups on the platform."
+      title="Danh sách nhóm"
+      description="Xem và quản lý tất cả các nhóm trên nền tảng."
       breadcrumbs={[
-        { label: "Dashboard", href: ADMIN_ROUTES.DASHBOARD },
-        { label: "Groups", href: ADMIN_ROUTES.GROUPS },
-        { label: "Manage Groups" },
+        { label: "Bảng điều khiển", href: ADMIN_ROUTES.DASHBOARD },
+        { label: "Nhóm", href: ADMIN_ROUTES.GROUPS },
+        { label: "Danh sách nhóm" },
       ]}
     >
       <Card>
         <CardHeader>
-          <CardTitle>Groups List</CardTitle>
+          <CardTitle>Danh sách nhóm</CardTitle>
           <CardDescription>
-            A list of all groups including their privacy status and member counts.
+            Danh sách tất cả các nhóm bao gồm trạng thái quyền riêng tư và số lượng thành viên.
           </CardDescription>
         </CardHeader>
         <CardContent>
