@@ -30,14 +30,14 @@ interface Hashtag {
 
 interface Post {
   id: string;
-  content: string | null;
+  content: string;
   created_at: string | null;
   author: {
     id: string;
     display_name: string | null;
     username: string | null;
     avatar_url: string | null;
-  } | null;
+  };
 }
 
 interface Stats {
@@ -137,7 +137,7 @@ export function HashtagGrowthContent() {
     setPostsLoading(true);
     try {
       const result = await getPostsByHashtagId(firstHashtag.id, page, 10);
-      setPosts(result.posts);
+      setPosts(result.posts.filter((p): p is Post => p !== null));
       setPostsPage(result.page);
       setPostsTotalPages(result.totalPages);
       setPostsTotal(result.total);

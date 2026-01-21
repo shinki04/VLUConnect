@@ -64,30 +64,30 @@ export default function ModerationAllActionsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.MODERATION}>Moderation</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.MODERATION}>Quản lý kiểm duyệt</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>All Actions</BreadcrumbPage>
+              <BreadcrumbPage>Danh sách bài đã kiểm duyệt</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            Tải lại
           </Button>
         </div>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">All Moderation Actions</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Danh sách bài đã kiểm duyệt</h2>
           <p className="text-muted-foreground">
-            View and manage all moderation actions across the platform
+            Xem và quản lý tất cả hành động kiểm duyệt trên hệ thống
           </p>
         </div>
 
@@ -104,3 +104,4 @@ export default function ModerationAllActionsPage() {
     </>
   );
 }
+

@@ -9,15 +9,16 @@ export default async function AllPostsPage() {
 
   return (
     <PageHeader
-      title="All Posts"
-      description="View and manage all posts on the platform"
+      title="Tất cả bài đăng"
+      description="Xem và quản lý tất cả bài đăng trên hệ thống"
       breadcrumbs={[
-        { label: "Dashboard", href: ADMIN_ROUTES.DASHBOARD },
-        { label: "Posts", href: ADMIN_ROUTES.POSTS },
-        { label: "All Posts" },
+        { label: "Bảng điều khiển", href: ADMIN_ROUTES.DASHBOARD },
+        { label: "Quản lý bài đăng", href: ADMIN_ROUTES.POSTS },
+        { label: "Tất cả bài đăng" },
       ]}
     >
       <PostsDataTable initialData={initialData} />
     </PageHeader>
   );
 }
+

@@ -27,40 +27,40 @@ export default async function ReportsAnalyticsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Reports Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê tố cáo</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AnalyticsHeader
-          title="Reports Analytics"
-          description="Overview of user reports and their status"
+          title="Thống kê tố cáo"
+          description="Tổng quan về các tố cáo từ người dùng và trạng thái xử lý"
         />
 
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Pending Reports</CardTitle>
+              <CardTitle className="text-sm font-medium">Tố cáo đang chờ</CardTitle>
               <Flag className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-500">{stats.reports.pending}</div>
-              <p className="text-xs text-muted-foreground">Awaiting review</p>
+              <p className="text-xs text-muted-foreground">Đang chờ xem xét</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+              <CardTitle className="text-sm font-medium">Tổng tố cáo</CardTitle>
               <Flag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.reports.total}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
+              <p className="text-xs text-muted-foreground">Tất cả thời gian</p>
             </CardContent>
           </Card>
         </div>
@@ -70,3 +70,4 @@ export default async function ReportsAnalyticsPage() {
     </>
   );
 }
+

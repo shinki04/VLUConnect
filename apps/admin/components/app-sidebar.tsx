@@ -56,7 +56,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Điều hướng</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {SIDEBAR_NAV_ITEMS.map((item) => (

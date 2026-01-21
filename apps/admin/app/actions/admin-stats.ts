@@ -298,3 +298,106 @@ export async function getUserRoleStats(): Promise<{ role: string; count: number 
 
   return Object.entries(roles).map(([role, count]) => ({ role, count }));
 }
+
+// Get group stats by period
+export async function getGroupStats(period: "daily" | "weekly" | "monthly" | "yearly") {
+  const supabase = await createClient();
+
+  const now = new Date();
+  let startDate: Date;
+
+  switch (period) {
+    case "daily":
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    case "weekly":
+      startDate = new Date(now.getTime() - 12 * 7 * 24 * 60 * 60 * 1000);
+      break;
+    case "monthly":
+      startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+      break;
+    case "yearly":
+      startDate = new Date(now.getFullYear() - 5, 0, 1);
+      break;
+  }
+
+  const { data, error } = await supabase
+    .from("groups")
+    .select("created_at")
+    .gte("created_at", startDate.toISOString())
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  // Helper to format week range
+  const formatWeekRange = (date: Date): string => {
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay());
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const startMonth = months[weekStart.getMonth()];
+    const endMonth = months[weekEnd.getMonth()];
+
+    if (startMonth === endMonth) {
+      return `${startMonth} ${weekStart.getDate()}-${weekEnd.getDate()}`;
+    }
+    return `${startMonth} ${weekStart.getDate()}-${endMonth} ${weekEnd.getDate()}`;
+  };
+
+  // Group data by period
+  const grouped = (data ?? []).reduce((acc, row) => {
+    if (!row.created_at) return acc;
+    const date = new Date(row.created_at);
+    let key: string;
+
+    switch (period) {
+      case "daily":
+        key = date.toISOString().split("T")[0]!;
+        break;
+      case "weekly":
+        key = formatWeekRange(date);
+        break;
+      case "monthly":
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        break;
+      case "yearly":
+        key = String(date.getFullYear());
+        break;
+    }
+
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return Object.entries(grouped)
+    .map(([period, count]) => ({
+      period,
+      count,
+    }))
+    .sort((a, b) => a.period.localeCompare(b.period));
+}
+
+// Get group overview stats for dashboard cards
+export async function getGroupOverviewStats() {
+  const supabase = await createClient();
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayISO = today.toISOString();
+
+  const [totalResult, todayResult, publicResult, privateResult] = await Promise.all([
+    supabase.from("groups").select("id", { count: "exact", head: true }),
+    supabase.from("groups").select("id", { count: "exact", head: true }).gte("created_at", todayISO),
+    supabase.from("groups").select("id", { count: "exact", head: true }).eq("privacy_level", "public"),
+    supabase.from("groups").select("id", { count: "exact", head: true }).eq("privacy_level", "private"),
+  ]);
+
+  return {
+    total: totalResult.count ?? 0,
+    today: todayResult.count ?? 0,
+    public: publicResult.count ?? 0,
+    private: privateResult.count ?? 0,
+  };
+}

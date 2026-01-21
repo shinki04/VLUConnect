@@ -17,30 +17,30 @@ export default async function DashboardPage() {
 
   const statsCards = [
     {
-      title: "Total Users",
+      title: "Tổng người dùng",
       value: stats.users.total,
-      description: `+${stats.users.today} today`,
+      description: `+${stats.users.today} hôm nay`,
       icon: Users,
       trend: stats.users.today > 0 ? "up" : "neutral",
     },
     {
-      title: "Total Posts",
+      title: "Tổng bài đăng",
       value: stats.posts.total,
-      description: `+${stats.posts.today} today`,
+      description: `+${stats.posts.today} hôm nay`,
       icon: FileText,
       trend: stats.posts.today > 0 ? "up" : "neutral",
     },
     {
-      title: "Flagged Posts",
+      title: "Bài đăng bị gắn cờ",
       value: stats.posts.flagged,
-      description: "Needs review",
+      description: "Cần xem xét",
       icon: Flag,
       trend: stats.posts.flagged > 0 ? "warning" : "neutral",
     },
     {
-      title: "Pending Reports",
+      title: "Tố cáo đang chờ",
       value: stats.reports.pending,
-      description: "Awaiting action",
+      description: "Đang chờ xử lý",
       icon: Flag,
       trend: stats.reports.pending > 0 ? "warning" : "neutral",
     },
@@ -48,9 +48,9 @@ export default async function DashboardPage() {
 
   return (
     <PageHeader
-      title="Dashboard Overview"
-      description="Welcome to the admin panel. Here's an overview of your platform."
-      breadcrumbs={[{ label: "Dashboard" }]}
+      title="Tổng quan"
+      description="Chào mừng bạn đến trang quản trị. Đây là tổng quan hệ thống."
+      breadcrumbs={[{ label: "Bảng điều khiển" }]}
     >
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((card) => (
@@ -92,8 +92,8 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common administrative tasks</CardDescription>
+            <CardTitle>Thao tác nhanh</CardTitle>
+            <CardDescription>Các tác vụ quản trị thường dùng</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2">
             <Link
@@ -101,35 +101,35 @@ export default async function DashboardPage() {
               className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted transition-colors"
             >
               <Flag className="h-4 w-4 text-orange-500" />
-              <span>Review Flagged Posts ({stats.posts.flagged})</span>
+              <span>Xem bài đăng bị gắn cờ ({stats.posts.flagged})</span>
             </Link>
             <Link
               href={ADMIN_ROUTES.REPORTS_MANAGE}
               className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted transition-colors"
             >
               <Flag className="h-4 w-4 text-red-500" />
-              <span>Handle Reports ({stats.reports.pending})</span>
+              <span>Xử lý tố cáo ({stats.reports.pending})</span>
             </Link>
             <Link
               href={ADMIN_ROUTES.USERS_MANAGE}
               className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted transition-colors"
             >
               <Users className="h-4 w-4" />
-              <span>Manage Users</span>
+              <span>Quản lý người dùng</span>
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Platform statistics</CardDescription>
+            <CardTitle>Hoạt động gần đây</CardTitle>
+            <CardDescription>Thống kê hệ thống</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium">New Users Today</p>
+                  <p className="text-sm font-medium">Người dùng mới hôm nay</p>
                   <p className="text-2xl font-bold text-green-500">
                     +{stats.users.today}
                   </p>
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium">New Posts Today</p>
+                  <p className="text-sm font-medium">Bài đăng mới hôm nay</p>
                   <p className="text-2xl font-bold text-blue-500">
                     +{stats.posts.today}
                   </p>
@@ -152,3 +152,4 @@ export default async function DashboardPage() {
     </PageHeader>
   );
 }
+

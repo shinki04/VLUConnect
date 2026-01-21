@@ -45,40 +45,64 @@
 }
 
 :root {
-  --color-mainred: #b52934;
-  --color-red-bg: rgba(182, 42, 54, 0.65);
+  /* Van Lang University Admin Color System */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Primary - Van Lang Red */
+  --color-vl-primary: #8B1A1A;
+  --color-vl-primary-light: #A63D3D;
+  --color-vl-primary-soft: #FBE9E9;
+  
+  /* Semantic Colors */
+  --color-vl-success: #16A34A;
+  --color-vl-success-soft: #DCFCE7;
+  --color-vl-warning: #D97706;
+  --color-vl-warning-soft: #FEF3C7;
+  --color-vl-danger: #DC2626;
+  --color-vl-danger-soft: #FEE2E2;
+  --color-vl-info: #0891B2;
+  --color-vl-info-soft: #CFFAFE;
+  
+  /* Legacy compatibility */
+  --color-mainred: #8B1A1A;
+  --color-red-bg: rgba(139, 26, 26, 0.65);
+  
+  /* shadcn/ui tokens - Light Mode */
+  --background: 0 0% 98.4%;           /* #FAFBFC - Pearl White */
+  --foreground: 222.2 47.4% 11.2%;    /* #0F172A - Deep Slate */
+  --card: 0 0% 100%;                  /* #FFFFFF - Clean White */
+  --card-foreground: 222.2 47.4% 11.2%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --primary: 0 68% 33%;               /* #8B1A1A - Van Lang Red */
+  --primary-foreground: 0 0% 100%;    /* White text on primary */
+  --secondary: 210 40% 96.1%;         /* #F1F5F9 - Surface Alt */
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;             /* #F1F5F9 */
+  --muted-foreground: 215.4 16.3% 46.9%; /* #64748B - Text Muted */
+  --accent: 0 60% 95%;                /* #FBE9E9 - Primary Soft */
+  --accent-foreground: 0 68% 33%;     /* Van Lang Red */
+  --destructive: 0 84.2% 60.2%;       /* #DC2626 */
+  --border: 214.3 31.8% 91.4%;        /* #E2E8F0 */
+  --input: 214.3 31.8% 91.4%;
+  --ring: 0 68% 33%;                  /* Van Lang Red for focus */
+  
+  /* Charts - Van Lang themed */
+  --chart-1: 0 68% 33%;               /* Van Lang Red */
+  --chart-2: 142.1 76.2% 36.3%;       /* Success Green */
+  --chart-3: 32.1 94.6% 43.7%;        /* Warning Amber */
+  --chart-4: 189.5 94.5% 36.7%;       /* Info Cyan */
+  --chart-5: 0 68% 45%;               /* Van Lang Red Light */
+  
+  /* Sidebar - Light */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 222.2 47.4% 11.2%;
+  --sidebar-primary: 0 68% 33%;       /* Van Lang Red */
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 60% 95%;        /* Primary Soft */
+  --sidebar-accent-foreground: 0 68% 33%;
+  --sidebar-border: 214.3 31.8% 91.4%;
+  --sidebar-ring: 0 68% 33%;
 }
 
 .dark {

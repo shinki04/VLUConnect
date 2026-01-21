@@ -38,9 +38,6 @@ export const ADMIN_ROUTES = {
   MODERATION: "/dashboard/moderation",
   MODERATION_ALL: "/dashboard/moderation/all",
   MODERATION_KEYWORDS: "/dashboard/moderation/keywords",
-  // Access Control
-  ACCESS_CONTROL: "/dashboard/access-control",
-  ACCESS_CONTROL_ROLES: "/dashboard/access-control/roles",
 } as const;
 
 // Navigation item types
@@ -59,80 +56,77 @@ export interface NavItem {
 // Sidebar navigation data
 export const SIDEBAR_NAV_ITEMS: NavItem[] = [
   {
-    title: "Dashboard",
+    title: "Bảng điều khiển",
     url: ADMIN_ROUTES.DASHBOARD,
     icon: Home,
   },
   {
-    title: "Users",
+    title: "Quản lý người dùng",
     icon: Users,
     items: [
-      { title: "Analytics", url: ADMIN_ROUTES.USERS },
-      { title: "Manage Users", url: ADMIN_ROUTES.USERS_MANAGE },
+      { title: "Thống kê người dùng", url: ADMIN_ROUTES.USERS },
+      { title: "Danh sách người dùng", url: ADMIN_ROUTES.USERS_MANAGE },
     ],
   },
   {
-    title: "Groups",
+    title: "Quản lý nhóm",
     icon: Grid,
     items: [
-      { title: "Manage Groups", url: ADMIN_ROUTES.GROUPS },
+      { title: "Thống kê nhóm", url: ADMIN_ROUTES.GROUPS },
+      { title: "Danh sách nhóm", url: ADMIN_ROUTES.GROUPS_MANAGE },
     ],
   },
   {
-    title: "Posts",
+    title: "Quản lý bài đăng",
     icon: FileText,
     items: [
-      { title: "Analytics", url: ADMIN_ROUTES.POSTS },
-      { title: "All Posts", url: ADMIN_ROUTES.POSTS_ALL },
-      { title: "Flagged Posts", url: ADMIN_ROUTES.POSTS_FLAGGED },
-      { title: "Rejected Posts", url: ADMIN_ROUTES.POSTS_REJECTED },
+      { title: "Thống kê bài đăng", url: ADMIN_ROUTES.POSTS },
+      { title: "Tất cả bài đăng", url: ADMIN_ROUTES.POSTS_ALL },
+      { title: "Bài viết bị đánh dấu Flag", url: ADMIN_ROUTES.POSTS_FLAGGED },
+      { title: "Bài đăng bị từ chối", url: ADMIN_ROUTES.POSTS_REJECTED },
     ],
   },
   {
-    title: "Comments",
+    title: "Quản lý bình luận",
     icon: MessageSquare,
     items: [
-      { title: "Analytics", url: ADMIN_ROUTES.COMMENTS },
-      { title: "Manage Comments", url: ADMIN_ROUTES.COMMENTS_MANAGE },
+      { title: "Thống kê bình luận", url: ADMIN_ROUTES.COMMENTS },
+      { title: "Danh sách bình luận", url: ADMIN_ROUTES.COMMENTS_MANAGE },
     ],
   },
   {
-    title: "Reports",
+    title: "Quản lý yêu cầu tố cáo",
     icon: Flag,
     items: [
-      { title: "Analytics", url: ADMIN_ROUTES.REPORTS },
-      { title: "Handle Reports", url: ADMIN_ROUTES.REPORTS_MANAGE },
+      { title: "Thống kê tố cáo", url: ADMIN_ROUTES.REPORTS },
+      { title: "Xử lý yêu cầu tố cáo", url: ADMIN_ROUTES.REPORTS_MANAGE },
     ],
   },
   {
-    title: "Moderation",
+    title: "Quản lý kiểm duyệt",
     icon: Shield,
     items: [
-      { title: "Analytics", url: ADMIN_ROUTES.MODERATION },
-      { title: "All Actions", url: ADMIN_ROUTES.MODERATION_ALL },
-      { title: "Keywords", url: ADMIN_ROUTES.MODERATION_KEYWORDS },
+      { title: "Thống kê kiểm duyệt", url: ADMIN_ROUTES.MODERATION },
+      { title: "Các bài đã kiểm duyệt", url: ADMIN_ROUTES.MODERATION_ALL },
+      { title: "Quản lý từ khóa", url: ADMIN_ROUTES.MODERATION_KEYWORDS },
     ],
   },
   {
-    title: "Hashtags",
+    title: "Quản lý hashtags",
     icon: Hash,
     items: [
-      { title: "Analytics", url: ADMIN_ROUTES.HASHTAGS },
-      { title: "Growth Analytics", url: ADMIN_ROUTES.HASHTAGS_GROWTH },
-      { title: "Manage Hashtags", url: ADMIN_ROUTES.HASHTAGS_MANAGE },
-    ],
-  },
-  {
-    title: "Access Control",
-    icon: Shield,
-    items: [
-      { title: "Roles", url: ADMIN_ROUTES.ACCESS_CONTROL_ROLES },
+      { title: "Thống kê hashtag", url: ADMIN_ROUTES.HASHTAGS },
+      {
+        title: "Thống kê tăng trưởng",
+        url: ADMIN_ROUTES.HASHTAGS_GROWTH,
+      },
+      { title: "Danh sách hashtag", url: ADMIN_ROUTES.HASHTAGS_MANAGE },
     ],
   },
 ];
 
 // App info
 export const APP_INFO = {
-  name: "Admin Panel",
+  name: "Bảng Quản Trị",
   version: "1.0.0",
 };

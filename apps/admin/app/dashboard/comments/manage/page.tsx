@@ -9,15 +9,16 @@ export default async function CommentsManagePage() {
 
   return (
     <PageHeader
-      title="Manage Comments"
-      description="View and moderate all comments on the platform"
+      title="Danh sách bình luận"
+      description="Xem và quản lý tất cả bình luận trên hệ thống"
       breadcrumbs={[
-        { label: "Dashboard", href: ADMIN_ROUTES.DASHBOARD },
-        { label: "Comments", href: ADMIN_ROUTES.COMMENTS },
-        { label: "Manage Comments" },
+        { label: "Bảng điều khiển", href: ADMIN_ROUTES.DASHBOARD },
+        { label: "Quản lý bình luận", href: ADMIN_ROUTES.COMMENTS },
+        { label: "Danh sách bình luận" },
       ]}
     >
       <CommentsDataTable initialData={initialData} />
     </PageHeader>
   );
 }
+

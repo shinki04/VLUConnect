@@ -22,22 +22,23 @@ export default async function HashtagsAnalyticsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Hashtags Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê hashtag</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AnalyticsHeader
-          title="Hashtags Analytics"
-          description="Top trending hashtags on the platform"
+          title="Thống kê hashtag"
+          description="Các hashtag đang thịnh hành trên hệ thống"
         />
         <HashtagTrendsChart />
       </div>
     </>
   );
 }
+

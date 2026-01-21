@@ -28,25 +28,25 @@ export default async function PostsAnalyticsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Posts Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê bài đăng</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AnalyticsHeader
-          title="Posts Analytics"
-          description="Post trends and moderation statistics"
+          title="Thống kê bài đăng"
+          description="Xu hướng bài đăng và thống kê kiểm duyệt"
         />
 
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <CardTitle className="text-sm font-medium">Tổng bài đăng</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -55,7 +55,7 @@ export default async function PostsAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Flagged Posts</CardTitle>
+              <CardTitle className="text-sm font-medium">Bài đăng bị gắn cờ</CardTitle>
               <Flag className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
@@ -64,7 +64,7 @@ export default async function PostsAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Rejected Posts</CardTitle>
+              <CardTitle className="text-sm font-medium">Bài đăng bị từ chối</CardTitle>
               <Ban className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
@@ -73,17 +73,17 @@ export default async function PostsAnalyticsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Actions</CardTitle>
+              <CardTitle className="text-sm font-medium">Hành động</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-1">
               <Link href={ADMIN_ROUTES.POSTS_ALL} className="text-primary hover:underline text-sm">
-                View all posts →
+                Xem tất cả bài đăng →
               </Link>
               <Link href={ADMIN_ROUTES.POSTS_FLAGGED} className="text-orange-500 hover:underline text-sm">
-                Review flagged →
+                Xem bài gắn cờ →
               </Link>
               <Link href={ADMIN_ROUTES.POSTS_REJECTED} className="text-red-500 hover:underline text-sm">
-                View rejected →
+                Xem bài bị từ chối →
               </Link>
             </CardContent>
           </Card>
@@ -94,3 +94,4 @@ export default async function PostsAnalyticsPage() {
     </>
   );
 }
+

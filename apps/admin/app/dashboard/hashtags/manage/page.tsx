@@ -9,15 +9,16 @@ export default async function HashtagsManagePage() {
 
   return (
     <PageHeader
-      title="Manage Hashtags"
-      description="View and manage all hashtags"
+      title="Danh sách hashtag"
+      description="Xem và quản lý tất cả hashtags"
       breadcrumbs={[
-        { label: "Dashboard", href: ADMIN_ROUTES.DASHBOARD },
-        { label: "Hashtags", href: ADMIN_ROUTES.HASHTAGS },
-        { label: "Manage Hashtags" },
+        { label: "Bảng điều khiển", href: ADMIN_ROUTES.DASHBOARD },
+        { label: "Quản lý hashtags", href: ADMIN_ROUTES.HASHTAGS },
+        { label: "Danh sách hashtag" },
       ]}
     >
       <HashtagsDataTable initialData={initialData} />
     </PageHeader>
   );
 }
+

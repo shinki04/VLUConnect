@@ -58,3 +58,5 @@ sequence-diagram/*
 .idea
 *.tsbuildinfo
 models/*
+.agent
+.shared

@@ -22,22 +22,23 @@ export default async function CommentsAnalyticsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href={ADMIN_ROUTES.DASHBOARD}>Bảng điều khiển</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Comments Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Thống kê bình luận</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AnalyticsHeader
-          title="Comments Analytics"
-          description="Comment activity trends and statistics"
+          title="Thống kê bình luận"
+          description="Xu hướng hoạt động bình luận và thống kê"
         />
         <CommentsChart />
       </div>
     </>
   );
 }
+
