@@ -313,15 +313,15 @@ export function ChatWindow({
 
   return (
     <TooltipProvider>
-      <div className={cn("flex flex-col h-full bg-background", className)}>
+      <div className={cn("flex flex-col h-full", className)}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-chat-border bg-chat-bg/95 backdrop-blur z-10 transition-colors">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-11 w-11 border-2 border-primary/10 shadow-sm">
               {headerInfo.avatarUrl ? (
                 <AvatarImage src={headerInfo.avatarUrl} alt={headerInfo.name} />
               ) : null}
-              <AvatarFallback>
+              <AvatarFallback className="bg-primary/5 text-primary text-sm font-semibold">
                 {isGroup ? (
                   <Users className="h-5 w-5" />
                 ) : (
@@ -330,15 +330,17 @@ export function ChatWindow({
               </AvatarFallback>
             </Avatar>
 
-            <div>
-              <h3 className="font-medium leading-tight">{headerInfo.name}</h3>
-              <p className="text-xs text-muted-foreground">
+            <div className="flex flex-col">
+              <h3 className="text-lg font-bold leading-tight">
+                {headerInfo.name}
+              </h3>
+              <p className="text-sm font-medium text-primary">
                 {headerInfo.subtitle}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {isGroup ? (
               <ChatDropdownGroup
                 onLeave={onLeave}
@@ -381,17 +383,17 @@ export function ChatWindow({
                 data={virtualizedItems}
                 itemContent={itemContent}
                 startReached={handleStartReached}
-                followOutput={(isAtBottom) => isAtBottom ? "smooth" : false}
+                followOutput={(isAtBottom) => (isAtBottom ? "smooth" : false)}
                 atBottomStateChange={setAtBottom}
                 initialTopMostItemIndex={virtualizedItems.length - 1}
                 alignToBottom
                 className="h-full overflow-x-hidden"
-                style={{ overflowX: 'hidden' }}
+                style={{ overflowX: "hidden" }}
                 components={{
                   Header: () => Header,
                 }}
               />
-              
+
               {/* Scroll to bottom button - centered */}
               {!atBottom && (
                 <button

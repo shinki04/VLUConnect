@@ -82,30 +82,44 @@ export function MessageInput({
     }
   }, [replyTo?.id]);
 
-  const handleSend = async (filesToSend?: File[]) => {
-    // Allow sending if there's content OR files
-    if ((!content.trim() && (!filesToSend || filesToSend.length === 0)) || disabled || isSending) return;
+  const handleSend = useCallback(
+    async (filesToSend?: File[]) => {
+      // Allow sending if there's content OR files
+      if (
+        (!content.trim() && (!filesToSend || filesToSend.length === 0)) ||
+        disabled ||
+        isSending
+      )
+        return;
 
-    const messageContent = content.trim();
-    // Capture reply info before clearing
-    const replyInfo = replyTo ? { id: replyTo.id, content: replyTo.content, sender: { display_name: replyTo.senderName } } : undefined;
-    
-    // Clear immediately for optimistic feel
-    setContent("");
-    onCancelReply?.(); // Clear reply immediately when Enter is pressed
-    setIsSending(true);
+      const messageContent = content.trim();
+      // Capture reply info before clearing
+      const replyInfo = replyTo
+        ? {
+            id: replyTo.id,
+            content: replyTo.content,
+            sender: { display_name: replyTo.senderName },
+          }
+        : undefined;
 
-    try {
-      await onSend(messageContent, replyInfo, filesToSend);
-    } catch (error) {
-      // Restore content if send failed
-      setContent(messageContent);
-      console.error("Failed to send message:", error);
-    } finally {
-      setIsSending(false);
-      textareaRef.current?.focus();
-    }
-  };
+      // Clear immediately for optimistic feel
+      setContent("");
+      onCancelReply?.(); // Clear reply immediately when Enter is pressed
+      setIsSending(true);
+
+      try {
+        await onSend(messageContent, replyInfo, filesToSend);
+      } catch (error) {
+        // Restore content if send failed
+        setContent(messageContent);
+        console.error("Failed to send message:", error);
+      } finally {
+        setIsSending(false);
+        textareaRef.current?.focus();
+      }
+    },
+    [content, disabled, isSending, replyTo, onCancelReply, onSend],
+  );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter without shift sends message
@@ -120,11 +134,14 @@ export function MessageInput({
   };
 
   // File attachment handlers
-  const handleFileSelect = useCallback((files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const fileArray = Array.from(files);
-    handleSend(fileArray);
-  }, [handleSend]);
+  const handleFileSelect = useCallback(
+    (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      const fileArray = Array.from(files);
+      handleSend(fileArray);
+    },
+    [handleSend],
+  );
 
   const handleAttachClick = () => {
     fileInputRef.current?.click();
@@ -163,18 +180,18 @@ export function MessageInput({
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     const files = e.dataTransfer?.files;
     if (files && files.length > 0) {
       handleFileSelect(files);
     }
   };
 
-  const canSend = (content.trim().length > 0) && !disabled && !isSending;
+  const canSend = content.trim().length > 0 && !disabled && !isSending;
 
   return (
     <div
-      className={cn("border-t bg-background/95 backdrop-blur relative", className)}
+      className={cn("chat-input-container relative", className)}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -185,7 +202,9 @@ export function MessageInput({
         <div className="absolute inset-0 bg-primary/10 border-2 border-dashed border-primary rounded-lg flex items-center justify-center z-10">
           <div className="text-center">
             <Paperclip className="h-8 w-8 mx-auto text-primary mb-2" />
-            <p className="text-sm font-medium text-primary">Thả file vào đây để gửi</p>
+            <p className="text-sm font-medium text-primary">
+              Thả file vào đây để gửi
+            </p>
           </div>
         </div>
       )}
@@ -225,7 +244,7 @@ export function MessageInput({
       )}
 
       <div className="p-4">
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-3 max-w-5xl mx-auto">
           {/* Attach button */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -233,18 +252,18 @@ export function MessageInput({
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="shrink-0 h-10 w-10 rounded-full"
+                className="shrink-0 h-9 w-9 rounded-full"
                 onClick={handleAttachClick}
                 disabled={disabled || isSending}
               >
-                <Paperclip className="h-5 w-5" />
+                <Paperclip className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Đính kèm file (tối đa 2GB)</TooltipContent>
           </Tooltip>
 
           {/* Input */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative group">
             <Textarea
               ref={textareaRef}
               value={content}
@@ -252,11 +271,13 @@ export function MessageInput({
                 setContent(e.target.value)
               }
               onKeyDown={handleKeyDown}
-              placeholder={replyTo ? `Trả lời ${replyTo.senderName || ""}...` : placeholder}
+              placeholder={
+                replyTo ? `Trả lời ${replyTo.senderName || ""}...` : placeholder
+              }
               className={cn(
-                "resize-none overflow-hidden min-h-11 max-h-[150px] py-3",
-                "rounded-2xl",
-                "focus-visible:ring-1"
+                "resize-none overflow-hidden min-h-[38px] max-h-[150px] py-2 px-4 text-[13px]",
+                "bg-chat-bg border border-chat-border rounded-xl",
+                "focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all shadow-sm",
               )}
               rows={1}
             />
@@ -270,21 +291,21 @@ export function MessageInput({
             onMouseEnter={() => sendIconRef.current?.startAnimation()}
             onMouseLeave={() => sendIconRef.current?.stopAnimation()}
             className={cn(
-              "shrink-0 h-10 w-10 rounded-full transition-all duration-200",
+              "shrink-0 h-11 w-11 rounded-full transition-all duration-300 shadow-md",
               canSend
-                ? "bg-primary hover:bg-primary/90 scale-100"
-                : "bg-muted scale-90"
+                ? "bg-primary hover:bg-primary/90 scale-100 shadow-primary/25 hover:shadow-lg hover:-translate-y-0.5"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-400 scale-95 cursor-not-allowed shadow-none",
             )}
           >
             {/* <Send className="h-5 w-5" /> */}
             <SendIcon ref={sendIconRef} className="h-5 w-5" size={26} />
-          
           </Button>
         </div>
 
         {/* Typing indicator hint */}
         <p className="text-[10px] text-muted-foreground mt-1 text-center">
-          Nhấn Enter để gửi • Shift+Enter để xuống dòng{replyTo ? " • Esc để hủy trả lời" : ""} • Kéo thả file để gửi
+          Nhấn Enter để gửi • Shift+Enter để xuống dòng
+          {replyTo ? " • Esc để hủy trả lời" : ""} • Kéo thả file để gửi
         </p>
       </div>
     </div>

@@ -7,7 +7,11 @@ import { getCurrentUser } from "@/app/actions/user";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { UserDropdown } from "./UserDropdown";
 
-export async function Header() {
+interface HeaderProps {
+  hideNavTabs?: boolean;
+}
+
+export async function Header({ hideNavTabs }: HeaderProps = {}) {
   const user = await getCurrentUser();
 
   return (
@@ -26,25 +30,34 @@ export async function Header() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
-        <div className="flex gap-6 mt-1 text-sm font-medium">
-          <a className="text-mainred border-b-2 border-mainred pb-0.5" href="#">
-            Tất cả
-          </a>
-          <a
-            className="text-slate-500 hover:text-mainred transition-colors pb-0.5"
-            href="#"
-          >
-            Người dùng
-          </a>
-          <a
-            className="text-slate-500 hover:text-mainred transition-colors pb-0.5"
-            href="#"
-          >
-            Nhóm
-          </a>
+      {!hideNavTabs ? (
+        <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
+          <div className="flex gap-6 mt-1 text-sm font-medium">
+            <a
+              className="text-mainred border-b-2 border-mainred pb-0.5"
+              href="#"
+            >
+              Tất cả
+            </a>
+            <a
+              className="text-slate-500 hover:text-mainred transition-colors pb-0.5"
+              href="#"
+            >
+              Người dùng
+            </a>
+            <a
+              className="text-slate-500 hover:text-mainred transition-colors pb-0.5"
+              href="#"
+            >
+              Nhóm
+            </a>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 text-center font-bold text-lg hidden md:block">
+          Trang cá nhân
+        </div>
+      )}
 
       {/* User Actions */}
       <div className="flex items-center justify-end gap-2 md:gap-3 md:w-1/4">

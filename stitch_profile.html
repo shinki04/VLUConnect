@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VLU Social - Trang Cá Nhân</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ec1313",
+              "vlu-red": "#ec1313",
+              "vlu-red-dark": "#c41212",
+              "background-light": "#f8f6f6",
+              "background-dark": "#120808",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"],
+              "body": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100;
+            }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+             font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .vlu-translucent-red {
+            background: linear-gradient(to bottom, rgba(236, 19, 19, 0) 0%, rgba(236, 19, 19, 0.1) 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<div class="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-16">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 cursor-pointer">
+<div class="size-8 bg-vlu-red rounded-lg flex items-center justify-center text-white shadow-lg shadow-vlu-red/20">
+<span class="material-symbols-outlined text-xl">school</span>
+</div>
+<h1 class="text-xl font-bold text-vlu-red tracking-tight">VLU Social</h1>
+</div>
+<div class="hidden md:flex relative w-64">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-full leading-5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-vlu-red/50 sm:text-sm transition duration-150 ease-in-out" placeholder="Tìm kiếm trên VLU Social" type="text"/>
+</div>
+</div>
+<nav class="hidden md:flex space-x-1">
+<a class="px-4 py-2 rounded-lg text-vlu-red bg-vlu-red/5 relative group" href="#">
+<span class="material-symbols-outlined filled text-2xl">home</span>
+</a>
+<a class="px-4 py-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-vlu-red transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+</a>
+<a class="px-4 py-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-vlu-red transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">school</span>
+</a>
+<a class="px-4 py-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-vlu-red transition-all" href="#">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-vlu-red hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl">chat</span>
+</button>
+<div class="relative ml-2">
+<img alt="Avatar người dùng" class="h-9 w-9 rounded-full object-cover border-2 border-vlu-red/20 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGD_ILErFnXTDgdtePBYRoQXCKewO57P28_dowZC4zFReuR8Sw3W3jF63ahBAbNipRgizsGW20YuU5OqVHII8lZcNKN09pNAzAQk6EZUFd4hVtwWN0khCr5zklktE4yCPMaeqER1S6qBeX-c7WiVyGrj5Yj5NnmwLjtDnEAEszv3dan74KnrDId02Zq_1qwgkEwSofpCZX9PW5m8aV_ZwKqTp-efO6vv03dqGMfX3T7c-fh4kX51Q6zFwDsaaXaiGajlq1q-267alQ"/>
+<span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-green-500"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<main class="pt-16 pb-12">
+<div class="max-w-[1024px] mx-auto">
+<div class="bg-white dark:bg-[#1a1a1a] shadow-sm rounded-b-xl overflow-hidden mb-6 border-b border-gray-200 dark:border-gray-800">
+<div class="relative h-48 md:h-[350px] w-full bg-vlu-red/5">
+<img alt="Ảnh bìa trường đại học" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmYLXPtGlQUYUkmT8_Nmb_HFP3F9F4ldUswW9XKuVnCo6kyAXELW4mwc13c33neb6C7y1m0SIdyMl5RoHocr0sN8ldM1sQDcwhHwfLN5V-h61UsIKnUA0sCKwN7A-zojeshbLdzhd1Bk42Qa3E2BCrw-dzLAfcn5VieDX5i0hlfUyWxPm25TcARDp3JZTsPi9v0ncGgpltUR8Zk6pwklPtcHRJuD1HDrHd-1rhTHBDNqBc1z7I4vhMTdK-cUObcdIe0FJfJYIbvGkr"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<button class="absolute bottom-4 right-4 bg-white/90 backdrop-blur text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-lg">photo_camera</span>
+<span class="hidden sm:inline">Chỉnh sửa ảnh bìa</span>
+</button>
+</div>
+<div class="px-4 md:px-8 pb-2 vlu-translucent-red">
+<div class="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-20 gap-4 mb-4 relative z-10">
+<div class="relative shrink-0 mx-auto md:mx-0">
+<div class="h-32 w-32 md:h-44 md:w-44 rounded-full p-1.5 bg-white dark:bg-[#1a1a1a] shadow-xl">
+<img alt="Avatar Nguyễn Văn A" class="h-full w-full rounded-full object-cover border border-gray-100 dark:border-gray-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJmE2lzzvV-GEE-MULGwTqy9Rzy8MARqOx1t-Zyw1IpPWkkTiNDtWucnJ1YU5vyHMZNlTNJmH7xkg9vEbpFLeokHmH2bKwb-Bmlq-PJk_nSWqUdf23pYluTAxQror3T7yicMCdH9qNdKW8UKR30htgF2TRqgEDcxSwEu4HCF015HjOAjXJuFzSQpisXTg5UT-BFwc4lP7E_T9bdbxaIvaD6IsBfolE5S3_8Zytm7uDpXQjJ6jK8iWNPO03jDp2Cp20E3Q1TR3QB73k"/>
+</div>
+<div class="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-vlu-red text-white p-2 rounded-full cursor-pointer hover:bg-vlu-red-dark border-4 border-white dark:border-[#1a1a1a] shadow-md transition-transform active:scale-95">
+<span class="material-symbols-outlined text-xl">photo_camera</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col items-center md:items-start pt-2 md:pt-16 pb-2">
+<div class="flex items-center gap-2">
+<h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Nguyễn Văn A</h1>
+<div class="bg-vlu-red text-white rounded-full px-2 py-0.5 flex items-center gap-1 shadow-sm border border-vlu-red" title="Giảng viên đã xác thực">
+<span class="material-symbols-outlined text-[14px] font-bold filled">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-wider hidden sm:block">Xác thực giảng viên</span>
+</div>
+</div>
+<p class="text-gray-600 dark:text-gray-400 font-medium">Giảng viên - Khoa Công Nghệ Thông Tin</p>
+<div class="flex items-center gap-2 mt-1.5">
+<span class="flex h-2.5 w-2.5 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+</span>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400">Đang hoạt động</span>
+</div>
+</div>
+<div class="hidden md:flex gap-3 mb-4">
+<button class="bg-vlu-red hover:bg-vlu-red-dark text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-vlu-red/20 transition-all hover:-translate-y-0.5">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                            Thêm tin mới
+                        </button>
+<button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">edit</span>
+                            Chỉnh sửa trang cá nhân
+                        </button>
+</div>
+</div>
+<div class="flex items-center gap-1 md:gap-2 border-t border-gray-100 dark:border-gray-800 pt-1">
+<a class="px-6 py-4 text-vlu-red border-b-[3px] border-vlu-red font-bold whitespace-nowrap bg-vlu-red/5" href="#">Bài viết</a>
+<a class="px-6 py-4 text-gray-500 dark:text-gray-400 hover:bg-vlu-red/5 hover:text-vlu-red rounded-t-lg font-semibold whitespace-nowrap transition-colors" href="#">Giới thiệu</a>
+<a class="px-6 py-4 text-gray-500 dark:text-gray-400 hover:bg-vlu-red/5 hover:text-vlu-red rounded-t-lg font-semibold whitespace-nowrap transition-colors" href="#">Bạn bè <span class="text-xs opacity-60 ml-1">500</span></a>
+<a class="px-6 py-4 text-gray-500 dark:text-gray-400 hover:bg-vlu-red/5 hover:text-vlu-red rounded-t-lg font-semibold whitespace-nowrap transition-colors" href="#">Ảnh</a>
+<div class="flex-1"></div>
+<button class="p-2 mr-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 px-4 md:px-0">
+<div class="md:col-span-5 lg:col-span-4 flex flex-col gap-5">
+<div class="bg-white dark:bg-[#1a1a1a] p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+<h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+                        Giới thiệu
+                    </h2>
+<ul class="space-y-4">
+<li class="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined text-vlu-red filled">work</span>
+<div class="text-sm">Giảng viên tại <span class="font-bold text-gray-900 dark:text-white">Đại học Văn Lang</span></div>
+</li>
+<li class="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined text-vlu-red filled">school</span>
+<div class="text-sm">Đã học tại <span class="font-bold text-gray-900 dark:text-white">Đại học Khoa học Tự nhiên</span></div>
+</li>
+<li class="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined text-vlu-red filled">home</span>
+<div class="text-sm">Sống tại <span class="font-bold text-gray-900 dark:text-white">TP. Hồ Chí Minh</span></div>
+</li>
+<li class="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined text-vlu-red filled">rss_feed</span>
+<div class="text-sm">Có <span class="font-bold text-gray-900 dark:text-white">1,209 người</span> theo dõi</div>
+</li>
+</ul>
+<button class="w-full mt-6 bg-gray-100 dark:bg-gray-800 hover:bg-vlu-red hover:text-white text-gray-800 dark:text-gray-200 py-2.5 rounded-lg font-bold text-sm transition-all">
+                        Chỉnh sửa chi tiết
+                    </button>
+</div>
+<div class="bg-white dark:bg-[#1a1a1a] p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Ảnh</h2>
+<a class="text-vlu-red hover:underline text-xs font-bold uppercase tracking-wide" href="#">Xem tất cả</a>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<img alt="Photo 1" class="aspect-square object-cover rounded-lg hover:brightness-90 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3Y2lUz2jWqkC8KNHl7C3yJ9YbcEFcrKmKvn3GXARNUnwwT9OwjovOBsrEtUsarhN29FSBpRgm0SslfSyAcL8WrHADDWf8Z-2hHIGTzNCrjT50hwCN3MQO7CZtAcHJoISyn8Q-MM0t_O5YU3fXyspO6CMGrZFAmUpRZuwmVmBzi8eWfxB5EqJws1J5Yt3kCpe4Bjyo7sMkDi8pVzDQG8w3SBme0WDw0z2J9cYIARLUJem-Xxdemd92Ym4o4_j8XkvC4aQpDCCMdGAZ"/>
+<img alt="Photo 2" class="aspect-square object-cover rounded-lg hover:brightness-90 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYR7xkSSjtV2J3KlwP1IChqWdcl0d051xNDDMc7gUtQMzq5p6bTGdAKWi7G5ubvoAklBwJwLGHJBtPS671vxv76uCMjkIbRgx0OzBA9FdMpMfH8DeTBgv6oXTPj5PaQh3ASQrkn8XklNip_iqVultSYLEY58nUXsCAvYMyVoGLTiYF_TrXbJfTzeG6-_4v5evCEz3LysDJNmsIX7uwsB0eZdAThAYEeMmj9fNda0xvKOyXNNAU7zUcpVuY8zJITXP7ANfX-EK2J2a2"/>
+<img alt="Photo 3" class="aspect-square object-cover rounded-lg hover:brightness-90 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH9iwapKlix9py3sqe56Aq5Ik-VJwErW4FvC3C-z2cIE1K0XsoHvrnVZFk5NDoeoYt_1RLZy4li8K9C6ZC-iI8wVOz7XS6p6Gdi4gPFYIcshjeFuqyUSJ-ccbCMD6RO93f3FvPNWqhqJGht7boXR8eKi80VyUY2AFlx0UbEB3uslNjkWE4qdmjrlyL3hZhuVIPhjCmnzyra8YANZX8BmjDkCYj7duphk9m91xEBLWjGK8bjo7jdEO6cc7ECKJ5GNXUKaqWcBCHMiNh"/>
+<img alt="Photo 4" class="aspect-square object-cover rounded-lg hover:brightness-90 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAX16XeV9EZpaYsZnGinceQt2aKUTYjZlbugMH1WfRTMr8fnYTTIGIgPE_36mbHYxCTo1qPjP4UPjF8PnT6Vxy9Iz4PSbZ6lB3wqBKzJ1D6olS74lj0m5lp-EVAMvWB3zmQYk0ZmwsLWi_qf42IJ8S15JWJIcFRvobD8WqY2-Pwy1V13ycANi8tbpm2J8K7SY6GriUQWA82H0Itb5tgVnkPq0nCOJnrrfoyDiTxh6lACga0ZfJ-m7iHGdIhe9HCocQUO-nwq7eEkQYr"/>
+<img alt="Photo 5" class="aspect-square object-cover rounded-lg hover:brightness-90 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_5b2xuMa2LNmPD0-sBPPIKvDZyC9jL77Y4ZnHSHJ4Uwmi8_bDIDCpRYG3VLaFyBu7uatk-Nt9jLour1yHei8Oth59LSovK-QPMNp6tUJXLB0sBn8I5fXePkzTfsIbRdHP-IYw8CGSSBeZsQExN5T4xABnfVD3-UmDV69YzlwZQkf-gEHz7hfqDb-bQrlsY2ehiw2-EhvjumWJTkzRz_ehA7_PZLRHtYjEk-QoCY2wLY58Rk158TdRxqiJn296pefCbRYEvJjOWgtm"/>
+<img alt="Photo 6" class="aspect-square object-cover rounded-lg hover:brightness-90 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB17xZJGPImFKbzlr0YyICbQA8kVZtFlQuBhmgtLV4_gUEAg1v0Ox1GHAVwiyV2xyGRIELSVS1isUB5SVcOMhtgYLQcRzppxpM37zp1V8Y4iaYaST85LGMnogFxpLj5eDyKmna5_GM5h6-2qfAayX_tu6m_XZMzpjEIRtiTcKxmRn0_hJdX8mu5ag2l0CnKDdvmjtFrXbkEXk9eGB-Mr1U3BPgg_OkmaSeR8MupWaDHD7RV0rmzXRgHBnR5KnbM2ntCeTLtGRjuGrGy"/>
+</div>
+</div>
+</div>
+<div class="md:col-span-7 lg:col-span-8 flex flex-col gap-5">
+<div class="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
+<div class="flex gap-3 mb-4">
+<img alt="Avatar user" class="h-10 w-10 rounded-full object-cover shrink-0 border border-gray-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqmbRf_gD-mrP2JhDOa_J7VlzYvUM1PLMDLr2lnX_z27jvHW3fyzO0E11Jgfs_pWfV_4aaQWp-bTIivR2_9VLwV7OtKQjk60b7ujEv2ZD1pQeogkP0xEag1CAXkh811-mhCRs9dbGc8EKYglQE-rdGkcP44gANuRZJodCbVC1zKlyGNxZLX0NqM8--c197b7VX2FB8WAPsWIZKygdfg_PALNV_xOZba148YY3PoiSPWtyiLvE1feoRgZeR7zHregSxEEg_WIhER_aU"/>
+<div class="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full px-5 py-2.5 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center">
+<span class="text-gray-500 dark:text-gray-400 text-sm">Bạn đang nghĩ gì, Nguyễn Văn A?</span>
+</div>
+</div>
+<div class="border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center justify-around">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-vlu-red/5 transition-colors group">
+<span class="material-symbols-outlined text-vlu-red filled group-hover:scale-110 transition-transform">videocam</span>
+<span class="text-sm font-bold text-gray-600 dark:text-gray-300">Trực tiếp</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-vlu-red/5 transition-colors group">
+<span class="material-symbols-outlined text-green-500 filled group-hover:scale-110 transition-transform">photo_library</span>
+<span class="text-sm font-bold text-gray-600 dark:text-gray-300">Ảnh/Video</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-vlu-red/5 transition-colors group">
+<span class="material-symbols-outlined text-yellow-500 filled group-hover:scale-110 transition-transform">mood</span>
+<span class="text-sm font-bold text-gray-600 dark:text-gray-300">Cảm xúc</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-5">
+<div class="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+<div class="px-4 py-3 bg-vlu-red/5 flex items-center gap-2 border-b border-vlu-red/10">
+<span class="material-symbols-outlined filled text-sm text-vlu-red">push_pin</span>
+<span class="text-[11px] font-bold text-vlu-red uppercase tracking-widest">Bài viết đã ghim</span>
+</div>
+<div class="p-4">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-3">
+<div class="relative">
+<img alt="Avatar" class="h-10 w-10 rounded-full object-cover ring-2 ring-vlu-red/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOttn_wBDYIDy41dzY7HOoRs9TEc-5tXmq7hNTQTc0sPmXDZioxiu0xy3HjRnUS_3SxRd3oV6fBUvrunHtUD3-gwYkzDvAvN6QYN4v0s5g7_IEZAZq1UvAmEpDRruu8WRCPs3AsdY9c_FVy5D6n-3aifCc2trS9lEPiVRLoZ1URTPe6ur7DWqe4L4aQykoGh1GQnkyuJ3ALg9Yytz9fuMBNN_jp4zcmUrf4d20aM-OZDmF03pfU6le2aSr335yQZJOcDrZm9rpBKrq"/>
+<div class="absolute -bottom-1 -right-1 bg-vlu-red text-white rounded-full p-[2px] border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] font-bold">check</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h4 class="font-bold text-gray-900 dark:text-white">Nguyễn Văn A</h4>
+<span class="text-gray-500 text-xs">• Đang cảm thấy hào hứng</span>
+</div>
+<div class="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+<span>2 giờ trước</span>
+<span>•</span>
+<span class="material-symbols-outlined text-[14px]">public</span>
+</div>
+</div>
+</div>
+<button class="text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<p class="text-gray-800 dark:text-gray-200 leading-relaxed mb-3">
+                                Hội thảo khoa học quốc tế <span class="text-vlu-red font-bold">VLU-Science 2024</span> thật tuyệt vời! Cảm ơn Trường Đại học Văn Lang đã tạo điều kiện để các giảng viên và sinh viên có cơ hội giao lưu, học hỏi. Rất nhiều đề tài nghiên cứu thú vị đã được trình bày hôm nay. 🎓✨
+                            </p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="text-xs font-bold text-vlu-red px-2 py-1 bg-vlu-red/5 rounded">#VLUScience2024</span>
+<span class="text-xs font-bold text-vlu-red px-2 py-1 bg-vlu-red/5 rounded">#VanLangUniversity</span>
+<span class="text-xs font-bold text-vlu-red px-2 py-1 bg-vlu-red/5 rounded">#Research</span>
+</div>
+<div class="grid grid-cols-2 gap-1 rounded-xl overflow-hidden mb-4 border border-gray-100 dark:border-gray-800">
+<img alt="VLU Conference" class="w-full h-64 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBen-Ytw8p7QGN1dMcVr6YF39e8KcAyNLwwjw-_BFdv0xSvFSZP6cQErG4WhOdLGahH0R0_U1Bn3RsAxf-mNSAE7HJXdRDL_N-ZB2E9DzyRGE9GIqF762GQRiPGHtQKak08qZ8DBOKUn5hAkxpqBj9oE4bhdYYa_xzF-NaNNhob7ETSyQxJm1kGjWXiipo-KKLEcKsaWtOOI57fvxGySmWlBhDgoR2Yq2eC6T3nx52-GYy9AKaiVm_Kw5P1eTUUGU-UkeYSXw4oxrd0"/>
+<div class="relative group cursor-pointer overflow-hidden">
+<img alt="Discussion" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC89b9AOKFGbF9kQhzBVIWk-LkbsGDUlDMohYrIyUSBVZjzgkDYjukwAwdacybuMpw6HfTiYW0MhJVnXkT6ePBTSgRsAJuIZ1zDHWKbN-HZSdTyI6xPpqI0q6aDO0Mwxcj6LptUh6OE18fG_KVO9-c2p5XnVsmYyd6AUcSt_s7laK7jOrE9lsq9t3IbBAGr3pUCfzRZ7jfvBJ718o8QGMvB0PQnLDfnXYtmj-KlB5-ART36VJZg_Gfz9NFL6Dn-UCiiRD8cVNFwYmY-"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+<span class="text-white text-2xl font-bold">+5 ảnh</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center py-3 border-t border-b border-gray-50 dark:border-gray-800 mb-1">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-1.5">
+<div class="size-6 rounded-full bg-vlu-red flex items-center justify-center ring-2 ring-white dark:ring-[#1a1a1a] z-20">
+<span class="material-symbols-outlined text-white text-[14px] filled">thumb_up</span>
+</div>
+<div class="size-6 rounded-full bg-pink-500 flex items-center justify-center ring-2 ring-white dark:ring-[#1a1a1a] z-10">
+<span class="material-symbols-outlined text-white text-[14px] filled">favorite</span>
+</div>
+</div>
+<span class="text-gray-500 text-sm font-medium hover:underline cursor-pointer">245 người khác</span>
+</div>
+<div class="flex gap-3 text-sm text-gray-500 font-medium">
+<span class="hover:underline cursor-pointer">32 bình luận</span>
+<span class="hover:underline cursor-pointer">5 chia sẻ</span>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-1">
+<button class="flex-1 py-2 rounded-lg hover:bg-vlu-red/5 flex items-center justify-center gap-2 text-vlu-red transition-all font-bold">
+<span class="material-symbols-outlined filled">thumb_up</span>
+                                    Thích
+                                </button>
+<button class="flex-1 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300 transition-all font-bold">
+<span class="material-symbols-outlined">chat_bubble</span>
+                                    Bình luận
+                                </button>
+<button class="flex-1 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300 transition-all font-bold">
+<span class="material-symbols-outlined">share</span>
+                                    Chia sẻ
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

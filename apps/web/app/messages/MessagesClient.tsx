@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { ChatNavSidebar } from "@/components/messaging/ChatNavSidebar";
 import { ChatWindow } from "@/components/messaging/ChatWindow";
 import { ConversationList } from "@/components/messaging/ConversationList";
 import { CreateConversationDialog } from "@/components/messaging/CreateConversationDialog";
@@ -33,14 +34,16 @@ export function MessagesClient({
 }: MessagesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Local state for active conversation ID (for shallow routing)
   // Initialize from URL param or initial prop
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(() => {
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(() => {
     const paramId = searchParams.get("conversationId");
     return paramId || initialConversation?.id || null;
   });
-  
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Sync with browser back/forward navigation (popstate)
@@ -73,36 +76,47 @@ export function MessagesClient({
     activeConversationId,
   });
 
+  const totalUnreadCount = conversations.reduce(
+    (acc, conv) => acc + (conv.unreadCount || 0),
+    0,
+  );
+
   // Fetch active conversation details (Client Side)
-  const { 
-    conversation: activeConversation, 
-    leave, 
-    isLoading: isLoadingConversation, 
+  const {
+    conversation: activeConversation,
+    leave,
+    isLoading: isLoadingConversation,
     isFetching: isFetchingConversation,
     error: conversationError,
-    refetch: refetchConversation
+    refetch: refetchConversation,
   } = useConversation(activeConversationId || "");
-  
+
   // Debug logging
-  console.log('[MessagesClient] activeConversationId:', activeConversationId);
-  console.log('[MessagesClient] activeConversation:', activeConversation);
-  console.log('[MessagesClient] isLoadingConversation:', isLoadingConversation);
-  console.log('[MessagesClient] isFetchingConversation:', isFetchingConversation);
-  console.log('[MessagesClient] conversationError:', conversationError);
-  
+  console.log("[MessagesClient] activeConversationId:", activeConversationId);
+  console.log("[MessagesClient] activeConversation:", activeConversation);
+  console.log("[MessagesClient] isLoadingConversation:", isLoadingConversation);
+  console.log(
+    "[MessagesClient] isFetchingConversation:",
+    isFetchingConversation,
+  );
+  console.log("[MessagesClient] conversationError:", conversationError);
+
   // Fallback to initial conversation if hook hasn't loaded yet
-  const displayConversation = activeConversation || 
-    (activeConversationId === initialConversation?.id ? initialConversation : null);
+  const displayConversation =
+    activeConversation ||
+    (activeConversationId === initialConversation?.id
+      ? initialConversation
+      : null);
 
   // Handle selecting a conversation - shallow routing for instant switch
   const handleSelectConversation = useCallback((id: string) => {
     // Update local state IMMEDIATELY for instant UI switch
     setActiveConversationId(id);
-    
+
     // Use shallow routing to avoid server-side re-render
     // This prevents Next.js from re-running page.tsx data fetching
     const url = `/messages?conversationId=${id}`;
-    window.history.pushState({}, '', url);
+    window.history.pushState({}, "", url);
   }, []);
 
   // Handle creating direct conversation
@@ -118,7 +132,7 @@ export function MessagesClient({
         throw error;
       }
     },
-    [createDirect, handleSelectConversation]
+    [createDirect, handleSelectConversation],
   );
 
   // Handle creating group conversation
@@ -136,7 +150,7 @@ export function MessagesClient({
         throw error;
       }
     },
-    [createGroup, handleSelectConversation]
+    [createGroup, handleSelectConversation],
   );
 
   // ... rest of handlers ...
@@ -148,7 +162,7 @@ export function MessagesClient({
       await leave();
       // Clear active conversation and URL using shallow routing
       setActiveConversationId(null);
-      window.history.pushState({}, '', '/messages');
+      window.history.pushState({}, "", "/messages");
       toast.success("Đã rời khỏi nhóm");
     } catch (error) {
       toast.error("Không thể rời nhóm");
@@ -160,12 +174,15 @@ export function MessagesClient({
     (userId: string) => {
       router.push(`/profile/${userId}`);
     },
-    [router]
+    [router],
   );
 
   return (
     <>
       <div className="chat-layout rounded-lg border shadow-sm">
+        {/* Nav Sidebar */}
+        <ChatNavSidebar unreadCount={totalUnreadCount} />
+
         {/* Conversation list - sidebar */}
         <div
           className={cn(

@@ -28,8 +28,10 @@ interface ConversationListProps {
 // Fixed height for conversation items
 const ITEM_HEIGHT = 72;
 
+type FilterType = "all" | "unread" | "group";
+
 /**
- * Virtualized list of conversations with search and new conversation button
+ * Virtualized list of conversations with search, filters, and new conversation button
  */
 export function ConversationList({
   conversations,
@@ -43,6 +45,7 @@ export function ConversationList({
 }: ConversationListProps) {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<FilterType>("all");
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Prefetch messages on hover for instant loading
@@ -50,15 +53,23 @@ export function ConversationList({
     (conversationId: string) => {
       queryClient.prefetchInfiniteQuery(messagesQueryOptions(conversationId));
     },
-    [queryClient]
+    [queryClient],
   );
 
-  // Filter conversations by search query
+  // Filter conversations by search query and active tab
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
+    let result = conversations;
+
+    if (filter === "unread") {
+      result = result.filter((conv) => (conv.unreadCount || 0) > 0);
+    } else if (filter === "group") {
+      result = result.filter((conv) => conv.type === "group");
+    }
+
+    if (!searchQuery.trim()) return result;
 
     const query = searchQuery.toLowerCase();
-    return conversations.filter((conv) => {
+    return result.filter((conv) => {
       // Search in group name
       if (conv.name?.toLowerCase().includes(query)) return true;
 
@@ -68,7 +79,7 @@ export function ConversationList({
         return (
           profile?.display_name?.toLowerCase().includes(query) ||
           profile?.slug?.toLowerCase().includes(query) ||
-          profile?.username?.toLowerCase().includes(query) 
+          profile?.username?.toLowerCase().includes(query)
         );
       });
       if (memberMatch) return true;
@@ -78,7 +89,7 @@ export function ConversationList({
 
       return false;
     });
-  }, [conversations, searchQuery]);
+  }, [conversations, searchQuery, filter]);
 
   // Setup virtualizer
   const virtualizer = useVirtualizer({
@@ -117,8 +128,45 @@ export function ConversationList({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setSearchQuery(e.target.value)
             }
-            className="w-full pl-10 pr-4 py-2.5 bg-background dark:bg-background-dark border border-chat-border rounded-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent outline-none transition-all text-sm h-auto"
+            className="w-full pl-10 pr-4 py-2 bg-background dark:bg-background-dark border border-chat-border rounded-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent outline-none transition-all text-sm h-auto"
           />
+        </div>
+
+        {/* Conversation Filters */}
+        <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
+          <button
+            onClick={() => setFilter("all")}
+            className={cn(
+              "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
+              filter === "all"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-transparent border-transparent text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-800/50",
+            )}
+          >
+            Tất cả
+          </button>
+          <button
+            onClick={() => setFilter("unread")}
+            className={cn(
+              "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
+              filter === "unread"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-transparent border-transparent text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-800/50",
+            )}
+          >
+            Chưa đọc
+          </button>
+          <button
+            onClick={() => setFilter("group")}
+            className={cn(
+              "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
+              filter === "group"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-transparent border-transparent text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-800/50",
+            )}
+          >
+            Nhóm
+          </button>
         </div>
       </div>
 

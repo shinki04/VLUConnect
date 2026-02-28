@@ -44,19 +44,23 @@ async function ProfileIdPage({ params }: ProfileIdPageProps) {
   // ]);
   const user = queryClient.getQueryData<User>(["user", slug]);
   return (
-    <>
-      <div>ID : {user?.id  }</div>
-      <div>Slug : {user?.slug  }</div>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <Profile user={user!} />
-        <div className="w-full text-center">
-          <h2 className="text-2xl font-bold mb-4">Bài viết</h2>
-          <div className=" w-1/2 mx-auto">
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Profile user={user!}>
+        <div className="bg-dashboard-card rounded-xl shadow-sm border border-dashboard-border overflow-hidden">
+          <div className="px-4 py-3 bg-mainred/5 flex items-center gap-2 border-b border-mainred/10">
+            <span className="material-symbols-outlined filled text-sm text-mainred">
+              subject
+            </span>
+            <span className="text-[11px] font-bold text-mainred uppercase tracking-widest">
+              Bài viết
+            </span>
+          </div>
+          <div className="p-4 w-full">
             <InfinitePostsListByAuthor authorId={user!.id} />
           </div>
         </div>
-      </HydrationBoundary>
-    </>
+      </Profile>
+    </HydrationBoundary>
   );
 }
 

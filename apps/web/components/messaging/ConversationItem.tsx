@@ -116,7 +116,7 @@ export function ConversationItem({
       >
         {/* Avatar */}
         <div className="relative shrink-0">
-          <Avatar className="h-14 w-14 border-2 border-primary/20 bg-cover bg-center">
+          <Avatar className="h-12 w-12 border-2 border-primary/20 bg-cover bg-center">
             {displayInfo.avatarUrl ? (
               <AvatarImage src={displayInfo.avatarUrl} alt={displayInfo.name} />
             ) : null}

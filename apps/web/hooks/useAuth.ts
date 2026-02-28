@@ -34,13 +34,11 @@ export function useUpdateProfile() {
       return updateProfileWithAvatar(userId, data);
     },
     onSuccess: (_data, variables) => {
-      // Update profile cache
-      // queryClient.setQueryData(["user"], (old: User | null) =>
-      //   old ? { ...old, ...updatedProfile } : updatedProfile
-      // );
-
-      const { userId } = variables; // lấy userId từ input mutate
-      // Invalidate related queries
+      const { userId } = variables;
+      // Remove stale cache so fresh data is fetched
+      queryClient.removeQueries({ queryKey: ["user"] });
+      queryClient.removeQueries({ queryKey: ["user", userId] });
+      // Re-fetch
       queryClient.invalidateQueries({ queryKey: ["user"] });
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
     },

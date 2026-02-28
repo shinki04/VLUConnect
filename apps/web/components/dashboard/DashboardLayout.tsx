@@ -19,7 +19,9 @@ export function DashboardLayout({
     <div className="bg-dashboard-background text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
       <Header />
       <SystemAnnouncementBanner />
-      <div className="flex-1 max-w-[1440px] mx-auto w-full px-4 md:px-6 lg:px-10 py-6 gap-6 grid grid-cols-1 md:grid-cols-[200px_1fr] lg:grid-cols-[200px_1fr_240px] xl:grid-cols-[260px_1fr_300px]">
+      <div
+        className={`flex-1 max-w-[1440px] w-full px-4 md:px-6 lg:px-10 py-6 gap-6 grid grid-cols-1 md:grid-cols-[200px_1fr] ${rightSidebar ? "mx-auto lg:grid-cols-[200px_1fr_240px] xl:grid-cols-[260px_1fr_300px]" : "mx-auto lg:max-w-5xl"}`}
+      >
         <Sidebar />
         <MainContent>{children}</MainContent>
         {rightSidebar && (

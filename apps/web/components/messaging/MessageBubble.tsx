@@ -74,7 +74,7 @@ export function MessageBubble({
   const [showRecallDialog, setShowRecallDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isHighlighted, setIsHighlighted] = useState(false);
-  
+
   const messageId = "id" in message ? message.id : undefined;
 
   // Listen for highlight events from other messages
@@ -85,8 +85,15 @@ export function MessageBubble({
         setTimeout(() => setIsHighlighted(false), 2000);
       }
     };
-    window.addEventListener("highlight-message" as string, handleHighlight as EventListener);
-    return () => window.removeEventListener("highlight-message" as string, handleHighlight as EventListener);
+    window.addEventListener(
+      "highlight-message" as string,
+      handleHighlight as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        "highlight-message" as string,
+        handleHighlight as EventListener,
+      );
   }, [messageId]);
 
   const handleRetry = () => {
@@ -96,7 +103,12 @@ export function MessageBubble({
   };
 
   const handleEdit = async () => {
-    if (!editContent?.trim() || editContent === message.content || !messageId || !onEditMessage) {
+    if (
+      !editContent?.trim() ||
+      editContent === message.content ||
+      !messageId ||
+      !onEditMessage
+    ) {
       setIsEditing(false);
       return;
     }
@@ -127,18 +139,24 @@ export function MessageBubble({
     }
   };
 
-  const canShowMenu = !isOptimistic && status !== "sending" && status !== "failed" && !message.is_deleted;
+  const canShowMenu =
+    !isOptimistic &&
+    status !== "sending" &&
+    status !== "failed" &&
+    !message.is_deleted;
 
   return (
     <>
       <motion.div
         id={messageId ? `message-${messageId}` : undefined}
         className={cn(
-          "flex items-end gap-2 group rounded-lg",
-          isOwn ? "flex-row-reverse" : "flex-row"
+          "flex items-end gap-2 group",
+          isOwn ? "flex-row-reverse" : "flex-row",
         )}
         animate={{
-          backgroundColor: isHighlighted ? "rgba(234, 179, 8, 0.3)" : "transparent",
+          backgroundColor: isHighlighted
+            ? "rgba(234, 179, 8, 0.3)"
+            : "transparent",
         }}
         transition={{ duration: 0.3 }}
       >
@@ -164,13 +182,11 @@ export function MessageBubble({
         {/* Message content */}
         <div
           className={cn(
-            "max-w-[70%] rounded-2xl px-4 py-2 relative",
-            isOwn
-              ? "bg-primary text-primary-foreground rounded-br-md"
-              : "bg-muted rounded-bl-md",
+            "max-w-[75%] relative",
+            isOwn ? "chat-bubble-self" : "chat-bubble-other",
             status === "failed" &&
-              "bg-destructive/10 border border-destructive/50",
-            status === "sending" && "opacity-70"
+              "bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800",
+            status === "sending" && "opacity-70",
           )}
         >
           {/* Sender name for group chats (if not own message) */}
@@ -182,33 +198,54 @@ export function MessageBubble({
 
           {/* Replied message quote - click to scroll to parent */}
           {message.reply_to && message.reply_to.id && !message.is_deleted && (
-            <div 
+            <div
               className={cn(
                 "mb-2 p-2 rounded-lg border-l-2 cursor-pointer hover:opacity-80 transition-opacity",
-                isOwn ? "bg-primary-foreground/10 border-primary-foreground/50" : "bg-background/50 border-muted-foreground/50"
+                isOwn
+                  ? "bg-white/20 border-white/50"
+                  : "bg-black/5 dark:bg-white/5 border-slate-300 dark:border-slate-600",
               )}
               onClick={() => {
                 // Find and scroll to parent message
-                const parentElement = document.getElementById(`message-${message.reply_to!.id}`);
+                const parentElement = document.getElementById(
+                  `message-${message.reply_to!.id}`,
+                );
                 if (parentElement) {
-                  parentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                  parentElement.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
                   // Dispatch custom event to trigger highlight
-                  window.dispatchEvent(new CustomEvent("highlight-message", { detail: message.reply_to!.id }));
+                  window.dispatchEvent(
+                    new CustomEvent("highlight-message", {
+                      detail: message.reply_to!.id,
+                    }),
+                  );
                 }
               }}
             >
-              <p className={cn(
-                "text-[10px] font-medium mb-0.5",
-                isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
-              )}>
-                {message.reply_to.sender?.display_name || message.reply_to.sender?.username || "Người dùng"}
+              <p
+                className={cn(
+                  "text-[11px] font-semibold mb-0.5",
+                  isOwn ? "text-white" : "text-slate-700 dark:text-slate-300",
+                )}
+              >
+                {message.reply_to.sender?.display_name ||
+                  message.reply_to.sender?.username ||
+                  "Người dùng"}
               </p>
-              <p className={cn(
-                "text-xs line-clamp-2",
-                isOwn ? "text-primary-foreground/80" : "text-muted-foreground",
-                message.reply_to.is_deleted && "italic"
-              )}>
-                {message.reply_to.is_deleted ? "Tin nhắn đã thu hồi" : message.reply_to.content}
+              <p
+                className={cn(
+                  "text-xs line-clamp-2",
+                  isOwn
+                    ? "text-white/90"
+                    : "text-slate-600 dark:text-slate-400",
+                  message.reply_to.is_deleted && "italic",
+                )}
+              >
+                {message.reply_to.is_deleted
+                  ? "Tin nhắn đã thu hồi"
+                  : message.reply_to.content}
               </p>
             </div>
           )}
@@ -257,25 +294,26 @@ export function MessageBubble({
             <DeletedMessageContent messageId={message.id} />
           ) : (
             <>
-              {/* Text content */}
               {message.content && (
-                <p className="text-sm whitespace-pre-wrap break-words">
+                <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">
                   {message.content}
                 </p>
               )}
 
               {/* Pending files (uploading) */}
-              {"pendingFiles" in message && message.pendingFiles && message.pendingFiles.length > 0 && (
-                <div className="flex flex-col gap-2 mt-2">
-                  {message.pendingFiles.map((pf) => (
-                    <MediaAttachment
-                      key={pf.id}
-                      pendingFile={pf}
-                      isOwn={isOwn}
-                    />
-                  ))}
-                </div>
-              )}
+              {"pendingFiles" in message &&
+                message.pendingFiles &&
+                message.pendingFiles.length > 0 && (
+                  <div className="flex flex-col gap-2 mt-2">
+                    {message.pendingFiles.map((pf) => (
+                      <MediaAttachment
+                        key={pf.id}
+                        pendingFile={pf}
+                        isOwn={isOwn}
+                      />
+                    ))}
+                  </div>
+                )}
 
               {/* Completed media attachments */}
               {message.media_urls && message.media_urls.length > 0 && (
@@ -295,15 +333,17 @@ export function MessageBubble({
           {/* Timestamp and status */}
           <div
             className={cn(
-              "flex items-center gap-1 mt-1",
-              isOwn ? "justify-end" : "justify-start"
+              "flex items-center gap-1.5 mt-1.5",
+              isOwn ? "justify-end" : "justify-start",
             )}
           >
             {showTimestamp && (
               <span
                 className={cn(
-                  "text-[10px]",
-                  isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
+                  "text-[11px] font-medium",
+                  isOwn
+                    ? "text-primary-foreground/80"
+                    : "text-slate-500 dark:text-slate-400",
                 )}
               >
                 {formatMessageTime(message.created_at)}
@@ -320,7 +360,7 @@ export function MessageBubble({
                       "h-3 w-3 animate-spin",
                       isOwn
                         ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   />
                 )}
@@ -330,7 +370,7 @@ export function MessageBubble({
                       "h-3 w-3",
                       isOwn
                         ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   />
                 )}
@@ -376,7 +416,7 @@ export function MessageBubble({
                 <MoreVertical className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
+            <DropdownMenuContent
               align={isOwn ? "end" : "start"}
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
@@ -385,7 +425,7 @@ export function MessageBubble({
                 <Reply className="h-4 w-4 mr-2" />
                 Trả lời
               </DropdownMenuItem>
-              
+
               {isOwn ? (
                 <>
                   <DropdownMenuItem onClick={() => setIsEditing(true)}>
@@ -443,10 +483,10 @@ export function MessageBubble({
  * Deleted message content with moderation reason tooltip
  */
 function DeletedMessageContent({ messageId }: { messageId?: string }) {
-  const { moderationAction, isLoading } = useModerationReason(
+  const { moderationAction } = useModerationReason(
     "message",
     messageId,
-    true // is_deleted
+    true, // is_deleted
   );
 
   if (!messageId || !moderationAction) {
@@ -493,7 +533,7 @@ export function MessageDateSeparator({ date }: { date: string }) {
 
   return (
     <div className="flex items-center justify-center my-4">
-      <span className="px-3 py-1 text-xs text-muted-foreground bg-muted rounded-full">
+      <span className="px-4 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 dark:text-slate-400 dark:bg-slate-800 rounded-full shadow-sm">
         {formatDate(date)}
       </span>
     </div>
