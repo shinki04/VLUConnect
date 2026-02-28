@@ -17,11 +17,21 @@ const config: Config = {
         "red-main": "#B52934",
         "input-text": "#ffffff",
         "custom-white": "#ffffff",
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // border: "hsl(var(--border))",
+        // input: "hsl(var(--input))",
+        // ring: "hsl(var(--ring))",
+        // background: "hsl(var(--background))",
+        // foreground: "hsl(var(--foreground))",
+        dashboard: {
+          background: "#f8f6f6",
+          darkBackground: "#221010",
+          sidebar: "#ffffff",
+          darkSidebar: "#2a1515",
+          card: "#ffffff",
+          darkCard: "#2a1515",
+          border: "#e2e8f0",
+          darkBorder: "#1e293b",
+        },
       },
       borderRadius: {
         xl: "1rem",
@@ -35,6 +45,18 @@ const config: Config = {
         "login-title": "1.8rem",
         "login-btn": "1rem",
       },
+      fontFamily: {
+        sans: [
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica',
+          'Arial',
+          'sans-serif'
+        ]
+      }
     },
   },
   plugins: [tailwindcssAnimate, lineClamp],

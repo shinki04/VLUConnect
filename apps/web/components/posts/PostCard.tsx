@@ -92,7 +92,7 @@ export default function PostCard({ post, isPending = false, allowAnonymousCommen
   return (
     <>
       <Card
-        className={`rounded-lg shadow hover:shadow-lg transition-shadow ${
+        className={`bg-dashboard-card dark:bg-dashboard-darkCard rounded-xl shadow-sm border border-dashboard-border dark:border-dashboard-darkBorder overflow-hidden ${
           isPending ? "opacity-50 pointer-events-none relative" : ""
         }`}
       >
@@ -105,7 +105,7 @@ export default function PostCard({ post, isPending = false, allowAnonymousCommen
           </div>
         )}
 
-        <div className="p-4">
+        <div className="p-4 pb-0">
           <PostHeader
             postId={post.id}
             author={post.author}
@@ -123,11 +123,14 @@ export default function PostCard({ post, isPending = false, allowAnonymousCommen
           <div className="mb-3">
             <ReadMore content={post.content} />
           </div>
-          <PostMediaGallery
-            mediaUrls={post.media_urls || []}
-            onMediaClick={handleMediaClick}
-          />
+        </div>
 
+        <PostMediaGallery
+          mediaUrls={post.media_urls || []}
+          onMediaClick={handleMediaClick}
+        />
+
+        <div className="p-4 pt-0 mt-2">
           <PostActions
             post={{
                 id: post.id,

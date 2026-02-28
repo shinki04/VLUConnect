@@ -42,6 +42,23 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Custom Web Colors from tailwind.config.ts */
+  --color-mainred: #b52934;
+  --color-red-main: #b52934;
+  --color-red-bg: rgba(181, 41, 52, 0.5);
+  --color-input-text: #ffffff;
+  --color-custom-white: #ffffff;
+
+  /* Dashboard Colors */
+  /* --color-dashboard-background: #f8f6f6;
+  --color-dashboard-darkBackground: #221010;
+  --color-dashboard-sidebar: #ffffff;
+  --color-dashboard-darkSidebar: #2a1515;
+  --color-dashboard-card: #ffffff;
+  --color-dashboard-darkCard: #2a1515;
+  --color-dashboard-border: #e2e8f0;
+  --color-dashboard-darkBorder: #1e293b; */
 }
 
 :root {
