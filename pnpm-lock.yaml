@@ -578,6 +578,9 @@ importers:
         specifier: ^5.8.2
         version: 5.8.2
     devDependencies:
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

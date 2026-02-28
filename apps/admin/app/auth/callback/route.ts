@@ -9,7 +9,7 @@ const COOKIE_CONFIG = {
   maxAge: 10,
 };
 
-const VLU_EMAIL_DOMAIN = "@vanlanguni.vn";
+const VLU_EMAIL_DOMAINS = ["@vanlanguni.vn", "@vlu.edu.vn"];
 const USER_CACHE_TTL = 3600;
 
 const redis = getRedisClient();
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
 
     const user = data.user;
 
-    if (!user.email?.endsWith(VLU_EMAIL_DOMAIN)) {
+    if (!VLU_EMAIL_DOMAINS.some(domain => user.email?.endsWith(domain))) {
       supabase.auth.admin.deleteUser(user.id).catch(console.error);
 
       return redirectWithCookie(
@@ -119,7 +119,7 @@ export async function GET(request: Request) {
     // Successful login - redirect to intended destination
     const redirectUrl = getRedirectUrl(origin, next, request);
     return redirectWithCookie(redirectUrl, "success", "Đăng nhập thành công");
-  } catch (err) {
+  } catch {
     return redirectWithCookie(
       `${origin}/login`,
       "access_error",

@@ -1,9 +1,15 @@
 "use server";
 
+import { systemAnnouncementCache } from "@repo/redis/systemAnnouncementCacheService";
 import { NotificationWithSender } from "@repo/shared/types/notification";
 import { createClient } from "@repo/supabase/server";
 
 export async function getActiveAnnouncements() {
+    const cachedAnnouncements = await systemAnnouncementCache.getActiveAnnouncements();
+    if (cachedAnnouncements) {
+        return cachedAnnouncements;
+    }
+
     const supabase = await createClient();
 
     const now = new Date().toISOString();
@@ -19,6 +25,11 @@ export async function getActiveAnnouncements() {
     if (error) {
         console.error("Error fetching active announcements:", error);
         return [];
+    }
+
+    if (data) {
+        // Run cache saving in background
+        systemAnnouncementCache.setActiveAnnouncements(data).catch(console.error);
     }
 
     return data;

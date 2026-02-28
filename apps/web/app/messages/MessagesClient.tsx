@@ -165,12 +165,12 @@ export function MessagesClient({
 
   return (
     <>
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-lg border bg-background shadow-sm">
+      <div className="chat-layout rounded-lg border shadow-sm">
         {/* Conversation list - sidebar */}
         <div
           className={cn(
-            "w-full md:w-80 lg:w-96 border-r shrink-0",
-            activeConversationId ? "hidden md:block" : "block"
+            "chat-sidebar",
+            activeConversationId ? "hidden md:flex" : "flex",
           )}
         >
           <ConversationList
@@ -186,11 +186,15 @@ export function MessagesClient({
 
         {/* Chat window - main area */}
         <div
-          className={cn("flex-1", !activeConversationId && "hidden md:flex")}
+          className={cn(
+            "chat-panel",
+            !activeConversationId && "hidden md:flex",
+          )}
         >
           {activeConversationId ? (
             // Show loading only when actually fetching and no data yet
-            (isLoadingConversation || (isFetchingConversation && !displayConversation)) ? (
+            isLoadingConversation ||
+            (isFetchingConversation && !displayConversation) ? (
               <ChatWindowLoading />
             ) : displayConversation ? (
               <ChatWindow
@@ -212,7 +216,7 @@ export function MessagesClient({
           )}
         </div>
       </div>
-      
+
       {/* ... dialogs ... */}
       <CreateConversationDialog
         open={isCreateDialogOpen}

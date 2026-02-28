@@ -1,6 +1,7 @@
 "use client";
 
 import { PostResponse } from "@repo/shared/types/post";
+import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { Loader2 } from "lucide-react";
 import React from "react";
@@ -48,11 +49,12 @@ export function InfinitePostsList() {
   if (isError) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-center">
+        <div className="text-center flex flex-col gap-2">
           <p className="text-red-500 font-semibold">Lỗi khi tải bài viết</p>
           <p className="text-sm text-gray-500">
             {error instanceof Error ? error.message : "Có lỗi xảy ra"}
           </p>
+          <Button onClick={() => window.location.reload()}>Thử tải lại</Button>
         </div>
       </div>
     );

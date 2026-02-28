@@ -66,6 +66,76 @@ function getNotificationIcon(type: NotificationType) {
   }
 }
 
+import { useQuery } from "@tanstack/react-query";
+
+function FriendRequestActionsWrapper({
+  notification,
+  handleMarkAsRead,
+}: {
+  notification: NotificationWithSender;
+  handleMarkAsRead: (e: React.MouseEvent, id: string) => void;
+}) {
+  const { data: relationship } = useQuery({
+    queryKey: ["friendship_status_dropdown", notification.sender_id],
+    queryFn: async () => {
+      if (!notification.sender_id) return null;
+      const { getFriendshipStatus } = await import("@/app/actions/friendship");
+      return getFriendshipStatus(notification.sender_id);
+    },
+    enabled: !!notification.sender_id,
+  });
+
+  if (relationship?.status === "friends") return null;
+
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <Button
+        size="sm"
+        className="h-7 text-xs px-3"
+        onClick={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            const { respondToFriendRequest } =
+              await import("@/app/actions/friendship");
+            await respondToFriendRequest(
+              notification.entity_id as string,
+              true,
+            );
+            handleMarkAsRead(e, notification.id);
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+      >
+        Xác nhận
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7 text-xs px-3"
+        onClick={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            const { respondToFriendRequest } =
+              await import("@/app/actions/friendship");
+            await respondToFriendRequest(
+              notification.entity_id as string,
+              false,
+            );
+            handleMarkAsRead(e, notification.id);
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+      >
+        Xóa
+      </Button>
+    </div>
+  );
+}
+
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -123,7 +193,7 @@ export function NotificationDropdown() {
     return () => {
       cleanup.then((cleanFn) => cleanFn && cleanFn());
     };
-  }, [queryClient]);
+  }, [queryClient, user]);
 
   // Flatten the infinite query data structure
   const notifications = React.useMemo(() => {
@@ -254,9 +324,17 @@ export function NotificationDropdown() {
                 >
                   <Link
                     href={
-                      notification.type === "post_reply"
+                      notification.type === "post_reply" ||
+                      (notification.type === "comment" &&
+                        notification.entity_type === "post_comment")
                         ? `/post/${notification.entity_id}`
-                        : "#"
+                        : notification.type === "like" &&
+                            notification.entity_type === "comment"
+                          ? `/post/${(notification.metadata as { post_id?: string })?.post_id}`
+                          : notification.type === "like" &&
+                              notification.entity_type === "post_like"
+                            ? `/post/${notification.entity_id}`
+                            : "#"
                     }
                     onClick={() => {
                       if (!notification.is_read) {
@@ -303,51 +381,10 @@ export function NotificationDropdown() {
                       {notification.type === "friend" &&
                         !notification.is_read &&
                         notification.entity_id && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs px-3"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                try {
-                                  const { respondToFriendRequest } =
-                                    await import("@/app/actions/friendship");
-                                  await respondToFriendRequest(
-                                    notification.entity_id as string,
-                                    true,
-                                  );
-                                  handleMarkAsRead(e, notification.id);
-                                } catch (error) {
-                                  console.error(error);
-                                }
-                              }}
-                            >
-                              Xác nhận
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs px-3"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                try {
-                                  const { respondToFriendRequest } =
-                                    await import("@/app/actions/friendship");
-                                  await respondToFriendRequest(
-                                    notification.entity_id as string,
-                                    false,
-                                  );
-                                  handleMarkAsRead(e, notification.id);
-                                } catch (error) {
-                                  console.error(error);
-                                }
-                              }}
-                            >
-                              Xóa
-                            </Button>
-                          </div>
+                          <FriendRequestActionsWrapper
+                            notification={notification}
+                            handleMarkAsRead={handleMarkAsRead}
+                          />
                         )}
 
                       <div className="flex items-center justify-between mt-2">

@@ -59,6 +59,7 @@ export function useInfinitePostsQuery() {
     gcTime: 5 * 60 * 1000, // 5 minutes - cache garbage collection time (formerly cacheTime)
     refetchOnMount: false, // Don't refetch if data is fresh
     refetchOnWindowFocus: false, // Don't refetch on window focus
+    enabled: !!user?.data?.id,
   });
 }
 

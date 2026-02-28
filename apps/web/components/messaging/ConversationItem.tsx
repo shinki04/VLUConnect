@@ -3,7 +3,6 @@
 import { Tables } from "@repo/shared/types/database.types";
 import type { ConversationWithDetails } from "@repo/shared/types/messaging";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
-import { Badge } from "@repo/ui/components/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,22 +110,20 @@ export function ConversationItem({
       <button
         onClick={onClick}
         className={cn(
-          "w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200",
-          "hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
-          isActive && "bg-accent",
-          unreadCount > 0 && "bg-primary/5"
+          "w-full chat-conversation-item",
+          isActive && "chat-conversation-item-active",
         )}
       >
         {/* Avatar */}
         <div className="relative shrink-0">
-          <Avatar className="h-12 w-12">
+          <Avatar className="h-14 w-14 border-2 border-primary/20 bg-cover bg-center">
             {displayInfo.avatarUrl ? (
               <AvatarImage src={displayInfo.avatarUrl} alt={displayInfo.name} />
             ) : null}
             <AvatarFallback
               className={cn(
                 "text-sm font-medium",
-                isGroup ? "bg-primary/10 text-primary" : "bg-muted"
+                isGroup ? "bg-primary/10 text-primary" : "bg-muted",
               )}
             >
               {isGroup ? <Users className="h-5 w-5" /> : displayInfo.initials}
@@ -135,61 +132,59 @@ export function ConversationItem({
 
           {/* Unread dot indicator */}
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-primary rounded-full border-2 border-background animate-pulse" />
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-background-dark animate-pulse" />
           )}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0 text-left">
-        
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
             <span
               className={cn(
-                "font-medium truncate",
-                unreadCount > 0 && "text-foreground"
+                "font-semibold truncate",
+                unreadCount > 0
+                  ? "text-slate-900 dark:text-slate-100"
+                  : "text-slate-900 dark:text-slate-100",
               )}
             >
               {displayInfo.name}
             </span>
-            <span className="text-xs text-muted-foreground shrink-0">
+            <span
+              className={cn(
+                "text-xs shrink-0",
+                unreadCount > 0 ? "text-primary font-medium" : "text-slate-400",
+              )}
+            >
               {getTimeAgo()}
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-2 mt-0.5">
+          <div className="flex items-center justify-between gap-2">
             <p
               className={cn(
                 "text-sm truncate",
                 unreadCount > 0
-                  ? "text-foreground font-medium"
-                  : "text-muted-foreground"
+                  ? "text-slate-900 dark:text-slate-100 font-medium"
+                  : "text-slate-500 dark:text-slate-400",
               )}
             >
               {getMessagePreview()}
             </p>
 
             {unreadCount > 0 && (
-              <Badge
-                variant="default"
-                className={cn(
-                  "shrink-0 h-5 min-w-[20px] px-1.5 text-xs",
-                  "bg-gradient-to-r from-primary to-primary/80",
-                  "shadow-sm shadow-primary/25",
-                  "animate-in fade-in-0 zoom-in-95 duration-200"
-                )}
-              >
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </Badge>
+              <div className="size-2 bg-primary rounded-full shrink-0 animate-in fade-in-0 zoom-in-95 duration-200" />
             )}
           </div>
         </div>
       </button>
 
       {/* Dropdown Menu - appears on hover */}
-      <div className={cn(
-        "absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity",
-        isMenuOpen && "opacity-100"
-      )}>
+      <div
+        className={cn(
+          "absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity",
+          isMenuOpen && "opacity-100",
+        )}
+      >
         <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <DropdownMenuTrigger asChild>
             <button
@@ -198,7 +193,7 @@ export function ConversationItem({
                 "h-8 w-8 rounded-full flex items-center justify-center",
                 "bg-background/80 backdrop-blur-sm hover:bg-accent",
                 "border border-border/50 shadow-sm",
-                "focus:outline-none focus:ring-2 focus:ring-primary/20"
+                "focus:outline-none focus:ring-2 focus:ring-primary/20",
               )}
             >
               <MoreVertical className="h-4 w-4 text-muted-foreground" />
@@ -206,13 +201,19 @@ export function ConversationItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             {unreadCount > 0 && (
-              <DropdownMenuItem onClick={handleMarkAsRead} className="cursor-pointer">
+              <DropdownMenuItem
+                onClick={handleMarkAsRead}
+                className="cursor-pointer"
+              >
                 <CheckCheck className="h-4 w-4 mr-2 text-green-500" />
                 <span>Đánh dấu đã đọc</span>
               </DropdownMenuItem>
             )}
             {unreadCount === 0 && (
-              <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+              <DropdownMenuItem
+                disabled
+                className="cursor-not-allowed opacity-50"
+              >
                 <CheckCheck className="h-4 w-4 mr-2" />
                 <span>Đã đọc tất cả</span>
               </DropdownMenuItem>

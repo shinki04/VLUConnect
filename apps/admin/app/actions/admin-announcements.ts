@@ -1,5 +1,6 @@
 "use server";
 
+import { systemAnnouncementCache } from "@repo/redis/systemAnnouncementCacheService";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -66,6 +67,7 @@ export async function createAnnouncement(data: {
 
   if (error) throw error;
 
+  await systemAnnouncementCache.invalidateActiveAnnouncements();
   revalidatePath("/dashboard/notifications");
   return announcement;
 }
@@ -90,6 +92,7 @@ export async function updateAnnouncement(
 
   if (error) throw error;
 
+  await systemAnnouncementCache.invalidateActiveAnnouncements();
   revalidatePath("/dashboard/notifications");
   return { success: true };
 }
@@ -104,6 +107,7 @@ export async function deleteAnnouncement(id: string) {
 
   if (error) throw error;
 
+  await systemAnnouncementCache.invalidateActiveAnnouncements();
   revalidatePath("/dashboard/notifications");
   return { success: true };
 }

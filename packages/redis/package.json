@@ -12,6 +12,7 @@
         "ioredis": "^5.8.2"
     },
     "devDependencies": {
+        "@repo/shared": "workspace:*",
         "@repo/typescript-config": "workspace:*"
     }
 }

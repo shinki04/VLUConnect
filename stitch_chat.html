@@ -1,0 +1,289 @@
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VLUconnect - Nhắn tin Thời gian thực</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec1313",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221010",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { font-family: 'Lexend', sans-serif; }
+        .frosted-glass {
+            background: rgba(236, 19, 19, 0.05);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(236, 19, 19, 0.1);
+        }
+        .message-shadow {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(236, 19, 19, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<aside class="w-20 flex flex-col items-center py-6 gap-8 border-r border-primary/10 bg-white dark:bg-background-dark/50">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<nav class="flex flex-col gap-6">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">home</span>
+</button>
+<button class="text-primary bg-primary/10 p-2 rounded-xl">
+<span class="material-symbols-outlined text-3xl font-fill">chat</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">groups</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">notifications</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">person</span>
+</button>
+</nav>
+<div class="mt-auto">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">settings</span>
+</button>
+</div>
+</aside>
+<aside class="w-80 md:w-96 frosted-glass flex flex-col h-full">
+<div class="p-6 pb-0">
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Trò chuyện</h1>
+<button class="size-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<div class="relative group mb-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-background-dark border border-primary/10 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm" placeholder="Tìm kiếm hội thoại..." type="text"/>
+</div>
+<div class="flex items-center gap-6 border-b border-primary/5 mb-2">
+<button class="pb-2 text-sm font-bold text-primary border-b-2 border-primary relative px-1">
+                        Tất cả
+                    </button>
+<button class="pb-2 text-sm font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors px-1">
+                        Chưa đọc
+                    </button>
+<button class="pb-2 text-sm font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors px-1">
+                        Nhóm
+                    </button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-2 space-y-1 custom-scrollbar pt-2">
+<div class="flex items-center gap-4 p-4 bg-white dark:bg-primary/20 rounded-xl border-l-4 border-primary shadow-sm cursor-pointer transition-all">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="Avatar of Lê Hoàng Anh" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBBdhM5q01ymFMXSQ-ZBL0rXQZKaTJvGT4696yLXfIe2wXcNx8yfunTBt--62T0DRF6_sQsLC6b6Ilr0PB5h1A-aYwsmc4bDJdDQykxy4ocMHO_kMgauQDRQeJV3BkHvuNoCXPSHu5vwMOSijSczHTywl-jrYrUw9odv88xoBNhWVU67J5tExJEd4YrHOQ7W3RozQdFsf3k6tW8aWJDxBYB4bwbmxrh7d3-PZNdn1JQdSBDaLq8nghpe8qg8N6bU886w3mUOLn9jGbp');"></div>
+<div class="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-white dark:border-background-dark rounded-full"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 truncate">Lê Hoàng Anh</h3>
+<span class="text-xs text-primary font-medium">10:30</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate">Chào bạn, mình gửi file tài liệu học tập tuần 4...</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 hover:bg-primary/5 rounded-xl cursor-pointer transition-all">
+<div class="relative shrink-0 size-14">
+<div class="absolute top-0 left-0 size-10 rounded-full bg-cover bg-center border-2 border-white dark:border-background-dark shadow-sm z-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBDSotgHqrP0qQTCATYDPcQ90-h3FB1P5QqJqiacIbjWUIh4LUeioh_An53dNbXtDfYukGiJpzV4zEr41aJqpvcJP9pF1NavAfXjKwJnG7PktsxIH5OCz5ZH3Xsxe1GzwPN4Ntik5bMBGQLU47Eg0fnHK0jE5All2V7rgZLWY4l4ajWgmugHq7QnKqUy-BoNugr9h_o6FrWtVW8SbMHJRxJw5lGa6_5WrnqIAj-usDNdQzbQ-1YWpZ2RURtqJMHKt0E8PrrP1eRJ42Y');"></div>
+<div class="absolute bottom-0 right-0 size-10 rounded-full bg-cover bg-center border-2 border-white dark:border-background-dark shadow-sm z-10" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDlOov7J_xmgNTCDspMsHVwzEsOoeLnNWhE9JdqdtPyeBP9i9esomKA-FFCsav0HtdPSw3grrouVYJALFAyp6oukfwWiROFZ7eGJw4agNGoPj9tKLu-rTz9ktjW8IymucEP7cAaQ-L5ltefxip6EK6QGzgUHggM41G2-l9MrOKadQmq-Xl-yChL5OHDzyVTt2dyXW1eCjwkPnEgn7qbTwdAo8_Jb3dLtGMVUUgU9tHXvwHfgEDbSKDB7WhLMAA9PvMD_P8sNnbImD2z');"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 truncate">Nhóm Đồ án VLUconnect</h3>
+<span class="text-xs text-slate-400">09:45</span>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">Thư: Mọi người đã xem file thiết kế chưa?</p>
+</div>
+<div class="size-2 bg-primary rounded-full shrink-0"></div>
+</div>
+<div class="flex items-center gap-4 p-4 hover:bg-primary/5 rounded-xl cursor-pointer transition-all">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-cover bg-center" data-alt="Avatar of Nguyễn Minh Thư" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBDSotgHqrP0qQTCATYDPcQ90-h3FB1P5QqJqiacIbjWUIh4LUeioh_An53dNbXtDfYukGiJpzV4zEr41aJqpvcJP9pF1NavAfXjKwJnG7PktsxIH5OCz5ZH3Xsxe1GzwPN4Ntik5bMBGQLU47Eg0fnHK0jE5All2V7rgZLWY4l4ajWgmugHq7QnKqUy-BoNugr9h_o6FrWtVW8SbMHJRxJw5lGa6_5WrnqIAj-usDNdQzbQ-1YWpZ2RURtqJMHKt0E8PrrP1eRJ42Y');"></div>
+<div class="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-white dark:border-background-dark rounded-full"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 truncate">Nguyễn Minh Thư</h3>
+<span class="text-xs text-slate-400">09:15</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate">Hẹn gặp ở thư viện tầng 3 nhé!</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 hover:bg-primary/5 rounded-xl cursor-pointer transition-all">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-cover bg-center" data-alt="Avatar of Trần Văn Hưng" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDlOov7J_xmgNTCDspMsHVwzEsOoeLnNWhE9JdqdtPyeBP9i9esomKA-FFCsav0HtdPSw3grrouVYJALFAyp6oukfwWiROFZ7eGJw4agNGoPj9tKLu-rTz9ktjW8IymucEP7cAaQ-L5ltefxip6EK6QGzgUHggM41G2-l9MrOKadQmq-Xl-yChL5OHDzyVTt2dyXW1eCjwkPnEgn7qbTwdAo8_Jb3dLtGMVUUgU9tHXvwHfgEDbSKDB7WhLMAA9PvMD_P8sNnbImD2z');"></div>
+<div class="absolute bottom-0 right-0 size-3.5 bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-background-dark rounded-full"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 truncate">Trần Văn Hưng</h3>
+<span class="text-xs text-slate-400">Hôm qua</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate">OK, mình đã nhận được thông báo.</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full bg-white dark:bg-background-dark">
+<header class="h-20 flex items-center justify-between px-8 border-b border-primary/10">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="size-12 rounded-full bg-cover bg-center border border-primary/10" data-alt="Profile of Lê Hoàng Anh" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD09R6z_ejwtMERl2ELp_9pX_NxIZQ84ImHfbyM_WW8WuYhTFExgoxPs08Tbc4lBD9LjcOu9wWhVQPaukEWdN2RmDOqO5j00o1a9CApyAbjWE7sYejYwYtjMCOILc3uDea-Rrec7TrZqs0W7uEMdEDgpYPeYXu_AqdJNaAZOv3OqdR6JX3y3txkUepmkIz06ri0illtCnzlLn-7yVnOmepGwfT_zF9utAXHsOPd1m3GWNizMtfLt-Z7Wg0dP3sdEqyrKqULpSHYNJyN');"></div>
+<div class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white dark:border-background-dark rounded-full"></div>
+</div>
+<div>
+<h2 class="font-bold text-lg text-slate-900 dark:text-slate-100">Lê Hoàng Anh</h2>
+<span class="text-xs text-green-500 font-medium">Đang hoạt động</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="p-2 text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-all">
+<span class="material-symbols-outlined">info</span>
+</button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-8 space-y-6 flex flex-col custom-scrollbar">
+<div class="flex gap-4 max-w-[70%]">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 mt-1" data-alt="Lê Hoàng Anh avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCHuKLtWkwceTqoTCwhcxFIR0Yf2xu-3LL_MtLpwGCAGxS5alH21GgBwYz9ssyzmwWPialgHX8FKIggAmTNlFHucWq2K1DM4OmxivfZl1gmBijuICd2F4XvmFPueYbGkXqXU87Tg3e2S3N9jZttkdwmiAH9KE_8r_pfa_rAQq-ndJQzjCjR4Ac2TefQjMzAqcyXbSByuQ5Ij9dhG9K2U_6IR2FO2KfWKDepKK7ip7UllhoNXKCTre6JfdlSPhQnPHp_BgEO83Rt_vwf');"></div>
+<div class="space-y-1">
+<div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl rounded-tl-none message-shadow text-slate-800 dark:text-slate-200 text-sm">
+                            Chào cậu, mình đã hoàn thành xong phần đề cương cho đồ án học kỳ này rồi. Cậu xem qua giúp mình nhé!
+                        </div>
+<span class="text-[10px] text-slate-400 px-1">10:25</span>
+</div>
+</div>
+<div class="flex gap-4 max-w-[70%]">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 mt-1 opacity-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAlPPMeUyQgl23zUESDO5PR0EheqdHSQt6pes-NbqKAn5X14e0E_7eD-hsLLp-EyVnxEYQIj0eEsqWJS7rudmXxu8kEVrRhCLN8Tf4f6vbMW5HKrvtVWYHC8O1QVhnGVbt1GWqxtsu7onpKAp-xliv1_U4lRPxXDKkhfgAo4EL_gvRLCUP-vx5xBurIFQqdnjCUvTEGLqYfhW8Db6bQ02CkL9pKQcnU-pk6RrYYD0iYIJ1PyM5ZLwQtqXg0WZe2HES-ucIXZlzNBeML');"></div>
+<div class="space-y-1">
+<div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-2xl flex items-center gap-3 border border-primary/5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-all message-shadow">
+<div class="size-10 bg-primary/10 rounded flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 min-w-0 pr-4">
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">De_cuong_Do_an_VLUconnect.pdf</p>
+<p class="text-[10px] text-slate-400 uppercase">2.4 MB • PDF Document</p>
+</div>
+<span class="material-symbols-outlined text-slate-400">download</span>
+</div>
+</div>
+</div>
+<div class="flex flex-row-reverse gap-4 max-w-[70%] self-end">
+<div class="space-y-1 text-right">
+<div class="bg-primary p-4 rounded-2xl rounded-tr-none message-shadow text-white text-sm">
+                            Tuyệt quá! Để mình check ngay đây. Phần UI có cần điều chỉnh gì thêm theo yêu cầu của thầy không nhỉ?
+                        </div>
+<div class="flex items-center justify-end gap-1">
+<span class="text-[10px] text-slate-400">10:28</span>
+<span class="text-[10px] text-primary font-medium">Đã gửi</span>
+</div>
+</div>
+</div>
+<div class="flex flex-row-reverse gap-4 max-w-[70%] self-end">
+<div class="space-y-1 text-right w-64">
+<div class="rounded-2xl overflow-hidden border-2 border-primary/10 message-shadow">
+<img alt="UI Design Screenshot" class="w-full h-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqTL8GLClAQIii1T_tGYDnV9tNsOJ1Z6nqQAvYwF4F49Wyh8sAmXa0efOF55i_QNC4pAIrA0_8EbFKcWb_x1XEROOnpT3bgswFER4CYjQqsCtlh6LxjADLWxT-riE_pygDnVFx8YGUlDJI1Xp77PpQzz4lrdPYCc9hd7BEJacP7PxjNcsPl06TU5DiAy2posEQ4zKt6zBf5A4yB95bU8Yt8NS5sslwIawrLNTkV_fTdgwo_I348U5UGErdOOzihgOlfJQ624ypAZS1"/>
+</div>
+<div class="flex items-center justify-end gap-1 mt-1">
+<span class="text-[10px] text-slate-400">10:30</span>
+<span class="material-symbols-outlined text-primary text-xs font-fill">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+<footer class="p-6 border-t border-primary/10 bg-white dark:bg-background-dark">
+<div class="max-w-5xl mx-auto flex items-end gap-3">
+<div class="flex gap-1 shrink-0 pb-1">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-full transition-all" title="Đính kèm tệp">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-full transition-all" title="Chèn hình ảnh">
+<span class="material-symbols-outlined">image</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-full transition-all" title="Biểu cảm">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+</button>
+</div>
+<div class="flex-1 relative">
+<textarea class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-2xl py-3 px-5 pr-12 focus:ring-2 focus:ring-primary/20 resize-none min-h-[48px] max-h-32 text-sm leading-relaxed outline-none" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+</div>
+<button class="size-12 bg-primary text-white rounded-2xl flex items-center justify-center hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 group">
+<span class="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">send</span>
+</button>
+</div>
+</footer>
+</main>
+<aside class="hidden xl:flex w-72 h-full border-l border-primary/10 bg-background-light/30 dark:bg-background-dark/30 flex-col">
+<div class="p-8 flex flex-col items-center text-center">
+<div class="size-24 rounded-full bg-cover bg-center border-4 border-white dark:border-background-dark shadow-xl mb-4" data-alt="Large profile picture of Lê Hoàng Anh" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDccw5LyVffFrUK7bryA8l5b89GgCeB471nOY8XUcp8HiPN370qWn095QAP9RY6N9BPqymNSDUK3vKOkXJsLET30TnU7awg6fA0Bgj5rWdTm9NN-0whO6JXN8HV53H_NZ3ZGeaEYG8_mMHnz07lSm7mihhpu5_WpXLn9I7y8uyoHfnj4Mmc3JRuQyNCmj1RaE3dMmZIJdRKG86wlv2IfV2fXuC4eW-PvbuHwPm1fAT-wWmicLBwlzqZ9gZm33XfolRkKk7-WW236Tu1');"></div>
+<h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">Lê Hoàng Anh</h3>
+<p class="text-sm text-slate-500 mb-6">Sinh viên • Khoa Mỹ thuật và Thiết kế</p>
+<div class="w-full space-y-4">
+<button class="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl text-sm font-medium hover:shadow-sm transition-all border border-primary/5">
+<span class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">description</span>
+                            Tài liệu đã gửi
+                        </span>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl text-sm font-medium hover:shadow-sm transition-all border border-primary/5">
+<span class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">image</span>
+                            Ảnh &amp; Video
+                        </span>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="flex-1 px-8 pb-8">
+<div class="h-full border-t border-primary/10 pt-6">
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Ghi chú &amp; Ghim</h4>
+<div class="p-3 bg-primary/5 rounded-xl border border-primary/10 border-dashed text-xs text-slate-600 dark:text-slate-400">
+                        Chưa có tin nhắn nào được ghim trong cuộc hội thoại này.
+                    </div>
+</div>
+</div>
+<div class="p-6">
+<button class="w-full py-2.5 text-sm font-semibold text-primary border border-primary/20 rounded-xl hover:bg-primary hover:text-white transition-all">
+                    Chặn người dùng
+                </button>
+</div>
+</aside>
+</div>
+
+</body></html>

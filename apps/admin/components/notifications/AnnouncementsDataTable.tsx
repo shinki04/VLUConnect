@@ -1,8 +1,10 @@
 "use client";
 
+import { SYSTEM_ANNOUNCEMENT_TYPES } from "@repo/shared/types/notification";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
+import { Calendar } from "@repo/ui/components/calendar";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +22,11 @@ import {
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@repo/ui/components/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,8 +42,10 @@ import {
   TableRow,
 } from "@repo/ui/components/table";
 import { Textarea } from "@repo/ui/components/textarea";
+import { cn } from "@repo/ui/lib/utils";
 import { format } from "date-fns";
 import {
+  CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Edit2,
@@ -374,10 +383,11 @@ function AnnouncementFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="info">Thông tin (Info)</SelectItem>
-                  <SelectItem value="warning">Cảnh báo (Warning)</SelectItem>
-                  <SelectItem value="success">Thành công (Success)</SelectItem>
-                  <SelectItem value="error">Lỗi (Error)</SelectItem>
+                  {SYSTEM_ANNOUNCEMENT_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -402,29 +412,17 @@ function AnnouncementFormDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_time">Thời gian bắt đầu</Label>
-              <Input
-                id="start_time"
+              <DateTimePicker
                 name="start_time"
-                type="datetime-local"
-                defaultValue={
-                  initialData?.start_time
-                    ? new Date(initialData.start_time).toISOString().slice(0, 16)
-                    : new Date().toISOString().slice(0, 16)
-                }
+                defaultValue={initialData?.start_time}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_time">Thời gian kết thúc (Tùy chọn)</Label>
-              <Input
-                id="end_time"
+              <DateTimePicker
                 name="end_time"
-                type="datetime-local"
-                defaultValue={
-                  initialData?.end_time
-                    ? new Date(initialData.end_time).toISOString().slice(0, 16)
-                    : ""
-                }
+                defaultValue={initialData?.end_time || ""}
               />
             </div>
           </div>
@@ -444,5 +442,78 @@ function AnnouncementFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DateTimePicker({
+  name,
+  defaultValue,
+  required,
+}: {
+  name: string;
+  defaultValue?: string;
+  required?: boolean;
+}) {
+  const [date, setDate] = React.useState<Date | undefined>(
+    defaultValue ? new Date(defaultValue) : required ? new Date() : undefined,
+  );
+  const [time, setTime] = React.useState<string>(
+    defaultValue ? format(new Date(defaultValue), "HH:mm") : "12:00",
+  );
+
+  const fullDate = React.useMemo(() => {
+    if (!date) return undefined;
+    const [hours, minutes] = time.split(":").map(Number);
+    const newDate = new Date(date);
+    newDate.setHours(hours || 0, minutes || 0, 0, 0);
+    return newDate;
+  }, [date, time]);
+
+  return (
+    <div>
+      <input
+        type="hidden"
+        name={name}
+        value={fullDate ? fullDate.toISOString() : ""}
+      />
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant={"outline"}
+            className={cn(
+              "w-full justify-start text-left font-normal",
+              !date && "text-muted-foreground",
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {fullDate ? (
+              format(fullDate, "MMM d, yyyy HH:mm")
+            ) : (
+              <span>Chọn ngày giờ</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            initialFocus
+          />
+          <div className="p-3 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">Thời gian:</Label>
+              <Input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full text-sm"
+              />
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }

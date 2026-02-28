@@ -1,5 +1,4 @@
 import { getRedisClient } from "@repo/redis/redis";
-import { BLANK_AVATAR, Global_Roles } from "@repo/shared/types/user";
 import { createClient } from "@repo/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -10,8 +9,7 @@ const COOKIE_CONFIG = {
   maxAge: 10,
 };
 
-const VLU_EMAIL_DOMAIN = "@vanlanguni.vn";
-const DEFAULT_ROLE: Global_Roles = "student";
+const VLU_EMAIL_DOMAINS = ["@vanlanguni.vn", "@vlu.edu.vn"];
 const USER_CACHE_TTL = 3600;
 
 const redis = getRedisClient();
@@ -48,7 +46,7 @@ export async function GET(request: Request) {
     return redirectWithCookie(
       `${origin}/login`,
       "access_error",
-      "Có lỗi xảy ra với đăng nhập"
+      "Có lỗi xảy ra"
     );
   }
 
@@ -66,7 +64,7 @@ export async function GET(request: Request) {
 
     const user = data.user;
 
-    if (!user.email?.endsWith(VLU_EMAIL_DOMAIN)) {
+    if (!VLU_EMAIL_DOMAINS.some(domain => user.email?.endsWith(domain))) {
       supabase.auth.admin.deleteUser(user.id).catch(console.error);
 
       return redirectWithCookie(
@@ -76,34 +74,33 @@ export async function GET(request: Request) {
       );
     }
 
-    // Prepare user profile data
-    const fullName = user.user_metadata?.full_name || `User ${user.id}`;
-    // Upsert user profile
     const { data: profile, error: upsertError } = await supabase
       .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          username: fullName,
-          email: user.email,
-          global_role: DEFAULT_ROLE,
-          avatar_url: BLANK_AVATAR,
-          display_name: fullName,
-        },
-        { onConflict: "id", ignoreDuplicates: true }
-      )
-      .select();
+      .select()
+      .eq("id", user.id)
+      .single();
+
+    console.log(profile);
+
+
 
     if (upsertError) {
-      return redirectWithCookie(
-        `${origin}/login`,
-        "access_error",
-        "Có lỗi xảy ra khi tạo hồ sơ"
+      return NextResponse.json(
+        { message: "Có lỗi xảy ra khi tạo hồ sơ" },
+        {
+          status: 400,
+          headers: {
+            "Set-Cookie": `access_error=Có lỗi xảy ra khi tạo hồ sơ; Path=/; HttpOnly; SameSite=Lax; Max-Age=${COOKIE_CONFIG.maxAge}`,
+          },
+        }
       );
     }
 
+
+
+
     // Cache user profile (non-blocking)
-    if (profile !== null && profile.length > 0) {
+    if (profile !== null) {
       redis
         .setCache(`user:${user.id}`, profile, USER_CACHE_TTL)
         .catch((err) => {
@@ -111,14 +108,22 @@ export async function GET(request: Request) {
         });
     }
 
+    if (profile.global_role !== 'admin') {
+      return redirectWithCookie(
+        `${origin}/login`,
+        "access_error",
+        "Bạn không có quyền truy cập"
+      );
+    }
+
     // Successful login - redirect to intended destination
     const redirectUrl = getRedirectUrl(origin, next, request);
     return redirectWithCookie(redirectUrl, "success", "Đăng nhập thành công");
-  } catch (err) {
+  } catch {
     return redirectWithCookie(
       `${origin}/login`,
       "access_error",
-      "Có lỗi xảy ra với đăng nhập"
+      "Có lỗi xảy ra"
     );
   }
 }

@@ -4,15 +4,7 @@ import { Card } from "@repo/ui/components/card";
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-
-import { getActiveAnnouncements } from "@/app/actions/notifications";
-
-interface Announcement {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-}
+import { useSystemAnnouncements } from "@/hooks/useSystemAnnouncements";
 
 const typeIcons = {
   info: <Info className="h-5 w-5" />,
@@ -21,39 +13,36 @@ const typeIcons = {
   error: <AlertCircle className="h-5 w-5" />,
 };
 
-const typeClasses = {
-  info: "glass-info text-blue-900 dark:text-blue-100",
-  warning: "glass-warning text-yellow-900 dark:text-yellow-100",
-  success: "glass-success text-green-900 dark:text-green-100",
-  error: "glass-error text-red-900 dark:text-red-100",
+const typeColors = {
+  info: "border-blue-500/50 bg-blue-50/50 text-blue-900 dark:bg-blue-950/50 dark:border-blue-800 dark:text-blue-200",
+  warning:
+    "border-yellow-500/50 bg-yellow-50/50 text-yellow-900 dark:bg-yellow-950/50 dark:border-yellow-800 dark:text-yellow-200",
+  success:
+    "border-green-500/50 bg-green-50/50 text-green-900 dark:bg-green-950/50 dark:border-green-800 dark:text-green-200",
+  error:
+    "border-red-500/50 bg-red-50/50 text-red-900 dark:bg-red-950/50 dark:border-red-800 dark:text-red-200",
 };
 
 export function SystemAnnouncementBanner() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const { data: announcements = [] } = useSystemAnnouncements();
+
   const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const fetchActive = async () => {
-      const data = await getActiveAnnouncements();
-
-      // Load closed ids from local storage
-      const stored = localStorage.getItem("closed_announcements");
-      if (stored) {
-        try {
-          setClosedIds(new Set(JSON.parse(stored)));
-        } catch (e) {
-          console.error(
-            "Error parsing closed announcements from local storage",
-            e,
-          );
-        }
+    // Load closed ids from local storage
+    const stored = localStorage.getItem("closed_announcements");
+    if (stored) {
+      try {
+        const parsedIds = new Set<string>(JSON.parse(stored));
+        setTimeout(() => setClosedIds(parsedIds), 0);
+      } catch (e) {
+        console.error(
+          "Error parsing closed announcements from local storage",
+          e,
+        );
       }
-
-      setAnnouncements(data || []);
-    };
-
-    fetchActive();
+    }
   }, []);
 
   const handleClose = (id: string) => {
@@ -80,14 +69,14 @@ export function SystemAnnouncementBanner() {
   const current = visibleAnnouncements[currentIndex];
   // Ensure default type values
   const typeKey =
-    current?.type && current.type in typeClasses
-      ? (current.type as keyof typeof typeClasses)
+    current?.type && current.type in typeColors
+      ? (current.type as keyof typeof typeColors)
       : "info";
 
   return (
     <div className="px-2 my-1 sticky top-16 z-50">
       <Card
-        className={`relative w-full rounded-2xl overflow-hidden glass-surface border-0 px-4 py-2 my-2 bg-liquid ${typeClasses[typeKey]} transition-all duration-300`}
+        className={`relative w-full border-b px-4 py-2 my-2 ${typeColors[typeKey]} shadow-sm transition-all duration-300`}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-1 min-w-0 items-center gap-2">

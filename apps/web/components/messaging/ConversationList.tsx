@@ -93,32 +93,31 @@ export function ConversationList({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* Header */}
-      <div className="p-4 border-b space-y-3">
+      <div className="p-4 border-b border-chat-border space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Tin nhắn</h2>
+          <h2 className="text-xl font-bold">Tin nhắn</h2>
           {onNewConversation && (
             <Button
               size="icon"
-              variant="ghost"
+              className="h-10 w-10 shrink-0 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
               onClick={onNewConversation}
-              className="h-8 w-8"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
               <span className="sr-only">Tin nhắn mới</span>
             </Button>
           )}
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative group mt-2">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
-            placeholder="Tìm kiếm cuộc trò chuyện..."
+            placeholder="Tìm kiếm hội thoại..."
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setSearchQuery(e.target.value)
             }
-            className="pl-9"
+            className="w-full pl-10 pr-4 py-2.5 bg-background dark:bg-background-dark border border-chat-border rounded-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent outline-none transition-all text-sm h-auto"
           />
         </div>
       </div>
