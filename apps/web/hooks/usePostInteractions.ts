@@ -348,7 +348,7 @@ export function useComments(
         isSending,
         removeComment,
         editComment,
-        toggleLike, // Export this
+        toggleLike,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage

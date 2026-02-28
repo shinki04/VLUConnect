@@ -19,7 +19,7 @@ export function useInfinitePostsQuery() {
     queryKey: ["posts", "infinite"],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user.data) {
-        throw new Error("User not authenticated");
+        throw new Error("Something went wrong!");
       }
 
       const res = await fetch(

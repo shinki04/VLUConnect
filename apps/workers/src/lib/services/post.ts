@@ -1,9 +1,11 @@
+import { NotificationType } from "@repo/shared/types/notification";
 import {  ModerationStatus, Post } from "@repo/shared/types/post";
 import {
   PostJobPayload,
   PostQueueDeletePayload,
   PostQueueItem,
   PostQueueStatus,
+  SentimentResult,
   UpdatePostJobPayload,
 } from "@repo/shared/types/postQueue";
 import { createServiceClient } from "@repo/supabase/service";
@@ -77,12 +79,13 @@ export async function processPostCreation(payload: PostJobPayload) {
       await updateQueueStatus(payload.queueId, "processing");
     }
 
+
     let moderationStatus: ModerationStatus = "approved";
     let moderationReason: string | null = null;
     let keywordMatch: string | null = null;
     let aiScore = 0;
     let aiLabel = "NEU";
-    let sentimentResults: any[] = [];
+    let sentimentResults: SentimentResult[] = [];
 
     // Step 0: Check blocked keywords
     const matchedKeyword = await checkBlockedKeywords(payload.content, payload.groupId || undefined);
@@ -152,17 +155,17 @@ export async function processPostCreation(payload: PostJobPayload) {
 
     // Step 2.1: Log Moderation Actions
     if (keywordMatch) {
-      await (supabase.from("moderation_actions") as any).insert({
+      await supabase.from("moderation_actions").insert({
         target_type: "post",
         target_id: post.id,
         action_type: "keyword_blocked",
-        reason: moderationReason,
+        reason: moderationReason!,
         matched_keyword: keywordMatch,
         created_by: null, // System
       });
     } else if (moderationStatus === "rejected" || moderationStatus === "flagged") {
       // Log AI action
-      await (supabase.from("moderation_actions") as any).insert({
+      await (supabase.from("moderation_actions")).insert({
         target_type: "post",
         target_id: post.id,
         action_type: "ai_flagged",
@@ -204,10 +207,26 @@ export async function processPostCreation(payload: PostJobPayload) {
       // Don't fail the post creation if hashtags fail
     }
 
+    // Save notification
+    const { error: notificationError } = await supabase.from("notifications").insert({
+      recipient_id: payload.userId,
+      sender_id: null,
+      entity_type: "post_created" as NotificationType,
+      entity_id: post.id,
+      title: "Bài viết đã được tạo",
+      message: "Bài viết của bạn đã được tạo thành công",
+      type: "post" as NotificationType,
+    });
+    if (notificationError) {
+      console.error("⚠️ Failed to save notification:", notificationError);
+    }
+
     // Update status to 'completed' with post ID
     if (payload.queueId) {
       await updateQueueStatus(payload.queueId, "completed", post.id);
     }
+
+
 
     console.log("🎉 Post processing completed successfully");
     // await deleteQueueStatus(payload.queueId!);

@@ -1,4 +1,4 @@
-import amqplib, { Channel, ChannelModel, Connection, Message } from "amqplib";
+import amqplib, { Channel, ChannelModel, Message } from "amqplib";
 
 interface QueueConfig {
   name: string;

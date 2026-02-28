@@ -1,10 +1,10 @@
 import { BLANK_AVATAR } from "@repo/shared/types/user";
-import { BellIcon } from "@repo/ui/components/bell";
 import Link from "next/link";
 import * as React from "react";
 
 import { getCurrentUser } from "@/app/actions/user";
 
+import { NotificationDropdown } from "./NotificationDropdown";
 import { UserDropdown } from "./UserDropdown";
 
 export async function Header() {
@@ -48,14 +48,9 @@ export async function Header() {
 
       {/* User Actions */}
       <div className="flex items-center justify-end gap-2 md:gap-3 md:w-1/4">
-        {/* Bell */}
-        <button className="relative p-1.5 md:p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
-          <BellIcon className="w-5 h-5 md:w-6 md:h-6" />
-          <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mainred opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-mainred"></span>
-          </span>
-        </button>
+        {/* Notifications */}
+        <NotificationDropdown />
+
         {/* Chat */}
         {/* <button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300 hidden sm:block">
           <MessageCircleMore />

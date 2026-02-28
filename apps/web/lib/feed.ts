@@ -22,7 +22,7 @@ export async function getFeedPosts(page = 1, limit = 10, userId: string = "publi
   }
   
   // Fetch from DB
-  const result = await fetchPosts(page, limit, userId);
+  const result = await fetchPosts(page, limit);
   
   return {
       data: result.posts,

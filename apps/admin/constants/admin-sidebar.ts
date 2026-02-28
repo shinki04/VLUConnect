@@ -1,4 +1,5 @@
 import {
+  Bell,
   FileText,
   Flag,
   Grid,
@@ -38,6 +39,8 @@ export const ADMIN_ROUTES = {
   MODERATION: "/dashboard/moderation",
   MODERATION_ALL: "/dashboard/moderation/all",
   MODERATION_KEYWORDS: "/dashboard/moderation/keywords",
+  // Notifications
+  NOTIFICATIONS: "/dashboard/notifications",
 } as const;
 
 // Navigation item types
@@ -122,6 +125,11 @@ export const SIDEBAR_NAV_ITEMS: NavItem[] = [
       },
       { title: "Danh sách hashtag", url: ADMIN_ROUTES.HASHTAGS_MANAGE },
     ],
+  },
+  {
+    title: "Quản lý thông báo",
+    url: ADMIN_ROUTES.NOTIFICATIONS,
+    icon: Bell,
   },
 ];
 

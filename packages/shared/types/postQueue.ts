@@ -25,6 +25,7 @@ export interface PostJobPayload {
   isAnonymous?: boolean; // Anonymous posting flag
 }
 
+
 export interface UpdatePostJobPayload {
   userId: string;
   postId: string;
@@ -40,3 +41,8 @@ export interface PostQueueDeletePayload {
   media_urls: string[];
   queueId?: string;
 }
+
+export type SentimentResult = {
+  label: string;
+  score: number;
+};

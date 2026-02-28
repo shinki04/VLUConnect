@@ -16,6 +16,8 @@ import { useState } from "react";
 
 import { useLogout } from "@/hooks/useAuth";
 
+import { ThemeSwitcher } from "../theme-switcher";
+
 interface UserDropdownProps {
   avatarUrl: string;
   displayName?: string | null;
@@ -61,6 +63,16 @@ export function UserDropdown({
               Trang cá nhân
             </DropdownMenuItem>
             <DropdownMenuItem>Post đang chờ</DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <ThemeSwitcher />
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuGroup>
             <DropdownMenuSeparator />
