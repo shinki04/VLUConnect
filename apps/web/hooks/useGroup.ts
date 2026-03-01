@@ -33,7 +33,38 @@ export const groupKeys = {
 // Hooks
 // ============================================================
 
-import { getMyGroups as fetchMyGroups,getSuggestedGroups } from "@/app/actions/group";
+import { GroupPrivacyFilter } from "@repo/shared/types/explore-groups";
+
+import { getMyGroups as fetchMyGroups, getSuggestedGroups, searchGroups } from "@/app/actions/group";
+
+export const exploreGroupKeys = {
+  all: ["explore-groups"] as const,
+  search: (query: string, privacy: string) => [...exploreGroupKeys.all, "search", query, privacy] as const,
+};
+
+export function useExploreGroups(query: string, privacy: GroupPrivacyFilter) {
+  return useInfiniteQuery({
+    queryKey: exploreGroupKeys.search(query, privacy),
+    queryFn: async ({ pageParam = 1 }) => {
+      const pageSize = 12;
+      const result = await searchGroups(query, privacy, pageParam, pageSize);
+      return {
+        groups: result.groups,
+        count: result.count,
+        page: pageParam,
+        hasNextPage: result.groups.length === pageSize,
+      };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.hasNextPage) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    staleTime: 30000,
+  });
+}
 
 /**
  * Hook to fetch suggested groups

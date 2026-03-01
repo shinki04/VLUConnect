@@ -115,6 +115,13 @@
   --profile-tab-active: #b52934;
   --profile-hover: #f1f5f9;
 
+  /* Group Colors (Light) */
+  --group-bg: var(--dashboard-background);
+  --group-card: var(--dashboard-card);
+  --group-border: var(--dashboard-border);
+  --group-hover: #f1f5f9;
+  --group-active: #e2e8f0;
+
   /* Chat Colors (Light) */
   --chat-bg: #f8f6f6;
   --chat-panel: #ffffff;
@@ -141,6 +148,10 @@
   --profile-border: oklch(1 0 0 / 10%);
   --profile-tab-active: #b52934;
   --profile-hover: #1f2937;
+
+  /* Group Colors (Dark) */
+  --group-hover: #1f2937;
+  --group-active: #374151;
 
 
   --background: oklch(0.145 0 0);

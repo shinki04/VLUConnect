@@ -1,5 +1,6 @@
 "use server";
 
+import { ExploreGroup, GroupPrivacyFilter } from "@repo/shared/types/explore-groups";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -781,3 +782,89 @@ export async function getMyGroups() {
     
     return data?.map(m => m.group).filter(Boolean) || [];
 }
+
+/**
+ * Search groups with pagination and privacy filter
+ */
+export async function searchGroups(
+  query: string,
+  privacy: GroupPrivacyFilter = "all",
+  page: number = 1,
+  pageSize: number = 12
+): Promise<{ groups: ExploreGroup[]; count: number; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+
+    let dbQuery = supabase
+      .from("groups")
+      .select(`
+        *,
+        members:group_members(count)
+      `, { count: "exact" });
+
+    // Apply search filter
+    if (query?.trim()) {
+      dbQuery = dbQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+    }
+
+    // Apply privacy filter
+    if (privacy !== "all") {
+      dbQuery = dbQuery.eq("privacy_level", privacy);
+    }
+
+    const { data, error, count } = await dbQuery
+      .order("created_at", { ascending: false })
+      .range(start, end);
+
+    if (error) {
+      console.error("Error searching groups:", error);
+      return { groups: [], count: 0, error: error instanceof Error ? error.message : "Unknown error" };
+    }
+
+    const memberships: Record<string, string> = {};
+    if (user && data && data.length > 0) {
+      const groupIds = data.map((g) => g.id);
+      const { data: userMemberships } = await supabase
+        .from("group_members")
+        .select("group_id, status")
+        .eq("user_id", user.id)
+        .in("group_id", groupIds);
+
+      if (userMemberships) {
+        userMemberships.forEach((m) => {
+          memberships[m.group_id] = m.status;
+        });
+      }
+    }
+
+    const formattedGroups: ExploreGroup[] = (data || []).map((group) => {
+      const pCount = (group.members)?.[0]?.count;
+      const memberCount = typeof pCount === "number" ? pCount : 0;
+
+      const myMembership = memberships[group.id] || "none";
+
+      return {
+        id: group.id,
+        name: group.name,
+        slug: group.slug,
+        description: group.description,
+        cover_url: group.cover_url,
+        avatar_url: group.avatar_url,
+        privacy_level: group.privacy_level || "public",
+        membership_mode: group.membership_mode || "auto",
+        member_count: memberCount,
+        my_membership_status: myMembership as "active" | "pending" | "none",
+      };
+    });
+
+    return { groups: formattedGroups, count: count || 0 };
+  } catch (error) {
+    console.error("searchGroups exception:", error);
+    return { groups: [], count: 0, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+

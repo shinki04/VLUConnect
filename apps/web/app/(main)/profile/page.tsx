@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import React from "react";
 
-import { getCurrentUser } from "../actions/user";
+import { getCurrentUser } from "@/app/actions/user";
 
 async function ProfilePage() {
   const queryClient = new QueryClient();

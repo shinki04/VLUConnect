@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
 import { BookmarkIcon } from "@repo/ui/components/bookmark";
 import { HomeIcon } from "@repo/ui/components/home";
 import { MessageCircleIcon } from "@repo/ui/components/message-circle";
@@ -15,6 +12,8 @@ import {
 import { GroupsIcon } from "@repo/ui/components/user-group-icon";
 import { UsersIcon } from "@repo/ui/components/users";
 import { cn } from "@repo/ui/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface ChatNavSidebarProps {
   unreadCount?: number;

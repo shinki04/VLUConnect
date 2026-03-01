@@ -7,7 +7,7 @@ import * as React from "react";
 
 import ListPosts from "@/components/posts/ListPosts";
 
-import { getCurrentUser } from "../actions/user";
+import { getCurrentUser } from "@/app/actions/user";
 
 // interface DashboardPageProps {
 //   propName: type;

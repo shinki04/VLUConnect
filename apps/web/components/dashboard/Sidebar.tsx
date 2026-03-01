@@ -9,6 +9,7 @@ import * as React from "react";
 
 import { getTotalUnreadCount } from "@/app/actions/messaging";
 import { getCurrentUser } from "@/app/actions/user";
+import { JoinedGroupsList } from "@/components/groups/JoinedGroupsList";
 
 import { AddPostButton } from "./AddPostButton";
 
@@ -62,8 +63,9 @@ export async function Sidebar() {
         </Link>
         <Separator />
         {currentUser && (
-          <div className="px-4">
+          <div className="px-4 flex flex-col gap-4">
             <AddPostButton currentUser={currentUser} />
+            <JoinedGroupsList />
           </div>
         )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { PostResponse } from "@repo/shared/types/post";
+import { FeedFilter } from "@repo/shared/types/post";
 import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { Loader2 } from "lucide-react";
@@ -9,7 +10,6 @@ import React from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import PostCard from "@/components/posts/PostCard";
-import { FeedFilter } from "@repo/shared/types/post";
 import { useInfinitePostsQuery } from "@/hooks/useInfinitePosts";
 
 import PendingPost from "./PendingPost";
