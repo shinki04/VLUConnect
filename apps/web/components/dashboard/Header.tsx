@@ -10,9 +10,10 @@ import { UserDropdown } from "./UserDropdown";
 
 interface HeaderProps {
   hideNavTabs?: boolean;
+  centerContent?: React.ReactNode;
 }
 
-export async function Header({ hideNavTabs }: HeaderProps = {}) {
+export async function Header({ hideNavTabs, centerContent }: HeaderProps = {}) {
   const user = await getCurrentUser();
 
   return (
@@ -31,7 +32,11 @@ export async function Header({ hideNavTabs }: HeaderProps = {}) {
         </div>
       </div>
 
-      {!hideNavTabs ? (
+      {centerContent ? (
+        <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
+          {centerContent}
+        </div>
+      ) : !hideNavTabs ? (
         <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
           <React.Suspense fallback={<div className="h-7" />}>
             <FeedFilterTabs />
