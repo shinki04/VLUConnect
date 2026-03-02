@@ -11,9 +11,14 @@ import { UserDropdown } from "./UserDropdown";
 interface HeaderProps {
   hideNavTabs?: boolean;
   centerContent?: React.ReactNode;
+  title?: string;
 }
 
-export async function Header({ hideNavTabs, centerContent }: HeaderProps = {}) {
+export async function Header({
+  hideNavTabs,
+  centerContent,
+  title,
+}: HeaderProps = {}) {
   const user = await getCurrentUser();
 
   return (
@@ -32,9 +37,13 @@ export async function Header({ hideNavTabs, centerContent }: HeaderProps = {}) {
         </div>
       </div>
 
-      {centerContent ? (
+      {centerContent || title ? (
         <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
-          {centerContent}
+          {centerContent || (
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              {title}
+            </h2>
+          )}
         </div>
       ) : !hideNavTabs ? (
         <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
