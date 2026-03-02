@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
 import MagnifierIcon from "@repo/ui/components/magnifier-icon";
+import React, { useEffect, useState } from "react";
 
 interface GroupSearchBarProps {
   onSearch: (query: string) => void;

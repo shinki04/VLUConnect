@@ -5,9 +5,8 @@ import {
 } from "@tanstack/react-query";
 import * as React from "react";
 
-import ListPosts from "@/components/posts/ListPosts";
-
 import { getCurrentUser } from "@/app/actions/user";
+import ListPosts from "@/components/posts/ListPosts";
 
 // interface DashboardPageProps {
 //   propName: type;

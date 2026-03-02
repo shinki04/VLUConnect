@@ -2,16 +2,16 @@
 
 import { GroupPrivacyFilter } from "@repo/shared/types/explore-groups";
 import { useQueryClient } from "@tanstack/react-query";
+import { SearchX } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
 import { joinGroup } from "@/app/actions/group";
+import { CreateGroupDialog } from "@/components/groups/create-group-dialog";
 import { GroupCard } from "@/components/groups/GroupCard";
 import { GroupFilter } from "@/components/groups/GroupFilter";
 import { GroupSearchBar } from "@/components/groups/GroupSearchBar";
 import { useExploreGroups } from "@/hooks/useGroup";
-import { SearchX } from "lucide-react";
-import { CreateGroupDialog } from "@/components/groups/create-group-dialog";
 
 export default function ExploreGroupsPage() {
   const [searchQuery, setSearchQuery] = useState("");
