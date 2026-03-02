@@ -76,15 +76,15 @@ export default function ExploreGroupsPage() {
       </div>
 
       <div className="bg-dashboard-card p-4 rounded-xl shadow-sm border border-dashboard-border">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 items-center">
           <GroupSearchBar onSearch={setSearchQuery} />
+          <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2 hidden lg:block"></div>
 
           <div className="flex items-center gap-2">
             <GroupFilter
               currentFilter={privacyFilter}
               onFilterChange={setPrivacyFilter}
             />
-            <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2 hidden lg:block"></div>
             {/* <button
               className="hidden lg:flex items-center justify-center p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-slate-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               title="Lọc nâng cao"

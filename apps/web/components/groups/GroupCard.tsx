@@ -36,28 +36,30 @@ export function GroupCard({ group, onJoin, isJoining }: GroupCardProps) {
   const showViewButton = my_membership_status === "active";
 
   return (
-    <div className="group-card group h-full flex flex-col hover:-translate-y-1 transition-all duration-300">
+    <div className="group-card group h-full flex flex-col hover:-translate-y-1 transition-all duration-300 border border-gray-200 dark:border-gray-700 rounded-xl">
       {/* Cover Image */}
-      <div className="group-card-cover h-32 w-full relative bg-gray-200 overflow-hidden rounded-t-xl">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-        {cover_url ? (
-          <img
-            src={cover_url}
-            alt={`${name} cover`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-slate-300 dark:bg-slate-700"></div>
-        )}
-        <span className="absolute top-3 right-3 z-20 bg-black/40 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border border-white/20">
-          <PrivacyIcon strokeWidth={1.3} />
-          {/* {isPublic ? "Công khai" : "Riêng tư"} */}
-        </span>
-        {/* <PrivacyIcon
+      <Link href={`/groups/${slug}`}>
+        <div className="group-card-cover h-32 w-full relative bg-gray-200 overflow-hidden rounded-t-xl">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+          {cover_url ? (
+            <img
+              src={cover_url}
+              alt={`${name} cover`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-slate-300 dark:bg-slate-700"></div>
+          )}
+          <span className="absolute top-3 right-3 z-20 bg-black/40 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border border-white/20">
+            <PrivacyIcon strokeWidth={1.3} />
+            {/* {isPublic ? "Công khai" : "Riêng tư"} */}
+          </span>
+          {/* <PrivacyIcon
           size={20}
           className="absolute top-3 right-3 z-20 bg-black/40 backdrop-blur-sm text-white rounded-md flex items-center gap-1 border border-white/20"
         /> */}
-      </div>
+        </div>
+      </Link>
 
       {/* Content */}
       <div className="group-card-content p-4 flex flex-col flex-1">
@@ -90,7 +92,7 @@ export function GroupCard({ group, onJoin, isJoining }: GroupCardProps) {
 
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center text-slate-500 dark:text-slate-400 text-xs font-medium gap-1">
-            <span className="material-symbols-outlined text-[16px]">group</span>
+            {/* <span className="material-symbols-outlined text-[16px]">group</span> */}
             {member_count} thành viên
           </div>
         </div>

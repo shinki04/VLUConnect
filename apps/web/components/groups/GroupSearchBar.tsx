@@ -21,7 +21,7 @@ export function GroupSearchBar({ onSearch, placeholder = "Tìm kiếm nhóm theo
   return (
     <div className="group-search flex-1 relative w-full">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <MagnifierIcon />
+        <MagnifierIcon size={19} strokeWidth={2.5} />
       </div>
       <input
         className="block w-full pl-10 pr-3 py-2.5 rounded-lg leading-5 sm:text-sm transition-colors group-search-input"
