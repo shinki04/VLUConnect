@@ -4,7 +4,8 @@ import { Tables } from "@repo/shared/types/database.types";
 import type {
   ConversationWithDetails,
   MessageWithSender,
-  OptimisticMessage} from "@repo/shared/types/messaging";
+  OptimisticMessage
+} from "@repo/shared/types/messaging";
 import {
   Avatar,
   AvatarFallback,
@@ -26,7 +27,6 @@ import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { useConversationFriendship } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 
-import { ChatDropdownDirect, ChatDropdownGroup } from "./ChatDropdown";
 import { GroupSettingsSheet } from "./GroupSettingsSheet";
 import { MessageBubble, MessageDateSeparator } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
@@ -39,11 +39,12 @@ interface ChatWindowProps {
   isInitialLoading?: boolean;
   onLeave?: () => void;
   onAddFriend?: (userId: string) => void;
+  onToggleRightSidebar?: () => void;
   className?: string;
 }
 
 // Union type for virtualized items
-type VirtualizedItem = 
+type VirtualizedItem =
   | { type: "date-separator"; date: string; key: string }
   | { type: "message"; message: MessageWithSender | OptimisticMessage; isOwn: boolean; showAvatar: boolean; key: string };
 
@@ -58,6 +59,7 @@ export function ChatWindow({
   isInitialLoading = false,
   onLeave,
   onAddFriend,
+  onToggleRightSidebar,
   className,
 }: ChatWindowProps) {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
@@ -185,7 +187,7 @@ export function ChatWindow({
     const sender = message.sender;
     const messageId = "id" in message ? message.id : "";
     if (!messageId) return;
-    
+
     setReplyingTo({
       id: messageId,
       content: message.content || null,
@@ -205,7 +207,7 @@ export function ChatWindow({
   ) => {
     // Send message first (this adds optimistic message to state)
     const sendPromise = sendMessage(content, replyTo, files);
-    
+
     // Force scroll to bottom after a small delay to ensure optimistic message is rendered
     // Use multiple timeouts to handle both immediate add and file upload states
     setTimeout(() => {
@@ -215,16 +217,16 @@ export function ChatWindow({
         align: "end",
       });
     }, 50);
-    
+
     // Second scroll after 200ms to handle any state updates from file processing
     setTimeout(() => {
       virtuosoRef.current?.scrollToIndex({
-        index: "LAST", 
+        index: "LAST",
         behavior: "smooth",
         align: "end",
       });
     }, 200);
-    
+
     return sendPromise;
   }, [sendMessage]);
 
@@ -257,7 +259,7 @@ export function ChatWindow({
     if (currentLength > prevLength && prevLength > 0) {
       const lastMessage = messages[messages.length - 1];
       const isOwnMessage = lastMessage?.sender_id === currentUserId;
-      
+
       // Always scroll if user sent the message, or if they're already at bottom
       if (isOwnMessage || atBottom) {
         // Use setTimeout to ensure DOM has updated with new message
@@ -340,15 +342,13 @@ export function ChatWindow({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {isGroup ? (
-              <ChatDropdownGroup
-                onLeave={onLeave}
-                onOpenSettings={() => setShowGroupSettings(true)}
-              />
-            ) : (
-              <ChatDropdownDirect userId={friendshipData?.otherUser?.id} />
-            )}
+          <div className="flex items-center gap-4 text-slate-400">
+            <button
+              onClick={onToggleRightSidebar}
+              className="hover:text-[#C81D31] text-slate-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 p-2 rounded-full border-2 border-transparent hover:border-[#C81D31]/20"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+            </button>
           </div>
         </div>
 

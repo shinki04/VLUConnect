@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { ChatNavSidebar } from "@/components/messaging/ChatNavSidebar";
+import { ChatRightSidebar } from "@/components/messaging/ChatRightSidebar";
 import { ChatWindow } from "@/components/messaging/ChatWindow";
 import { ConversationList } from "@/components/messaging/ConversationList";
 import { CreateConversationDialog } from "@/components/messaging/CreateConversationDialog";
@@ -45,6 +46,7 @@ export function MessagesClient({
   });
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   // Sync with browser back/forward navigation (popstate)
   useEffect(() => {
@@ -211,19 +213,29 @@ export function MessagesClient({
           {activeConversationId ? (
             // Show loading only when actually fetching and no data yet
             isLoadingConversation ||
-            (isFetchingConversation && !displayConversation) ? (
+              (isFetchingConversation && !displayConversation) ? (
               <ChatWindowLoading />
             ) : displayConversation ? (
-              <ChatWindow
-                key={activeConversationId} // Force remount on change
-                conversation={displayConversation}
-                currentUserId={currentUser.id}
-                currentUser={currentUser}
-                isInitialLoading={false}
-                onLeave={handleLeave}
-                onAddFriend={handleAddFriend}
-                className="w-full"
-              />
+              <div className="flex flex-1 overflow-hidden relative">
+                <ChatWindow
+                  key={activeConversationId} // Force remount on change
+                  conversation={displayConversation}
+                  currentUserId={currentUser.id}
+                  currentUser={currentUser}
+                  isInitialLoading={false}
+                  onLeave={handleLeave}
+                  onAddFriend={handleAddFriend}
+                  className="flex-1 min-w-0"
+                  onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+                />
+                <ChatRightSidebar
+                  conversation={displayConversation}
+                  currentUserId={currentUser.id}
+                  isOpen={isRightSidebarOpen}
+                  onClose={() => setIsRightSidebarOpen(false)}
+                  onLeaveGroup={handleLeave}
+                />
+              </div>
             ) : (
               // Fallback: show error or retry state
               <ChatWindowLoading />
@@ -284,7 +296,7 @@ function ChatWindowLoading() {
           <div className="h-3 w-20 bg-muted animate-pulse rounded" />
         </div>
       </div>
-      
+
       {/* Messages skeleton */}
       <div className="flex-1 p-4 space-y-4">
         {[...Array(5)].map((_, i) => (
@@ -305,7 +317,7 @@ function ChatWindowLoading() {
           </div>
         ))}
       </div>
-      
+
       {/* Input skeleton */}
       <div className="p-4 border-t">
         <div className="h-10 w-full bg-muted animate-pulse rounded-full" />

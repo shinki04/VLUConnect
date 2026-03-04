@@ -2,7 +2,7 @@ import { createServerClient, Database } from "@repo/supabase/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  const publicPaths = ["/", "/login", "/auth/callback", "/account-banned"];
+  const publicPaths = ["/", "/login", "/auth/callback", "/account-banned", "/privacy-policy", "/terms-of-service"];
 
   // Nếu request nằm trong public path → bỏ qua check user
   const isPublic = publicPaths.some(
@@ -48,7 +48,7 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
   // console.log("METADATA", user);
 
-  if (!user && !isPublic) { 
+  if (!user && !isPublic) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/login";

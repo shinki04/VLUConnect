@@ -28,14 +28,14 @@ export async function Sidebar() {
 
       {/* Mini Footer */}
       <div className="px-4 text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
-        <p>© 2023 Van Lang University.</p>
+        <p>© 2026 VLUconnect.</p>
         <div className="flex gap-2 mt-1">
-          <Link className="hover:underline" href="/dashboard">
-            Điều khoản
+          <Link className="hover:underline" href="/privacy-policy">
+            Chính sách bảo mật
           </Link>{" "}
           •
-          <Link className="hover:underline" href="/dashboard">
-            Quyền riêng tư
+          <Link className="hover:underline" href="/terms-of-service">
+            Điều khoản dịch vụ
           </Link>
         </div>
       </div>

@@ -110,8 +110,10 @@ export function ConversationItem({
       <button
         onClick={onClick}
         className={cn(
-          "w-full chat-conversation-item",
-          isActive && "chat-conversation-item-active",
+          "w-full flex items-center gap-3 p-4 transition-colors text-left border-l-4",
+          isActive
+            ? "bg-[#fff4f5] border-[#C81D31] dark:bg-red-950/20"
+            : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50"
         )}
       >
         {/* Avatar */}
