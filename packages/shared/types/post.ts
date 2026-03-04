@@ -40,14 +40,14 @@ export type FeedFilter = "all" | "user" | "group";
 export type ModerationStatus = Enums<"moderation_status">;
 export type PostResponse = {
   id: string;
-  created_at: string;
+  created_at: string | null;
   author: {
     id: string;
-    username: string;
+    username: string | null;
     slug?: string;
-    display_name: string;
+    display_name: string | null;
     avatar_url: string | null;
-    global_role: "admin" | "moderator" | "student" | "lecturer";
+    global_role: "admin" | "moderator" | "student" | "lecturer" | "banned" | null;
   };
   content: string;
   media_urls: string[] | null;
