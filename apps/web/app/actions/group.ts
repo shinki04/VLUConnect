@@ -854,8 +854,8 @@ export async function searchGroups(
         description: group.description,
         cover_url: group.cover_url,
         avatar_url: group.avatar_url,
-        privacy_level: group.privacy_level || "public",
-        membership_mode: group.membership_mode || "auto",
+        privacy_level: (group.privacy_level || "public") as ExploreGroup["privacy_level"],
+        membership_mode: (group.membership_mode || "auto") as ExploreGroup["membership_mode"],
         member_count: memberCount,
         my_membership_status: myMembership as "active" | "pending" | "none",
       };

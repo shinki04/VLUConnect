@@ -16,9 +16,15 @@ import AddPost from "@/components/posts/AddPost";
 
 interface AddPostButtonProps {
   currentUser: User;
+  groupId?: string;
+  allowAnonymousPosts?: boolean;
 }
 
-export function AddPostButton({ currentUser }: AddPostButtonProps) {
+export function AddPostButton({
+  currentUser,
+  groupId,
+  allowAnonymousPosts,
+}: AddPostButtonProps) {
   const [open, setOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -69,6 +75,8 @@ export function AddPostButton({ currentUser }: AddPostButtonProps) {
             currentUser={currentUser}
             onCancel={handleClose}
             onSuccess={() => setOpen(false)}
+            groupId={groupId}
+            allowAnonymousPosts={allowAnonymousPosts}
           />
         </DialogContent>
       </Dialog>

@@ -110,7 +110,7 @@ export function ConversationList({
           {onNewConversation && (
             <Button
               size="icon"
-              className="h-10 w-10 shrink-0 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+              className="h-10 w-10 shrink-0 bg-mainred text-white hover:bg-mainred-hover focus-visible:ring-mainred/20 dark:focus-visible:ring-mainred/40 dark:bg-mainred/60 rounded-full flex items-center justify-center transition-all shadow-lg shadow-mainred/20"
               onClick={onNewConversation}
             >
               <Plus className="h-5 w-5" />
@@ -121,14 +121,14 @@ export function ConversationList({
 
         {/* Search */}
         <div className="relative group mt-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-mainred transition-colors" />
           <Input
             placeholder="Tìm kiếm hội thoại..."
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setSearchQuery(e.target.value)
             }
-            className="w-full pl-10 pr-4 py-2 bg-background dark:bg-background-dark border border-chat-border rounded-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent outline-none transition-all text-sm h-auto"
+            className="w-full pl-10 pr-4 py-2 bg-background dark:bg-background-dark border border-chat-border rounded-xl focus-visible:ring-2 focus-visible:ring-mainred focus-visible:border-transparent outline-none transition-all text-sm h-auto"
           />
         </div>
 
@@ -139,7 +139,7 @@ export function ConversationList({
             className={cn(
               "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
               filter === "all"
-                ? "bg-primary/10 border-primary/20 text-primary"
+                ? "bg-mainred/10 border-mainred/20 text-mainred"
                 : "bg-transparent border-transparent text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-800/50",
             )}
           >
@@ -150,7 +150,7 @@ export function ConversationList({
             className={cn(
               "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
               filter === "unread"
-                ? "bg-primary/10 border-primary/20 text-primary"
+                ? "bg-mainred/10 border-mainred/20 text-mainred"
                 : "bg-transparent border-transparent text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-800/50",
             )}
           >
@@ -161,7 +161,7 @@ export function ConversationList({
             className={cn(
               "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
               filter === "group"
-                ? "bg-primary/10 border-primary/20 text-primary"
+                ? "bg-mainred/10 border-mainred/20 text-mainred"
                 : "bg-transparent border-transparent text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-800/50",
             )}
           >

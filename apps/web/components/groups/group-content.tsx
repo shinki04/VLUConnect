@@ -17,12 +17,12 @@ import type { GroupMember, GroupWithDetails } from "@/app/actions/group";
 import { BlockedKeywordsForm } from "@/components/groups/blocked-keywords-form";
 import { GroupSettingsForm } from "@/components/groups/group-settings-form";
 import { MemberList } from "@/components/groups/member-list";
-import AddPost from "@/components/posts/AddPost";
-import PendingPost from "@/components/posts/PendingPost";
 import PostCard from "@/components/posts/PostCard";
 import { useGetCurrentUser } from "@/hooks/useAuth";
 import { useInfiniteGroupPosts } from "@/hooks/useGroup";
 import { canManageGroup } from "@/lib/utils/group-permissions";
+
+import { AddPostButton } from "../dashboard/AddPostButton";
 
 interface GroupContentProps {
   group: GroupWithDetails;
@@ -68,33 +68,36 @@ export function GroupContent({
   // Logic: Public Group OR Active Member
   const canViewPosts = group.privacy_level === "public" || isActiveMember;
 
-  const [activeTab, setActiveTab] = useState(canViewPosts ? "discussion" : "overview");
+  const [activeTab, setActiveTab] = useState(
+    canViewPosts ? "discussion" : "overview",
+  );
 
   const [loadMoreRef, entry] = useIntersectionObserver({
     threshold: 0.1,
     root: null,
     rootMargin: "100px",
   });
-  
+
   // Infinite Query for posts (Only enabled if canViewPosts)
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    
-  } = useInfiniteGroupPosts(group.id); // Hook internally enabled/disabled logic? No, let's just use it, RLS blocks if needed.
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteGroupPosts(group.id); // Hook internally enabled/disabled logic? No, let's just use it, RLS blocks if needed.
   // Actually hook is always enabled in previous code.
 
   // Flatten all pages into single array
-  const posts = data?.pages.flatMap((page) => page.posts) as PostResponse[] ?? initialPosts;
+  const posts =
+    (data?.pages.flatMap((page) => page.posts) as PostResponse[]) ??
+    initialPosts;
 
   const myRole = group.my_membership?.role || null;
 
   // Auto fetch next page when loadMore element is visible
   useEffect(() => {
-    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage && canViewPosts) {
+    if (
+      entry?.isIntersecting &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      canViewPosts
+    ) {
       fetchNextPage();
     }
   }, [entry, hasNextPage, isFetchingNextPage, fetchNextPage, canViewPosts]);
@@ -142,8 +145,10 @@ export function GroupContent({
       onValueChange={setActiveTab}
       defaultValue={canViewPosts ? "discussion" : "overview"}
     >
-      <TabsList>
-        {canViewPosts && <TabsTrigger value="discussion">Thảo luận</TabsTrigger>}
+      <TabsList className="w-full overflow-x-auto justify-start flex-nowrap">
+        {canViewPosts && (
+          <TabsTrigger value="discussion">Thảo luận</TabsTrigger>
+        )}
         <TabsTrigger value="overview">Tổng quan</TabsTrigger>
         <TabsTrigger value="members">Tất cả thành viên</TabsTrigger>
         <TabsTrigger value="about">Giới thiệu</TabsTrigger>
@@ -156,17 +161,17 @@ export function GroupContent({
       {canViewPosts && (
         <TabsContent value="discussion">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-3 mt-2 md:mt-5 ">
               {isActiveMember && currentUser && (
-                <AddPost 
-                  currentUser={currentUser} 
-                  groupId={group.id} 
+                <AddPostButton
+                  currentUser={currentUser}
+                  groupId={group.id}
                   allowAnonymousPosts={group.allow_anonymous_posts ?? false}
                 />
               )}
 
               {/* Pending posts */}
-              <PendingPost groupId={group.id} />
+              {/* <PendingPost groupId={group.id} /> */}
 
               {isLoading ? (
                 <div className="flex items-center justify-center py-10">
@@ -179,19 +184,23 @@ export function GroupContent({
               ) : (
                 <>
                   {posts.map((post) => (
-                    <PostCard 
-                      key={post.id} 
-                      post={post} 
-                      allowAnonymousComments={group.allow_anonymous_comments ?? false}
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      allowAnonymousComments={
+                        group.allow_anonymous_comments ?? false
+                      }
                     />
                   ))}
-                  
+
                   {/* Load more trigger */}
                   <div ref={loadMoreRef} className="py-4">
                     {isFetchingNextPage && (
                       <div className="flex items-center justify-center">
                         <Loader2 className="w-5 h-5 animate-spin text-muted-foreground mr-2" />
-                        <span className="text-sm text-muted-foreground">Đang tải thêm...</span>
+                        <span className="text-sm text-muted-foreground">
+                          Đang tải thêm...
+                        </span>
                       </div>
                     )}
                   </div>
@@ -199,8 +208,8 @@ export function GroupContent({
               )}
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-4">
+            {/* Sidebar - hidden on mobile */}
+            <div className="hidden lg:block space-y-4 mt-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Giới thiệu</CardTitle>
@@ -218,13 +227,12 @@ export function GroupContent({
       <TabsContent value="overview">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            
             {/* Core Members Section */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                   <Crown className="w-5 h-5 text-yellow-500" />
-                   Ban quản trị
+                  <Crown className="w-5 h-5 text-yellow-500" />
+                  Ban quản trị
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -233,62 +241,66 @@ export function GroupContent({
                     {coreMembers.map(renderMemberItem)}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-4">Chưa có thông tin ban quản trị</p>
+                  <p className="text-muted-foreground text-center py-4">
+                    Chưa có thông tin ban quản trị
+                  </p>
                 )}
               </CardContent>
             </Card>
 
             {/* Friends Section */}
             {currentUser && (
-               <Card>
-                 <CardHeader>
+              <Card>
+                <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                     <Users className="w-5 h-5 text-blue-500" />
-                     Bạn bè trong nhóm
+                    <Users className="w-5 h-5 text-blue-500" />
+                    Bạn bè trong nhóm
                   </CardTitle>
-                 </CardHeader>
-                 <CardContent>
-                    {friendMembers.length > 0 ? (
-                       <div className="flex flex-col">
-                         {friendMembers.map(renderMemberItem)}
-                       </div>
-                    ) : (
-                       <p className="text-center text-sm text-muted-foreground py-4">
-                         Không có bạn bè nào trong nhóm này.
-                       </p>
-                    )}
-                 </CardContent>
+                </CardHeader>
+                <CardContent>
+                  {friendMembers.length > 0 ? (
+                    <div className="flex flex-col">
+                      {friendMembers.map(renderMemberItem)}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      Không có bạn bè nào trong nhóm này.
+                    </p>
+                  )}
+                </CardContent>
               </Card>
             )}
           </div>
-          
-           {/* Sidebar Info */}
-           <div className="space-y-4">
-               <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Thông tin</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                   <div className="flex items-center gap-2">
-                      {group.privacy_level === "public" ? (
-                        <Globe className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Lock className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="text-sm">
-                        {group.privacy_level === "public" ? "Công khai" : "Riêng tư"}
-                      </span>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">
-                        {group.members_count || 0} thành viên
-                      </span>
-                    </div>
-                </CardContent>
-              </Card>
-           </div>
+          {/* Sidebar Info */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Thông tin</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  {group.privacy_level === "public" ? (
+                    <Globe className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Lock className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <span className="text-sm">
+                    {group.privacy_level === "public"
+                      ? "Công khai"
+                      : "Riêng tư"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    {group.members_count || 0} thành viên
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </TabsContent>
 
@@ -329,11 +341,12 @@ export function GroupContent({
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">
-                  Tạo {group.created_at ? formatPostDate(group.created_at) : "N/A"}
+                  Tạo{" "}
+                  {group.created_at ? formatPostDate(group.created_at) : "N/A"}
                 </span>
               </div>
             </div>
-        </CardContent>
+          </CardContent>
         </Card>
       </TabsContent>
 
