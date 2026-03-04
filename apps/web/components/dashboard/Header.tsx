@@ -23,7 +23,7 @@ export async function Header({
 
   return (
     <header className="sticky top-0 z-50 bg-dashboard-sidebar border-b border-dashboard-border h-16 px-4 md:px-6 lg:px-10 flex items-center justify-between shadow-sm">
-      <div className="hidden md:flex items-center gap-4 w-1/4">
+      {/* <div className="hidden md:flex items-center gap-4 w-1/4">
         <div>
           <Link
             href="/dashboard"
@@ -35,6 +35,24 @@ export async function Header({
             </h1>
           </Link>
         </div>
+      </div> */}
+      <div className="hidden md:flex items-center gap-4 w-1/4">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 text-mainred"
+        >
+          <span className="material-symbols-outlined text-4xl">school</span>
+
+          <div className="flex flex-col leading-none">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              VLU Connect
+            </h1>
+
+            <span className="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider mt-[2px]">
+              Trường Đại học Văn Lang
+            </span>
+          </div>
+        </Link>
       </div>
 
       {centerContent || title ? (
