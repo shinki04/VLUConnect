@@ -13,7 +13,7 @@ import { InfiniteSavedPostsList } from "@/components/posts/InfiniteSavedPostsLis
 
 export default function SavedPostsPage() {
   return (
-    <div className="flex flex-col w-full max-w-3xl mx-auto pt-4 md:py-8 px-0 md:px-4">
+    <div className="flex flex-col w-full mx-auto pt-4 md:py-8 px-0 md:px-4">
       <Card className="flex flex-col w-full border-none shadow-none md:border-solid bg-transparent md:bg-dashboard-card dark:md:bg-dashboard-darkCard">
         <CardHeader className="flex flex-row items-center gap-3 p-4 md:px-8 border-b border-dashboard-border space-y-0">
           <div className="bg-mainred/10 p-2.5 rounded-xl shrink-0">
