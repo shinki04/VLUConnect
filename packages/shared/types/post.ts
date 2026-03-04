@@ -13,6 +13,7 @@ export type PostAppeal = Tables<"post_appeals"> & {
   post: {
     content: string;
     author_id: string;
+    media_urls?: string[] | null;
   } | null;
 };
 

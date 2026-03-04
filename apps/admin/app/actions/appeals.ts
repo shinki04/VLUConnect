@@ -18,7 +18,7 @@ export async function getPendingAppeals() {
       status,
       created_at,
       user:profiles(display_name, avatar_url, username),
-      post:posts(content, author_id)
+      post:posts(content, author_id, media_urls)
     `)
         .eq("status", "pending")
         .order("created_at", { ascending: false });

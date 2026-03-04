@@ -349,7 +349,7 @@ export function NotificationDropdown() {
                     }}
                   >
                     <div className="relative shrink-0">
-                      {notification.sender ? (
+                      {notification.sender && notification.type !== "system" ? (
                         <Avatar className="h-10 w-10">
                           <AvatarImage
                             src={notification.sender.avatar_url || BLANK_AVATAR}

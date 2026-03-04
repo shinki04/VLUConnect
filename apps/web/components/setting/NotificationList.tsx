@@ -13,10 +13,7 @@ import {
 } from "@repo/ui/components/avatar";
 import { Button } from "@repo/ui/components/button";
 import {
-  Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@repo/ui/components/card";
 import { InfiniteData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -254,11 +251,9 @@ export function NotificationList() {
 
   return (
     <div className="max-w-4xl mx-auto w-full pt-4">
-      <Card className="flex flex-col w-full border-none shadow-none md:border-solid bg-transparent md:bg-dashboard-card dark:md:bg-dashboard-darkCard overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between p-4 md:px-8 border-b border-dashboard-border space-y-0">
-          <CardTitle className="text-xl md:text-2xl font-bold">
-            Thông báo của bạn
-          </CardTitle>
+      <div className="flex flex-col w-full border-none shadow-none md:border-solid bg-transparent md:bg-dashboard-card dark:md:bg-dashboard-darkCard overflow-hidden">
+        <div className="flex flex-row items-center justify-between p-4 md:px-8 border-b border-dashboard-border space-y-0">
+          <h1 className="text-xl md:text-2xl font-bold">Thông báo của bạn</h1>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -271,7 +266,7 @@ export function NotificationList() {
               <span className="sm:hidden">Đã đọc tất cả</span>
             </Button>
           )}
-        </CardHeader>
+        </div>
 
         <CardContent className="flex flex-col w-full min-h-[40vh] p-0">
           {status === "pending" ? (
@@ -316,7 +311,7 @@ export function NotificationList() {
                     className="flex items-start gap-4 p-4 md:px-8"
                   >
                     <div className="relative shrink-0 mt-1">
-                      {notification.sender ? (
+                      {notification.sender && notification.type !== "system" ? (
                         <Avatar className="h-12 w-12 border border-slate-200 dark:border-slate-800">
                           <AvatarImage
                             src={notification.sender.avatar_url || BLANK_AVATAR}
@@ -405,7 +400,7 @@ export function NotificationList() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

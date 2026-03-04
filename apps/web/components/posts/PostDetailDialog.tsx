@@ -96,7 +96,7 @@ export default function PostDetailDialog({
             onMediaClick={handleMediaClick}
           />
 
-          <div className="my-4 border-t pt-2">
+          <div className="my-4 border-b pt-2">
             <PostActions
               post={{
                 id: post.id,

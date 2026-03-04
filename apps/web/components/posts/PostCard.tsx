@@ -100,7 +100,7 @@ export default function PostCard({
       <Card
         className={`bg-dashboard-card dark:bg-dashboard-darkCard rounded-xl shadow-sm border border-dashboard-border dark:border-dashboard-darkBorder overflow-hidden ${
           isPending ? "opacity-50 pointer-events-none relative" : ""
-        } ${isPendingModeration ? "opacity-60 grayscale-[0.2]" : ""}`}
+        } ${isPendingModeration ? "opacity-70" : ""}`}
       >
         {isPending && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 rounded-lg">
@@ -124,6 +124,7 @@ export default function PostCard({
             group={post.group}
             isAnonymous={post.is_anonymous ?? false}
             isGlobalAdmin={currentUser.data?.global_role === "admin"}
+            isPendingModeration={isPendingModeration}
           />
 
           <div className="mb-3">

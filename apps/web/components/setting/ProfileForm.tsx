@@ -2,7 +2,7 @@
 
 import { BLANK_AVATAR } from "@repo/shared/types/user";
 import { Button } from "@repo/ui/components/button";
-import { Card, CardContent } from "@repo/ui/components/card";
+import { CardContent } from "@repo/ui/components/card";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Textarea } from "@repo/ui/components/textarea";
@@ -101,7 +101,7 @@ function ProfileFormContent({ user }: { user: User }) {
   };
 
   return (
-    <Card className="max-w-3xl mx-auto w-full mt-4 overflow-hidden border-none shadow-none md:border-solid bg-transparent md:bg-dashboard-card dark:md:bg-dashboard-darkCard">
+    <div className="max-w-3xl mx-auto w-full mt-4 overflow-hidden border-none shadow-none md:border-solid bg-transparent md:bg-dashboard-card dark:md:bg-dashboard-darkCard">
       <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full pb-8">
         <div className="relative w-full h-48 md:h-64 bg-slate-200 dark:bg-slate-800 md:rounded-t-xl overflow-hidden group">
           {coverPreview ? (
@@ -206,6 +206,6 @@ function ProfileFormContent({ user }: { user: User }) {
           </div>
         </CardContent>
       </form>
-    </Card>
+    </div>
   );
 }

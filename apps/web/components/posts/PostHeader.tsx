@@ -25,7 +25,7 @@ interface PostHeaderProps {
   author: {
     id: string;
     username: string | null;
-    slug?: string ;
+    slug?: string;
     display_name?: string | null;
     avatar_url?: string | null;
     global_role: Global_Roles | null;
@@ -43,9 +43,8 @@ interface PostHeaderProps {
   } | null;
   isAnonymous?: boolean;
   isGlobalAdmin?: boolean;
+  isPendingModeration?: boolean;
 }
-
-
 
 export default function PostHeader({
   postId,
@@ -59,6 +58,7 @@ export default function PostHeader({
   group,
   isAnonymous = false,
   isGlobalAdmin = false,
+  isPendingModeration = false,
 }: PostHeaderProps) {
   const displayTime = updatedAt || createdAt;
   const formattedDate = formatPostDate(displayTime);
@@ -69,8 +69,12 @@ export default function PostHeader({
 
   // Determine display values based on anonymous status
   const shouldHideIdentity = isAnonymous && !isGlobalAdmin;
-  const displayName = shouldHideIdentity ? "Thành viên ẩn danh" : (author?.display_name || author?.username);
-  const displayAvatar = shouldHideIdentity ? ANONYMOUS_AVATAR : (author?.avatar_url || "/next.svg");
+  const displayName = shouldHideIdentity
+    ? "Thành viên ẩn danh"
+    : author?.display_name || author?.username;
+  const displayAvatar = shouldHideIdentity
+    ? ANONYMOUS_AVATAR
+    : author?.avatar_url || "/next.svg";
   const profileLink = shouldHideIdentity ? null : `/profile/${author?.slug}`;
 
   return (
@@ -128,11 +132,12 @@ export default function PostHeader({
         </div>
       </div>
       <div>
-        {isOwner ? (
-          <PostOwnerDropdown onUpdate={onUpdate} onDelete={onDelete} />
-        ) : (
-          <PostViewerDropdown postId={postId} />
-        )}
+        {!isPendingModeration &&
+          (isOwner ? (
+            <PostOwnerDropdown onUpdate={onUpdate} onDelete={onDelete} />
+          ) : (
+            <PostViewerDropdown postId={postId} />
+          ))}
       </div>
     </div>
   );
