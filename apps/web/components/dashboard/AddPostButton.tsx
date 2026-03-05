@@ -18,12 +18,14 @@ interface AddPostButtonProps {
   currentUser: User;
   groupId?: string;
   allowAnonymousPosts?: boolean;
+  isMobileNav?: boolean;
 }
 
 export function AddPostButton({
   currentUser,
   groupId,
   allowAnonymousPosts,
+  isMobileNav,
 }: AddPostButtonProps) {
   const [open, setOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -39,13 +41,23 @@ export function AddPostButton({
 
   return (
     <>
-      <Button
-        className="w-full bg-mainred text-white transition-colors font-medium hover:bg-mainred-hover"
-        onClick={() => setOpen(true)}
-      >
-        <PlusIcon className="text-white" />
-        Thêm bài đăng mới
-      </Button>
+      {isMobileNav ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="h-14 w-14 rounded-full bg-mainred hover:bg-mainred-hover flex items-center justify-center text-white shadow-lg border-4 border-dashboard-sidebar transition-transform active:scale-95"
+          aria-label="Thêm bài viết"
+        >
+          <PlusIcon className="h-6 w-6" strokeWidth={2.5} />
+        </button>
+      ) : (
+        <Button
+          className="w-full bg-mainred text-white transition-colors font-medium hover:bg-mainred-hover"
+          onClick={() => setOpen(true)}
+        >
+          <PlusIcon className="text-white" />
+          Thêm bài đăng mới
+        </Button>
+      )}
 
       <Dialog
         open={open}

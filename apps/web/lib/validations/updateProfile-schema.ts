@@ -25,7 +25,7 @@ export const updateProfileSchema = z.object({
       message: "Tên hiển thị chứa ký tự không hợp lệ",
     })
     .transform((val) => val.trim()),
-  
+
   slug: z
     .string()
     .min(2, "Slug phải có ít nhất 2 ký tự")
@@ -35,7 +35,28 @@ export const updateProfileSchema = z.object({
       "Slug chỉ được chứa chữ cái không dấu, số, gạch ngang và gạch dưới"
     ),
 
+  phone_number: z
+    .string()
+    .refine((val) => {
+      if (val === "") return true;
+      const cleaned = val.replace(/[\s\-\.]/g, "");
+      return /^[0-9]{10,11}$/.test(cleaned);
+    }, {
+      message: "Số điện thoại không hợp lệ (cần 10-11 số)",
+    }),
+
+  birth_date: z
+    .string()
+    .refine((val) => val === "" || !isNaN(Date.parse(val)), {
+      message: "Ngày sinh không hợp lệ",
+    }),
+
   avatar_image: z.union([
+    fileImageSchema.refine((file) => file.size >= 2, "Chỉ được chọn 1 ảnh"),
+    z.undefined(),
+  ]),
+
+  cover_image: z.union([
     fileImageSchema.refine((file) => file.size >= 2, "Chỉ được chọn 1 ảnh"),
     z.undefined(),
   ]),

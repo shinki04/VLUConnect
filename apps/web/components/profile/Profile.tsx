@@ -9,7 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/components/dialog";
+import { Input } from "@repo/ui/components/input";
+import { Label } from "@repo/ui/components/label";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { Textarea } from "@repo/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { BadgeCheck, Camera, Pencil } from "lucide-react";
 import Image from "next/image";
@@ -40,9 +43,9 @@ function Profile({ user, children }: ProfileProps) {
     user?.avatar_url || BLANK_AVATAR,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isCoverDialogOpen, setIsCoverDialogOpen] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(
+    user?.background_url || null
+  );
 
   const [avatars, setAvatars] = useState<Avatar[]>([]);
   const [activeTab, setActiveTab] = useState<
@@ -67,7 +70,10 @@ function Profile({ user, children }: ProfileProps) {
       display_name: user?.display_name || "",
       slug: user?.slug || "",
       description: user?.description || "",
+      phone_number: user?.phone_number || "",
+      birth_date: user?.birth_date || "",
       avatar_image: undefined as File | undefined,
+      cover_image: undefined as File | undefined,
     },
     validators: {
       onSubmit: updateProfileSchema,
@@ -89,9 +95,14 @@ function Profile({ user, children }: ProfileProps) {
         formData.append("display_name", value.display_name);
         formData.append("slug", value.slug);
         formData.append("description", value.description);
+        formData.append("phone_number", value.phone_number);
+        formData.append("birth_date", value.birth_date);
 
         if (value.avatar_image) {
           formData.append("avatar_image", value.avatar_image);
+        }
+        if (value.cover_image) {
+          formData.append("cover_image", value.cover_image);
         }
 
         await updateProfile({ userId: currentUser!.id, data: formData });
@@ -103,6 +114,15 @@ function Profile({ user, children }: ProfileProps) {
       }
     },
   });
+
+  const handleCoverChange = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCoverPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    form.setFieldValue("cover_image", file);
+  };
 
   const handleAvatarChange = (file: File) => {
     const reader = new FileReader();
@@ -159,7 +179,7 @@ function Profile({ user, children }: ProfileProps) {
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent"></div>
           {isOwner && (
             <Button
-              onClick={() => setIsCoverDialogOpen(true)}
+              onClick={() => setIsDialogOpen(true)}
               className="absolute bottom-4 right-4 bg-white/90 dark:bg-black/90 backdrop-blur text-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white dark:hover:bg-black transition-colors flex items-center gap-2 shadow-sm"
             >
               <Camera />
@@ -372,50 +392,98 @@ function Profile({ user, children }: ProfileProps) {
         )}
 
         {activeTab === "about" && (
-          <div className="bg-dashboard-card p-5 rounded-xl shadow-sm border border-dashboard-border w-full max-w-3xl mx-auto">
-            <h2 className="text-xl font-bold mb-6 text-foreground border-b border-dashboard-border pb-4">
-              Giới thiệu
-            </h2>
-            <div className="grid gap-6">
-              <div>
-                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                  Thông tin cơ bản
-                </h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-3">
-                    {/* <span className="material-symbols-outlined text-mainred filled">
-                      rss_feed
-                    </span> */}
-                    <div className="text-base text-foreground">
-                      <span className="text-muted-foreground">
-                        Tên người dùng:
-                      </span>{" "}
-                      <span className="font-bold">@{user.username}</span>
-                    </div>
-                  </li>
-                  {user.email && (
-                    <li className="flex items-start gap-3">
-                      {/* <Mail /> */}
-                      <div className="text-base text-foreground">
-                        <span className="text-muted-foreground">Email:</span>{" "}
-                        <span className="font-bold">{user.email}</span>
-                      </div>
-                    </li>
-                  )}
-                </ul>
+          <div className="w-full max-w-4xl mx-auto space-y-6">
+            {/* THÔNG TIN CƠ BẢN */}
+            <div className="bg-dashboard-card p-5 rounded-xl shadow-sm border border-dashboard-border">
+              <h3 className="text-sm font-bold text-mainred uppercase tracking-wider mb-5">
+                Thông tin cơ bản
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Mã SN sinh viên/cán bộ</p>
+                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">@{user.username}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Họ và tên</p>
+                  <p className="text-[14px] font-semibold text-foreground">{user.display_name}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Ngày sinh</p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.birth_date ? new Date(user.birth_date).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Vai trò</p>
+                  <p className="text-[14px] font-semibold text-foreground capitalize">{user.global_role || "Thành viên"}</p>
+                </div>
               </div>
+            </div>
 
-              <div>
-                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                  Về bản thân
-                </h3>
-                <p className="text-foreground text-base leading-relaxed line-clamp-3 md:line-clamp-4">
-                  {user?.description || (
-                    <span className="italic opacity-60">
-                      Chưa có lời giới thiệu nào
-                    </span>
-                  )}
-                </p>
+            {/* LIÊN HỆ */}
+            <div className="bg-dashboard-card p-5 rounded-xl shadow-sm border border-dashboard-border">
+              <h3 className="text-sm font-bold text-mainred uppercase tracking-wider mb-5">
+                Liên hệ
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Email</p>
+                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">{user.email || "Chưa cập nhật"}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Số điện thoại</p>
+                  <p className="text-[14px] font-semibold text-foreground">{user.phone_number || "Chưa cập nhật"}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">URL Cá nhân</p>
+                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">
+                    {user.slug ? `/${user.slug}` : "Chưa cập nhật"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* GIỚI THIỆU BẢN THÂN */}
+            <div className="bg-dashboard-card p-5 rounded-xl shadow-sm border border-dashboard-border">
+              <h3 className="text-sm font-bold text-mainred uppercase tracking-wider mb-5">
+                Giới thiệu bản thân
+              </h3>
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Tiểu sử</p>
+                  <p className="text-[14px] font-semibold text-foreground leading-relaxed whitespace-pre-wrap">
+                    {user.description || <span className="italic opacity-60">Chưa có lời giới thiệu nào</span>}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Tương tác</p>
+                  <p className="text-[14px] font-semibold text-foreground">{totalFriends || 0} người bạn</p>
+                </div>
+              </div>
+            </div>
+
+            {/* THÔNG TIN TÀI KHOẢN */}
+            <div className="bg-dashboard-card p-5 rounded-xl shadow-sm border border-dashboard-border">
+              <h3 className="text-sm font-bold text-mainred uppercase tracking-wider mb-5">
+                Thông tin tài khoản
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">ID Tài khoản</p>
+                  <p className="text-[12px] font-mono text-muted-foreground break-all">{user.id}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Ngày tham gia</p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.create_at ? new Date(user.create_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Cập nhật lần cuối</p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.updated_at ? new Date(user.updated_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -499,12 +567,12 @@ function Profile({ user, children }: ProfileProps) {
       {isOwner && (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent
-            className="max-w-2xl"
+            className="max-w-xl max-h-[90vh] flex flex-col overflow-hidden"
             onInteractOutside={(e) => {
               e.preventDefault(); // không cho đóng khi click ra ngoài
             }}
           >
-            <DialogHeader>
+            <DialogHeader className="shrink-0">
               <DialogTitle>Chỉnh sửa trang cá nhân</DialogTitle>
             </DialogHeader>
 
@@ -514,13 +582,48 @@ function Profile({ user, children }: ProfileProps) {
                 e.stopPropagation();
                 form.handleSubmit();
               }}
-              className="space-y-6"
+              className="flex-1 overflow-y-auto space-y-6 pr-2"
             >
+              {/* Cover Field */}
+              <div>
+                <Label className="mb-2 block">
+                  Ảnh bìa
+                </Label>
+                <div className="flex flex-col space-y-4">
+                  <div className="w-full h-32 md:h-40 rounded-xl overflow-hidden bg-dashboard-background border-2 border-dashed border-dashboard-border flex items-center justify-center relative">
+                    {coverPreview ? (
+                      <Image
+                        fill
+                        src={coverPreview}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-muted-foreground text-sm">Chưa có ảnh bìa</span>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleCoverChange(file);
+                      }}
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-mainred/10 file:text-mainred hover:file:bg-mainred/20"
+                    />
+                    <form.Field name="cover_image">
+                      {(field) => <FieldErrors field={field} />}
+                    </form.Field>
+                  </div>
+                </div>
+              </div>
+
               {/* Avatar Field */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <Label className="mb-2 block">
                   Ảnh đại diện
-                </label>
+                </Label>
                 <div className="flex items-center space-x-4">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-dashboard-background">
                     <Image
@@ -551,16 +654,16 @@ function Profile({ user, children }: ProfileProps) {
               {/* Display Name Field */}
               <form.Field name="display_name">
                 {(field) => (
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="display_name">
                       Tên hiển thị *
-                    </label>
-                    <input
+                    </Label>
+                    <Input
+                      id="display_name"
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="w-full px-3 py-2 border border-dashboard-border bg-dashboard-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-mainred"
                       placeholder="Nhập tên hiển thị của bạn"
                     />
                     <FieldErrors field={field} />
@@ -568,19 +671,61 @@ function Profile({ user, children }: ProfileProps) {
                 )}
               </form.Field>
 
-              {/* Slug Field */}
-              <form.Field name="slug">
+              {/* Phone Number Field */}
+              <form.Field name="phone_number">
                 {(field) => (
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Slug (URL Profile) *
-                    </label>
-                    <input
+                  <div className="space-y-2">
+                    <Label htmlFor="phone_number">
+                      Số điện thoại
+                    </Label>
+                    <Input
+                      id="phone_number"
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="w-full px-3 py-2 border border-dashboard-border bg-dashboard-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-mainred"
+                      placeholder="Nhập số điện thoại của bạn"
+                    />
+                    <FieldErrors field={field} />
+                  </div>
+                )}
+              </form.Field>
+
+              {/* Birth Date Field */}
+              <form.Field name="birth_date">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="birth_date">
+                      Ngày sinh
+                    </Label>
+                    <Input
+                      id="birth_date"
+                      type="date"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                    <FieldErrors field={field} />
+                  </div>
+                )}
+              </form.Field>
+
+
+              {/* Slug Field */}
+              <form.Field name="slug">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">
+                      Slug (URL Profile) *
+                    </Label>
+                    <Input
+                      id="slug"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
                       placeholder="Nhập slug (ví dụ: ten-cua-ban)"
                     />
                     <FieldErrors field={field} />
@@ -591,17 +736,18 @@ function Profile({ user, children }: ProfileProps) {
               {/* Description Field */}
               <form.Field name="description">
                 {(field) => (
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="description">
                       Giới thiệu
-                    </label>
-                    <textarea
+                    </Label>
+                    <Textarea
+                      id="description"
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       rows={4}
-                      className="w-full px-3 py-2 border border-dashboard-border bg-dashboard-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-mainred"
+                      className="resize-none w-full"
                       placeholder="Giới thiệu về bản thân..."
                     />
                     <div className="flex justify-between text-sm text-muted-foreground mt-1">
@@ -613,7 +759,7 @@ function Profile({ user, children }: ProfileProps) {
               </form.Field>
 
               {/* Dialog Footer */}
-              <DialogFooter>
+              <DialogFooter className="shrink-0 pt-4 border-t border-dashboard-border mt-2">
                 <form.Subscribe
                   selector={(state) => [state.canSubmit, state.isSubmitting]}
                 >
@@ -643,113 +789,6 @@ function Profile({ user, children }: ProfileProps) {
         </Dialog>
       )}
 
-      {/* Cover Image Dialog */}
-      {isOwner && (
-        <Dialog
-          open={isCoverDialogOpen}
-          onOpenChange={(open) => {
-            setIsCoverDialogOpen(open);
-            if (!open) {
-              setCoverPreview(null);
-              setCoverFile(null);
-            }
-          }}
-        >
-          <DialogContent
-            className="max-w-2xl"
-            onInteractOutside={(e) => e.preventDefault()}
-          >
-            <DialogHeader>
-              <DialogTitle>Chỉnh sửa ảnh bìa</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {/* Preview */}
-              <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden bg-dashboard-background border border-dashboard-border">
-                {coverPreview ? (
-                  <Image
-                    src={coverPreview}
-                    alt="Cover preview"
-                    fill
-                    className="object-cover"
-                  />
-                ) : user.background_url ? (
-                  <Image
-                    src={user.background_url}
-                    alt="Current cover"
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    <div className="text-center">
-                      <span className="material-symbols-outlined text-4xl mb-2">
-                        add_photo_alternate
-                      </span>
-                      <p className="text-sm">Chọn ảnh bìa</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* File Input */}
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setCoverFile(file);
-                      const reader = new FileReader();
-                      reader.onload = (ev) => {
-                        setCoverPreview(ev.target?.result as string);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-mainred/10 file:text-mainred hover:file:bg-mainred/20"
-                />
-              </div>
-            </div>
-
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isProfileUpdating}
-                >
-                  Hủy
-                </Button>
-              </DialogClose>
-              <Button
-                disabled={!coverFile || isProfileUpdating}
-                onClick={async () => {
-                  if (!coverFile || !currentUser) return;
-                  try {
-                    const formData = new FormData();
-                    formData.append("cover_image", coverFile);
-                    await updateProfile({
-                      userId: currentUser.id,
-                      data: formData,
-                    });
-                    toast.success("Cập nhật ảnh bìa thành công!");
-                    setIsCoverDialogOpen(false);
-                    setCoverPreview(null);
-                    setCoverFile(null);
-                  } catch (err) {
-                    console.error("Cover update error:", err);
-                    toast.error("Có lỗi xảy ra khi cập nhật ảnh bìa");
-                  }
-                }}
-              >
-                {isProfileUpdating ? "Đang tải lên..." : "Lưu ảnh bìa"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }

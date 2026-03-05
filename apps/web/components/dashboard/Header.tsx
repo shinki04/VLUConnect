@@ -1,4 +1,5 @@
 import { BLANK_AVATAR } from "@repo/shared/types/user";
+import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 
@@ -41,7 +42,7 @@ export async function Header({
           href="/dashboard"
           className="flex items-center gap-2 text-mainred"
         >
-          <span className="material-symbols-outlined text-4xl">school</span>
+          <Image src="/logo_red_noname.png" alt="VLU Connect Logo" width={36} height={36} className="object-contain" />
 
           <div className="flex flex-col leading-none">
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">

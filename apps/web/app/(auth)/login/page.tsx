@@ -17,7 +17,18 @@ async function LoginPage() {
     >
       <div className="absolute inset-0" aria-hidden="true" />
       <div className="relative z-10 w-full max-w-xl flex flex-col items-center">
-        {!data.user ? <LoginForm /> : <LoggedForm />}
+        {!data.user ? (
+          <LoginForm />
+        ) : (
+          <LoggedForm
+            userName={
+              data.user.user_metadata?.full_name ||
+              data.user.user_metadata?.name ||
+              data.user.email ||
+              "Người dùng"
+            }
+          />
+        )}
 
         {/* {error && (
           <div className="text-red-600 font-medium mt-2">{error.message}</div>

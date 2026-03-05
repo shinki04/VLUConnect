@@ -1,17 +1,16 @@
-import Link from "next/link";
-import * as React from "react";
-import { BackButton } from "@/components/ui/BackButton";
 import {
-    Globe,
-    Lock,
-    Info,
-    Users,
-    LogIn,
-    UserCircle,
     FileText,
+    Globe,
+    Info,
+    Lock,
+    LogIn,
     MousePointerClick,
     RefreshCw,
+    UserCircle,
+    Users,
 } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 export default function PrivacyPolicyPageWrapper() {
     return (
@@ -26,51 +25,71 @@ export default function PrivacyPolicyPageWrapper() {
 function PrivacyPolicyPage() {
     return (
         <div className="min-h-screen bg-[#F5F5F5] flex flex-col font-sans">
-            {/* ================= MAIN CONTENT ================= */}
             <main className="flex-1 w-full bg-[#f8f9fa] relative pb-20">
-                {/* Hero Section */}
-                <div className="h-[280px] w-full bg-[#C81D31] flex flex-col items-center pt-12 md:pt-16 px-4">
+
+                {/* ================= HERO ================= */}
+                <div className="relative min-h-[340px] w-full bg-[#C81D31] flex flex-col items-center justify-center px-4 pb-20">
+
+                    {/* BACK BUTTON GLASS */}
+                    <div className="absolute top-6 left-4 md:left-10">
+                        <Link
+                            href="/dashboard"
+                            className="
+                                flex items-center gap-2
+                                bg-white/15 backdrop-blur-md
+                                text-white
+                                px-4 py-2
+                                rounded-full
+                                border border-white/30
+                                shadow-md
+                                hover:bg-white hover:text-[#C81D31]
+                                hover:shadow-lg
+                                transition-all duration-300
+                                text-sm font-semibold
+                            "
+                        >
+                            ← Trở về
+                        </Link>
+                    </div>
+
                     <h1 className="text-3xl md:text-[44px] font-black text-white text-center tracking-tight mb-2 uppercase">
                         Chính sách bảo mật
                     </h1>
-                    <p className="text-white text-base md:text-[20px] font-bold tracking-widest uppercase mb-8">
+
+                    <p className="text-white text-base md:text-[20px] font-bold tracking-widest uppercase mb-6">
                         (Privacy Policy)
                     </p>
-                    <p className="text-white/80 text-[10px] sm:text-xs tracking-[0.2em] font-medium uppercase border-t border-white/20 pt-4 px-8 text-center">
-                        VLUCONNECT INTERNAL ACADEMIC SOCIAL NETWORK
+
+                    <div className="w-16 h-px bg-white/40 mb-4" />
+
+                    <p className="text-white/80 text-[10px] sm:text-xs tracking-[0.2em] font-medium uppercase text-center max-w-md leading-relaxed">
+                        MẠNG XÃ HỘI HỌC THUẬT NỘI BỘ VLUCONNECT
                     </p>
                 </div>
 
-                {/* Content Card */}
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-16">
+                {/* ================= CONTENT CARD ================= */}
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-10">
                     <div className="bg-white rounded-2xl md:rounded-3xl shadow-lg p-6 md:p-10 lg:p-12 pb-8">
 
-                        {/* Breadcrumb */}
-                        <div className="flex justify-between items-center mb-8 md:mb-10">
-                            <div className="flex items-center text-xs font-medium text-slate-500">
-                                <Link
-                                    href="/dashboard"
-                                    className="hover:text-[#C81D31] transition-colors"
-                                >
-                                    Trang chủ
-                                </Link>
-                                <span className="mx-2">{">"}</span>
-                                <span className="text-[#C81D31]">
-                                    Chính sách Bảo mật
-                                </span>
-                            </div>
-                            <BackButton />
+                        {/* Breadcrumb (đã bỏ BackButton ở đây) */}
+                        <div className="flex items-center text-xs font-medium text-slate-500 mb-8 md:mb-10">
+                            <Link
+                                href="/dashboard"
+                                className="hover:text-[#C81D31] transition-colors"
+                            >
+                                Trang chủ
+                            </Link>
+                            <span className="mx-2">{">"}</span>
+                            <span className="text-[#C81D31]">
+                                Chính sách Bảo mật
+                            </span>
                         </div>
 
                         <div className="space-y-12">
+
                             {/* Section 1 */}
                             <section>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-1.5 h-6 bg-[#C81D31] rounded-full" />
-                                    <h2 className="text-lg md:text-xl font-bold text-slate-900">
-                                        1. Thông tin chúng tôi thu thập
-                                    </h2>
-                                </div>
+                                <SectionTitle title="1. Thông tin chúng tôi thu thập" />
 
                                 <p className="text-sm md:text-base text-slate-600 mb-6">
                                     Chúng tôi thu thập các loại thông tin sau để cung cấp
@@ -78,7 +97,6 @@ function PrivacyPolicyPage() {
                                 </p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Card */}
                                     <InfoCard
                                         icon={<LogIn size={20} strokeWidth={2.5} />}
                                         title="Thông tin đăng nhập SSO"
@@ -140,8 +158,8 @@ function PrivacyPolicyPage() {
                                     />
                                     <PrivacyLevel
                                         icon={<Users size={28} strokeWidth={2.5} />}
-                                        title="Trong Khoa"
-                                        desc="Chỉ giảng viên và sinh viên cùng khoa mới xem được."
+                                        title="Bạn bè"
+                                        desc="Chỉ bạn bè mới xem được."
                                     />
                                     <PrivacyLevel
                                         icon={<Lock size={28} strokeWidth={2.5} />}
@@ -168,6 +186,7 @@ function PrivacyPolicyPage() {
                                     </p>
                                 </div>
                             </section>
+
                         </div>
 
                         {/* Footer */}
@@ -177,6 +196,7 @@ function PrivacyPolicyPage() {
                                 Cập nhật lần cuối: Ngày 05 tháng 03 năm 2026
                             </div>
                         </div>
+
                     </div>
                 </div>
             </main>
@@ -210,12 +230,8 @@ function InfoCard({
         <div className="bg-[#f8f9fa] rounded-xl p-5 flex gap-4 border border-slate-100 hover:bg-slate-50 transition-colors">
             <div className="text-[#C81D31] mt-1 shrink-0">{icon}</div>
             <div>
-                <h3 className="font-bold text-slate-900 mb-1">
-                    {title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                    {desc}
-                </p>
+                <h3 className="font-bold text-slate-900 mb-1">{title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
             </div>
         </div>
     );
@@ -233,12 +249,8 @@ function PrivacyLevel({
     return (
         <div className="bg-[#f8f9fa] rounded-xl p-6 flex flex-col items-center text-center gap-3 border border-slate-100 hover:bg-slate-50 transition-colors">
             <div className="text-[#C81D31]">{icon}</div>
-            <h3 className="font-bold text-slate-900">
-                {title}
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-                {desc}
-            </p>
+            <h3 className="font-bold text-slate-900">{title}</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
         </div>
     );
 }

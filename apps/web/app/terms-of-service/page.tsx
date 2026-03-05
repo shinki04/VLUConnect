@@ -1,23 +1,20 @@
-import Link from "next/link";
-import * as React from "react";
-import { BackButton } from "@/components/ui/BackButton";
 import {
-    ShieldCheck,
-    Key,
-    Gavel,
     AlertCircle,
     Copyright,
-    ShieldAlert,
-    Settings,
+    Gavel,
     History,
+    Key,
     RefreshCw,
+    Settings,
+    ShieldAlert,
+    ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 export default function TermsOfServicePageWrapper() {
     return (
-        <React.Suspense
-            fallback={<div className="min-h-screen bg-[#F5F5F5]" />}
-        >
+        <React.Suspense fallback={<div className="min-h-screen bg-[#F5F5F5]" />}>
             <TermsOfServicePage />
         </React.Suspense>
     );
@@ -28,53 +25,69 @@ function TermsOfServicePage() {
         <div className="min-h-screen bg-[#F5F5F5] flex flex-col font-sans">
             <main className="flex-1 w-full bg-[#f8f9fa] relative pb-20">
                 {/* ================= HERO ================= */}
-                <div className="h-[280px] w-full bg-[#C81D31] flex flex-col items-center pt-12 md:pt-16 px-4">
+                <div className="relative min-h-[320px] w-full bg-[#C81D31] flex flex-col items-center justify-center px-4 pb-20">
+                    {/* Back Button */}
+                    <div className="absolute top-6 left-4 md:left-10">
+                        <Link
+                            href="/dashboard"
+                            className="
+                flex items-center gap-2
+                bg-white text-[#C81D31]
+                px-5 py-2.5
+                rounded-full
+                shadow-lg
+                hover:scale-105
+                hover:bg-white/90
+                transition-all duration-300
+                text-sm font-bold
+              "
+                        >
+                            ← Trở về
+                        </Link>
+                    </div>
+
                     <h1 className="text-3xl md:text-[44px] font-black text-white text-center tracking-tight mb-2 uppercase">
                         ĐIỀU KHOẢN DỊCH VỤ
                     </h1>
-                    <p className="text-white text-base md:text-[20px] font-bold tracking-widest uppercase mb-8">
+
+                    <p className="text-white text-base md:text-[20px] font-bold tracking-widest uppercase mb-6">
                         (TERMS OF SERVICE)
                     </p>
+
                     <div className="w-16 h-px bg-white/40 mb-4" />
-                    <p className="text-white/80 text-[10px] sm:text-xs tracking-[0.2em] font-medium uppercase pt-2 px-8 text-center">
-                        VLUCONNECT INTERNAL ACADEMIC SOCIAL NETWORK
+
+                    <p className="text-white/80 text-xs tracking-[0.2em] font-medium uppercase text-center max-w-md leading-relaxed">
+                        MẠNG XÃ HỘI HỌC THUẬT NỘI BỘ VLUCONNECT
                     </p>
                 </div>
 
-                {/* ================= CONTENT CARD ================= */}
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-16">
-                    <div className="bg-white rounded-2xl md:rounded-3xl shadow-lg p-6 md:p-10 lg:p-12 pb-8">
+                {/* ================= CONTENT ================= */}
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 relative -mt-10">
+                    <div className="bg-white rounded-3xl shadow-xl p-6 md:p-10 lg:p-14">
 
                         {/* Breadcrumb */}
-                        <div className="flex justify-between items-center mb-8 md:mb-10">
-                            <div className="flex items-center text-xs font-medium text-slate-500">
-                                <Link
-                                    href="/dashboard"
-                                    className="hover:text-[#C81D31] transition-colors"
-                                >
-                                    Trang chủ
-                                </Link>
-                                <span className="mx-2">{">"}</span>
-                                <span className="text-[#C81D31]">
-                                    Điều khoản Dịch vụ
-                                </span>
-                            </div>
-                            <BackButton />
+                        <div className="flex items-center text-xs font-medium text-slate-500 mb-10">
+                            <Link
+                                href="/dashboard"
+                                className="hover:text-[#C81D31] transition-colors"
+                            >
+                                Trang chủ
+                            </Link>
+                            <span className="mx-2">{">"}</span>
+                            <span className="text-[#C81D31]">
+                                Điều khoản Dịch vụ
+                            </span>
                         </div>
 
-                        <div className="space-y-12">
+                        <div className="space-y-14">
+
                             {/* SECTION 1 */}
                             <section>
-                                <SectionTitle title="1. Điều kiện sử dụng và Tư cách thành viên" />
-
-                                <p className="text-sm md:text-base text-slate-600 mb-6">
-                                    Để tham gia VLUconnect, người dùng phải đáp ứng các tiêu chuẩn xác thực sau:
-                                </p>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <SectionTitle title="1. Điều kiện sử dụng & Tư cách thành viên" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <InfoCard
                                         icon={<ShieldCheck size={20} />}
-                                        title="Tài khoản Nội bộ"
+                                        title="Tài khoản nội bộ"
                                         desc="Chỉ dành cho sinh viên, giảng viên và cán bộ đang công tác tại VLU."
                                     />
                                     <InfoCard
@@ -87,85 +100,55 @@ function TermsOfServicePage() {
 
                             {/* SECTION 2 */}
                             <section>
-                                <SectionTitle title="2. Kiểm duyệt AI và Cơ chế Global Ban" />
-
-                                <div className="bg-[#fff4f5] border border-[#ffe0e3] rounded-xl p-6 flex gap-4">
-                                    <div className="text-[#C81D31] bg-white p-3 rounded-full shadow-sm shrink-0">
-                                        <Gavel size={22} />
-                                    </div>
-
-                                    <div>
-                                        <h3 className="font-bold text-slate-900 mb-2">
-                                            AI Moderation
-                                        </h3>
-                                        <p className="text-sm text-slate-600 leading-relaxed">
-                                            Tất cả bài viết và bình luận được phân tích tự động.
-                                            Các vi phạm nghiêm trọng có thể dẫn đến lệnh{" "}
-                                            <span className="font-bold">Global Ban</span> —
-                                            đình chỉ quyền truy cập trên toàn hệ thống.
-                                        </p>
-                                    </div>
+                                <SectionTitle title="2. Quyền và trách nhiệm của người dùng" />
+                                <div className="space-y-4">
+                                    <ListItem
+                                        icon={<Gavel size={18} />}
+                                        text="Chịu trách nhiệm về nội dung đã đăng tải."
+                                    />
+                                    <ListItem
+                                        icon={<AlertCircle size={18} />}
+                                        text="Không đăng tải nội dung vi phạm pháp luật hoặc quy định của nhà trường."
+                                    />
+                                    <ListItem
+                                        icon={<ShieldAlert size={18} />}
+                                        text="Bảo mật thông tin tài khoản và mật khẩu cá nhân."
+                                    />
                                 </div>
                             </section>
 
                             {/* SECTION 3 */}
                             <section>
-                                <SectionTitle title="3. Tiêu chuẩn cộng đồng học thuật" />
-                                <p className="text-sm md:text-base text-slate-600">
-                                    Người dùng cam kết tôn trọng chuẩn mực học thuật,
-                                    quyền sở hữu trí tuệ và hành xử văn minh trong môi
-                                    trường đại học.
-                                </p>
+                                <SectionTitle title="3. Nội dung và bản quyền" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <PolicyBlock
+                                        icon={<Copyright size={20} />}
+                                        title="Quyền sở hữu nội dung"
+                                        desc="Người dùng giữ quyền sở hữu nội dung của mình nhưng cấp quyền hiển thị trên nền tảng."
+                                    />
+                                    <PolicyBlock
+                                        icon={<ShieldCheck size={20} />}
+                                        title="Tôn trọng bản quyền"
+                                        desc="Nghiêm cấm sao chép hoặc sử dụng nội dung của người khác khi chưa được phép."
+                                    />
+                                </div>
                             </section>
 
                             {/* SECTION 4 */}
                             <section>
-                                <SectionTitle title="4. Các hành vi bị nghiêm cấm" />
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <PolicyBlock
-                                        icon={<AlertCircle size={24} />}
-                                        title="Nội dung độc hại"
-                                        desc="Nghiêm cấm chia sẻ nội dung gây thù ghét hoặc không lành mạnh."
+                                <SectionTitle title="4. Quản lý và xử lý vi phạm" />
+                                <div className="space-y-4">
+                                    <ListItem
+                                        icon={<Settings size={18} />}
+                                        text="Ban quản trị có quyền chỉnh sửa hoặc xoá nội dung vi phạm."
                                     />
-                                    <PolicyBlock
-                                        icon={<Copyright size={24} />}
-                                        title="Vi phạm bản quyền"
-                                        desc="Sử dụng tài liệu học thuật trái phép hoặc đạo văn."
-                                    />
-                                    <PolicyBlock
-                                        icon={<ShieldAlert size={24} />}
-                                        title="Xâm nhập hệ thống"
-                                        desc="Cố ý tấn công hoặc làm gián đoạn dịch vụ mạng."
+                                    <ListItem
+                                        icon={<History size={18} />}
+                                        text="Tài khoản vi phạm nhiều lần có thể bị tạm khóa hoặc khóa vĩnh viễn."
                                     />
                                 </div>
                             </section>
 
-                            {/* SECTION 5 */}
-                            <section>
-                                <SectionTitle title="5. Quyền và Trách nhiệm của VLU" />
-
-                                <div className="space-y-3">
-                                    <ListItem
-                                        icon={<Settings size={20} />}
-                                        text="Quyền thay đổi tính năng và giao diện để tối ưu hóa học tập."
-                                    />
-                                    <ListItem
-                                        icon={<History size={20} />}
-                                        text="Lưu trữ nhật ký hoạt động phục vụ công tác hậu kiểm."
-                                    />
-                                </div>
-                            </section>
-
-                            {/* SECTION 6 */}
-                            <section>
-                                <SectionTitle title="6. Giải quyết tranh chấp và Kỷ luật" />
-                                <p className="text-sm md:text-base text-slate-600">
-                                    Mọi tranh chấp sẽ được giải quyết thông qua Hội đồng
-                                    Kỷ luật của Trường Đại học Văn Lang. Quyết định của
-                                    Nhà trường là quyết định cuối cùng.
-                                </p>
-                            </section>
                         </div>
 
                         {/* FOOTER */}
@@ -175,6 +158,7 @@ function TermsOfServicePage() {
                                 Cập nhật lần cuối: Ngày 05 tháng 03 năm 2026
                             </div>
                         </div>
+
                     </div>
                 </div>
             </main>
@@ -182,11 +166,11 @@ function TermsOfServicePage() {
     );
 }
 
-/* ================= REUSABLE COMPONENTS ================= */
+/* ================= COMPONENTS ================= */
 
 function SectionTitle({ title }: { title: string }) {
     return (
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-6">
             <div className="w-1.5 h-6 bg-[#C81D31] rounded-full" />
             <h2 className="text-lg md:text-xl font-bold text-slate-900">
                 {title}
@@ -205,15 +189,11 @@ function InfoCard({
     desc: string;
 }) {
     return (
-        <div className="bg-[#f8f9fa] rounded-xl p-5 flex gap-4 border border-slate-100 hover:bg-slate-50 transition-colors">
+        <div className="bg-[#f8f9fa] rounded-xl p-6 flex gap-4 border border-slate-100 hover:bg-slate-50 transition-colors">
             <div className="text-[#C81D31] shrink-0 mt-1">{icon}</div>
             <div>
-                <h3 className="font-bold text-slate-900 mb-1">
-                    {title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                    {desc}
-                </p>
+                <h3 className="font-bold text-slate-900 mb-1">{title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
             </div>
         </div>
     );
@@ -229,16 +209,12 @@ function PolicyBlock({
     desc: string;
 }) {
     return (
-        <div className="bg-white rounded-xl p-6 flex flex-col items-center text-center gap-3 border border-slate-100 shadow-sm">
-            <div className="text-[#C81D31] bg-[#fff4f5] p-2.5 rounded-full">
+        <div className="bg-white rounded-xl p-6 flex flex-col items-center text-center gap-3 border border-slate-100 shadow-sm hover:shadow-md transition">
+            <div className="text-[#C81D31] bg-[#fff4f5] p-3 rounded-full">
                 {icon}
             </div>
-            <h3 className="font-bold text-slate-900">
-                {title}
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-                {desc}
-            </p>
+            <h3 className="font-bold text-slate-900">{title}</h3>
+            <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
         </div>
     );
 }
@@ -251,7 +227,7 @@ function ListItem({
     text: string;
 }) {
     return (
-        <div className="bg-[#f8f9fa] rounded-xl p-4 flex items-center gap-4">
+        <div className="bg-[#f8f9fa] rounded-xl p-4 flex items-center gap-4 border border-slate-100">
             <div className="text-[#C81D31]">{icon}</div>
             <p className="font-semibold text-slate-800 text-sm md:text-base">
                 {text}

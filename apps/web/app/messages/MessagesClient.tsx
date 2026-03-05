@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { MobileNav } from "@/components/dashboard/MobileNav";
 import { ChatNavSidebar } from "@/components/messaging/ChatNavSidebar";
 import { ChatRightSidebar } from "@/components/messaging/ChatRightSidebar";
 import { ChatWindow } from "@/components/messaging/ChatWindow";
@@ -180,8 +181,8 @@ export function MessagesClient({
   );
 
   return (
-    <>
-      <div className="chat-layout rounded-lg border shadow-sm">
+    <div className="flex flex-col h-screen h-[100dvh] pb-[72px] md:pb-0">
+      <div className="flex-1 overflow-hidden chat-layout rounded-none md:rounded-lg border-0 md:border shadow-sm">
         {/* Nav Sidebar */}
         <ChatNavSidebar unreadCount={totalUnreadCount} />
 
@@ -255,7 +256,9 @@ export function MessagesClient({
         onCreateGroup={handleCreateGroup}
         isCreating={isCreatingDirect || isCreatingGroup}
       />
-    </>
+
+      <MobileNav currentUser={currentUser} unreadCount={totalUnreadCount} />
+    </div>
   );
 }
 

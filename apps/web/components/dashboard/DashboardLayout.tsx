@@ -1,8 +1,10 @@
+import { User } from "@repo/shared/types/user";
 import * as React from "react";
 
 import { SystemAnnouncementBanner } from "@/components/notifications/SystemAnnouncementBanner";
 
 import { MainContent } from "./MainContent";
+import { MobileNav } from "./MobileNav";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   header?: React.ReactNode;
@@ -16,7 +18,12 @@ export function DashboardLayout({
   header,
   leftSidebar,
   rightSidebar,
-}: DashboardLayoutProps) {
+  currentUser,
+  unreadCount,
+}: DashboardLayoutProps & {
+  currentUser?: User | null;
+  unreadCount?: number;
+}) {
   return (
     <div className="bg-dashboard-background text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
       {header}
@@ -39,6 +46,11 @@ export function DashboardLayout({
           </aside>
         )}
       </div>
+
+      {/* Mobile Navigation Bar */}
+      {currentUser !== undefined && (
+        <MobileNav currentUser={currentUser} unreadCount={unreadCount} />
+      )}
     </div>
   );
 }

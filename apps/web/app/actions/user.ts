@@ -214,6 +214,8 @@ export async function updateProfileWithAvatar(
   const displayName = formData.get("display_name") as string;
   const description = formData.get("description") as string;
   const slug = formData.get("slug") as string;
+  const phoneNumber = formData.get("phone_number") as string;
+  const birthDate = formData.get("birth_date") as string;
   const avatarImage = formData.get("avatar_image") as File | null;
   const coverImage = formData.get("cover_image") as File | null;
 
@@ -228,8 +230,7 @@ export async function updateProfileWithAvatar(
     } catch (error) {
       console.error("Avatar upload failed:", error);
       throw new Error(
-        `Failed to upload avatar: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `Failed to upload avatar: ${error instanceof Error ? error.message : "Unknown error"
         }`
       );
     }
@@ -240,7 +241,7 @@ export async function updateProfileWithAvatar(
     try {
       const fileExt = coverImage.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `covers/${userId}/${fileName}`;
+      const filePath = `${userId}/covers/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
@@ -276,6 +277,8 @@ export async function updateProfileWithAvatar(
   if (displayName?.trim()) profileData.display_name = displayName.trim();
   if (description !== null && description !== undefined) profileData.description = description?.trim() || null;
   if (slug !== null && slug !== undefined) profileData.slug = slug?.trim() || null;
+  if (phoneNumber !== null && phoneNumber !== undefined) profileData.phone_number = phoneNumber?.trim() || null;
+  if (birthDate !== null && birthDate !== undefined) profileData.birth_date = birthDate?.trim() || null;
   if (avatarUrl) profileData.avatar_url = avatarUrl;
   if (backgroundUrl) profileData.background_url = backgroundUrl;
 
