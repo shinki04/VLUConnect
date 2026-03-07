@@ -90,10 +90,13 @@ interface AnnouncementsDataTableProps {
 
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50] as const;
 
-const typeColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  info: "default",
-  warning: "outline",
-  success: "secondary",
+const typeColors: Record<
+  string,
+  "info" | "warning" | "success" | "destructive"
+> = {
+  info: "info",
+  warning: "warning",
+  success: "success",
   error: "destructive",
 };
 
