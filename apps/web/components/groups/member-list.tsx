@@ -84,16 +84,17 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
             <h3 className="font-semibold">
               Yêu cầu tham gia ({pendingMembers.length})
             </h3>
-            {["admin", "sub_admin"].includes(currentUserRole || "") && pendingMembers.length > 1 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => actions.approveAllMembers()}
-                disabled={actions.isApprovingAll}
-              >
-                {actions.isApprovingAll ? "Đang duyệt..." : "Duyệt tất cả"}
-              </Button>
-            )}
+            {["admin", "sub_admin"].includes(currentUserRole || "") &&
+              pendingMembers.length > 1 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => actions.approveAllMembers()}
+                  disabled={actions.isApprovingAll}
+                >
+                  {actions.isApprovingAll ? "Đang duyệt..." : "Duyệt tất cả"}
+                </Button>
+              )}
           </div>
           <div className="space-y-3">
             {pendingMembers.map((member) => (
@@ -103,7 +104,9 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={member.profile?.avatar_url || BLANK_AVATAR} />
+                    <AvatarImage
+                      src={member.profile?.avatar_url || BLANK_AVATAR}
+                    />
                     <AvatarFallback>
                       {member.profile?.display_name?.[0] || "?"}
                     </AvatarFallback>
@@ -162,11 +165,13 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
               className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors"
             >
               <Link
-                href={`/profile/${member.profile?.username}`}
+                href={`/profile/${member.profile?.slug}`}
                 className="flex items-center gap-3 flex-1"
               >
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={member.profile?.avatar_url || BLANK_AVATAR} />
+                  <AvatarImage
+                    src={member.profile?.avatar_url || BLANK_AVATAR}
+                  />
                   <AvatarFallback>
                     {member.profile?.display_name?.[0] || "?"}
                   </AvatarFallback>
@@ -245,7 +250,7 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
                             onClick={() => {
                               if (
                                 confirm(
-                                  `Bạn có chắc muốn chuyển quyền Admin cho ${member.profile?.display_name}?`
+                                  `Bạn có chắc muốn chuyển quyền Admin cho ${member.profile?.display_name}?`,
                                 )
                               ) {
                                 actions.transferAdmin(member.user_id);

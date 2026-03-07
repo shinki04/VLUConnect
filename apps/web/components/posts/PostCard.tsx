@@ -7,6 +7,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useGetCurrentUser } from "@/hooks/useAuth";
+import { useIsGroupAdmin } from "@/hooks/useGroup";
 import { useDeletePost } from "@/hooks/usePost";
 import { getFileInfo, isImageType, type MediaType } from "@/lib/mediaUtils";
 
@@ -48,6 +49,8 @@ export default function PostCard({
   } | null>(null);
 
   const isOwner = !isPending && post.author.id === currentUser.data?.id;
+  const { data: isGroupAdmin } = useIsGroupAdmin(post.group?.id);
+  const canDelete = isOwner || !!isGroupAdmin;
 
   const imageUrls = React.useMemo(
     () =>
@@ -125,6 +128,7 @@ export default function PostCard({
             isAnonymous={post.is_anonymous ?? false}
             isGlobalAdmin={currentUser.data?.global_role === "admin"}
             isPendingModeration={isPendingModeration}
+            canDelete={canDelete}
           />
 
           <div className="mb-3">

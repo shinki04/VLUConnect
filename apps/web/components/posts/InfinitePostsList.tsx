@@ -40,6 +40,12 @@ export function InfinitePostsList({
 
   const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Handle reaching end of list for infinite scroll
   const handleEndReached = React.useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -47,7 +53,8 @@ export function InfinitePostsList({
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (isLoading) {
+  // Prevent hydration mismatch: Server always renders skeleton, client first render matches it.
+  if (!mounted || isLoading) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (

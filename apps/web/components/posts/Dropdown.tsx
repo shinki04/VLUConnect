@@ -11,6 +11,7 @@ import { Flag, MoreHorizontalIcon, Pencil, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { ReportDialog } from "@/components/reports/ReportDialog";
+import { Separator } from "@repo/ui/components/separator";
 
 interface PostOwnerDropdownProps {
   onDelete: () => void;
@@ -56,9 +57,15 @@ export function PostOwnerDropdown({
 
 interface PostViewerDropdownProps {
   postId: string;
+  canDelete?: boolean;
+  onDelete?: () => void;
 }
 
-export function PostViewerDropdown({ postId }: PostViewerDropdownProps) {
+export function PostViewerDropdown({
+  postId,
+  canDelete,
+  onDelete,
+}: PostViewerDropdownProps) {
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   return (
@@ -78,6 +85,15 @@ export function PostViewerDropdown({ postId }: PostViewerDropdownProps) {
               <Flag className="mr-2 h-4 w-4" />
               Báo cáo
             </DropdownMenuItem>
+            {canDelete && onDelete && (
+              <>
+                <Separator />
+                <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                  <Trash2Icon className="mr-2 h-4 w-4" />
+                  Xóa bài viết
+                </DropdownMenuItem>
+              </>
+            )}
             {/* <DropdownMenuItem>Archive</DropdownMenuItem> */}
           </DropdownMenuGroup>
         </DropdownMenuContent>

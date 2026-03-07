@@ -44,6 +44,7 @@ interface PostHeaderProps {
   isAnonymous?: boolean;
   isGlobalAdmin?: boolean;
   isPendingModeration?: boolean;
+  canDelete?: boolean;
 }
 
 export default function PostHeader({
@@ -59,6 +60,7 @@ export default function PostHeader({
   isAnonymous = false,
   isGlobalAdmin = false,
   isPendingModeration = false,
+  canDelete = false,
 }: PostHeaderProps) {
   const displayTime = updatedAt || createdAt;
   const formattedDate = formatPostDate(displayTime);
@@ -136,7 +138,7 @@ export default function PostHeader({
           (isOwner ? (
             <PostOwnerDropdown onUpdate={onUpdate} onDelete={onDelete} />
           ) : (
-            <PostViewerDropdown postId={postId} />
+            <PostViewerDropdown postId={postId} canDelete={canDelete} onDelete={onDelete} />
           ))}
       </div>
     </div>

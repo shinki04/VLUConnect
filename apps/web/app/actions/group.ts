@@ -663,7 +663,7 @@ export async function getGroupMembers(
       role,
       status,
       joined_at,
-      profile:profiles!user_id(id, display_name, username, avatar_url)
+      profile:profiles!user_id(id, display_name, username, avatar_url, slug)
     `
     )
     .eq("group_id", groupId);
@@ -869,6 +869,32 @@ export async function searchGroups(
   } catch (error) {
     console.error("searchGroups exception:", error);
     return { groups: [], count: 0, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+/**
+ * Check if the current user is a group admin (admin, sub_admin, or moderator)
+ */
+export async function checkIsGroupAdmin(groupId?: string): Promise<boolean> {
+  if (!groupId) return false;
+  
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data: membership } = await supabase
+      .from("group_members")
+      .select("role")
+      .eq("group_id", groupId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!membership) return false;
+    return ["admin", "sub_admin", "moderator"].includes(membership.role);
+  } catch (error) {
+    console.error("Error checking group admin status:", error);
+    return false;
   }
 }
 
