@@ -212,7 +212,7 @@ function Profile({ user, children }: ProfileProps) {
             </div>
 
             <div className="flex-1 flex flex-col items-center md:items-start pt-2 md:pt-16 pb-2">
-              <div className="flex items-center gap-2 justify-center items-center">
+              <div className="flex items-center gap-2 justify-center">
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                   {user?.display_name || user?.username}
                 </h1>
@@ -400,22 +400,38 @@ function Profile({ user, children }: ProfileProps) {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Mã SN sinh viên/cán bộ</p>
-                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">@{user.username}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Họ và tên</p>
-                  <p className="text-[14px] font-semibold text-foreground">{user.display_name}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Ngày sinh</p>
-                  <p className="text-[14px] font-semibold text-foreground">
-                    {user.birth_date ? new Date(user.birth_date).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Mã SN sinh viên/cán bộ
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">
+                    @{user.username}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Vai trò</p>
-                  <p className="text-[14px] font-semibold text-foreground capitalize">{user.global_role || "Thành viên"}</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Họ và tên
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.display_name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Ngày sinh
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.birth_date
+                      ? new Date(user.birth_date).toLocaleDateString("vi-VN")
+                      : "Chưa cập nhật"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Vai trò
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground capitalize">
+                    {user.global_role || "Thành viên"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -427,15 +443,25 @@ function Profile({ user, children }: ProfileProps) {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Email</p>
-                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">{user.email || "Chưa cập nhật"}</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Email
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground text-wrap break-all">
+                    {user.email || "Chưa cập nhật"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Số điện thoại</p>
-                  <p className="text-[14px] font-semibold text-foreground">{user.phone_number || "Chưa cập nhật"}</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Số điện thoại
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.phone_number || "Chưa cập nhật"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">URL Cá nhân</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    URL Cá nhân
+                  </p>
                   <p className="text-[14px] font-semibold text-foreground text-wrap break-all">
                     {user.slug ? `/${user.slug}` : "Chưa cập nhật"}
                   </p>
@@ -450,14 +476,24 @@ function Profile({ user, children }: ProfileProps) {
               </h3>
               <div className="grid grid-cols-1 gap-6">
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Tiểu sử</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Tiểu sử
+                  </p>
                   <p className="text-[14px] font-semibold text-foreground leading-relaxed whitespace-pre-wrap">
-                    {user.description || <span className="italic opacity-60">Chưa có lời giới thiệu nào</span>}
+                    {user.description || (
+                      <span className="italic opacity-60">
+                        Chưa có lời giới thiệu nào
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Tương tác</p>
-                  <p className="text-[14px] font-semibold text-foreground">{totalFriends || 0} người bạn</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Tương tác
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {totalFriends || 0} người bạn
+                  </p>
                 </div>
               </div>
             </div>
@@ -469,19 +505,31 @@ function Profile({ user, children }: ProfileProps) {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">ID Tài khoản</p>
-                  <p className="text-[12px] font-mono text-muted-foreground break-all">{user.id}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Ngày tham gia</p>
-                  <p className="text-[14px] font-semibold text-foreground">
-                    {user.create_at ? new Date(user.create_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    ID Tài khoản
+                  </p>
+                  <p className="text-[12px] font-mono text-muted-foreground break-all">
+                    {user.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">Cập nhật lần cuối</p>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Ngày tham gia
+                  </p>
                   <p className="text-[14px] font-semibold text-foreground">
-                    {user.updated_at ? new Date(user.updated_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                    {user.create_at
+                      ? new Date(user.create_at).toLocaleDateString("vi-VN")
+                      : "Chưa cập nhật"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                    Cập nhật lần cuối
+                  </p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    {user.updated_at
+                      ? new Date(user.updated_at).toLocaleDateString("vi-VN")
+                      : "Chưa cập nhật"}
                   </p>
                 </div>
               </div>
@@ -586,9 +634,7 @@ function Profile({ user, children }: ProfileProps) {
             >
               {/* Cover Field */}
               <div>
-                <Label className="mb-2 block">
-                  Ảnh bìa
-                </Label>
+                <Label className="mb-2 block">Ảnh bìa</Label>
                 <div className="flex flex-col space-y-4">
                   <div className="w-full h-32 md:h-40 rounded-xl overflow-hidden bg-dashboard-background border-2 border-dashed border-dashboard-border flex items-center justify-center relative">
                     {coverPreview ? (
@@ -599,7 +645,9 @@ function Profile({ user, children }: ProfileProps) {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-muted-foreground text-sm">Chưa có ảnh bìa</span>
+                      <span className="text-muted-foreground text-sm">
+                        Chưa có ảnh bìa
+                      </span>
                     )}
                   </div>
                   <div>
@@ -621,9 +669,7 @@ function Profile({ user, children }: ProfileProps) {
 
               {/* Avatar Field */}
               <div>
-                <Label className="mb-2 block">
-                  Ảnh đại diện
-                </Label>
+                <Label className="mb-2 block">Ảnh đại diện</Label>
                 <div className="flex items-center space-x-4">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-dashboard-background">
                     <Image
@@ -655,9 +701,7 @@ function Profile({ user, children }: ProfileProps) {
               <form.Field name="display_name">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="display_name">
-                      Tên hiển thị *
-                    </Label>
+                    <Label htmlFor="display_name">Tên hiển thị *</Label>
                     <Input
                       id="display_name"
                       name={field.name}
@@ -675,9 +719,7 @@ function Profile({ user, children }: ProfileProps) {
               <form.Field name="phone_number">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="phone_number">
-                      Số điện thoại
-                    </Label>
+                    <Label htmlFor="phone_number">Số điện thoại</Label>
                     <Input
                       id="phone_number"
                       name={field.name}
@@ -695,9 +737,7 @@ function Profile({ user, children }: ProfileProps) {
               <form.Field name="birth_date">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="birth_date">
-                      Ngày sinh
-                    </Label>
+                    <Label htmlFor="birth_date">Ngày sinh</Label>
                     <Input
                       id="birth_date"
                       type="date"
@@ -712,14 +752,11 @@ function Profile({ user, children }: ProfileProps) {
                 )}
               </form.Field>
 
-
               {/* Slug Field */}
               <form.Field name="slug">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="slug">
-                      Slug (URL Profile) *
-                    </Label>
+                    <Label htmlFor="slug">Slug (URL Profile) *</Label>
                     <Input
                       id="slug"
                       name={field.name}
@@ -737,9 +774,7 @@ function Profile({ user, children }: ProfileProps) {
               <form.Field name="description">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="description">
-                      Giới thiệu
-                    </Label>
+                    <Label htmlFor="description">Giới thiệu</Label>
                     <Textarea
                       id="description"
                       name={field.name}
@@ -788,7 +823,6 @@ function Profile({ user, children }: ProfileProps) {
           </DialogContent>
         </Dialog>
       )}
-
     </div>
   );
 }
