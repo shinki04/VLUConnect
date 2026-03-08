@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   approveAllMembers,
   approveMember,
+  checkIsGroupAdmin,
   getGroupMembers,
   getGroupPosts,
   rejectMember,
@@ -266,4 +267,19 @@ export function useGroupMemberActions(groupId: string) {
     approveAllMembers: approveAllMembersMutation.mutate,
     isApprovingAll: approveAllMembersMutation.isPending,
   };
+}
+
+/**
+ * Hook to check if current user is admin/sub_admin/moderator of a group
+ */
+export function useIsGroupAdmin(groupId?: string) {
+  return useQuery({
+    queryKey: [...groupKeys.all, "isAdmin", groupId],
+    queryFn: () => {
+      if (!groupId) return false;
+      return checkIsGroupAdmin(groupId);
+    },
+    enabled: !!groupId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 }

@@ -1,107 +1,71 @@
 services:
-  # RabbitMQ Message Queue
-  rabbitmq:
-    build:
-      context: ./rabbitmq
-      dockerfile: Dockerfile
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_DEFAULT_VHOST: /
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 20s
-      retries: 5
-      start_period: 40s
-    networks:
-      - app_network
-    restart: unless-stopped
-
-  # Redis Cache
-  redis:
-    build:
-      context: ./redis
-      dockerfile: Dockerfile
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    networks:
-      - app_network
-    restart: unless-stopped
-
-  # Next.js Application
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-  #       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-  #       # - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-  #   container_name: nextjs_app
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - NODE_ENV=production
-  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-  #     - REDIS_URL=redis://redis:6379
-  #   volumes:
-  #     - ./next-app/src:/app/src
-  #     - ./next-app/public:/app/public
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     - app_network
-  #   restart: unless-stopped
-
-  # Post Worker Process
-  # worker:
+  web:
     build:
       context: .
-      dockerfile: Dockerfile.worker
-      args:
-        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-        # - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-    container_name: post_worker
+      dockerfile: apps/web/Dockerfile
+    container_name: web-app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/web/.env
     environment:
-      - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - app_network
-    restart: unless-stopped
+      - redis
+      - rabbitmq
 
-volumes:
-  rabbitmq_data:
-    driver: local
-  redis_data:
-    driver: local
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    container_name: admin-app
+    restart: always
+    ports:
+      - "3001:3000" # Maps local port 3001 to container port 3000
+    env_file:
+      - ./apps/admin/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
 
-networks:
-  app_network:
-    driver: bridge
+  worker:
+    build:
+      context: .
+      dockerfile: apps/workers/Dockerfile
+    # When using multiple replicas, remove fixed container_name, or Docker compose will throw an error since multiple containers cannot have the same name.
+    # container_name: background-worker
+    restart: always
+    env_file:
+      - ./apps/workers/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+    deploy:
+      mode: replicated
+      replicas: 3
+
+  redis:
+    build:
+      context: ./infra/redis
+    container_name: redis-cache
+    restart: always
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    build:
+      context: ./infra/rabbitmq
+    container_name: rabbitmq-broker
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Management UI
+

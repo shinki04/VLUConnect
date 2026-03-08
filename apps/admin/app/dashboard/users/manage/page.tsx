@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { getAllUsers } from "@/app/actions/admin-users";
 import { PageHeader } from "@/components/common/PageHeader";
 import { UsersDataTable } from "@/components/users/UsersDataTable";
@@ -17,7 +19,9 @@ export default async function UsersManagePage() {
         { label: "Danh sách người dùng" },
       ]}
     >
-      <UsersDataTable initialData={initialData} />
+      <Suspense fallback={<div>Đang tải...</div>}>
+        <UsersDataTable initialData={initialData} />
+      </Suspense>
     </PageHeader>
   );
 }

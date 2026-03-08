@@ -45,6 +45,7 @@ import {
   Video,
   XCircle,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import * as React from "react";
 
 import { approvePost,deletePostAdmin, flagPost, getAllPosts, rejectPost } from "@/app/actions/admin-posts";
@@ -53,10 +54,9 @@ import { FlagDialog } from "@/components/FlagDialog";
 import { RejectDialog } from "@/components/RejectDialog";
 import { getFileInfo, isDocumentType, isImageType, isVideoType } from "@/lib/mediaUtils";
 
-import { PostDetailDialog } from "./PostDetailDialog";
+import { ModerationStatus } from "@repo/shared/types/post";
 
-// Moderation status type matching database enum
-type ModerationStatus = "approved" | "rejected" | "flagged";
+import { PostDetailDialog } from "./PostDetailDialog";
 
 interface PostAuthor {
   id: string;
@@ -111,9 +111,10 @@ function formatDate(dateString: string | null): string {
 }
 
 export function PostsDataTable({ flaggedOnly = false, rejectedOnly = false, initialData }: PostsDataTableProps) {
+  const searchParams = useSearchParams();
   const [posts, setPosts] = React.useState<Post[]>(initialData?.posts as Post[] ?? []);
   const [loading, setLoading] = React.useState(!initialData);
-  const [search, setSearch] = React.useState("");
+  const [search, setSearch] = React.useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = React.useState<
     "all" | ModerationStatus
   >("all");

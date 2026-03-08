@@ -27,9 +27,10 @@ export async function JoinedGroupsList() {
             <Link
               key={group.id}
               href={`/groups/${group.slug}`}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-mainred/10 dark:hover:bg-mainred-hover transition-colors group"
             >
               {avatarUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={avatarUrl}
                   alt={group.name}

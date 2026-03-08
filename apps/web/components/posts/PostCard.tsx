@@ -7,6 +7,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useGetCurrentUser } from "@/hooks/useAuth";
+import { useIsGroupAdmin } from "@/hooks/useGroup";
 import { useDeletePost } from "@/hooks/usePost";
 import { getFileInfo, isImageType, type MediaType } from "@/lib/mediaUtils";
 
@@ -48,6 +49,8 @@ export default function PostCard({
   } | null>(null);
 
   const isOwner = !isPending && post.author.id === currentUser.data?.id;
+  const { data: isGroupAdmin } = useIsGroupAdmin(post.group?.id);
+  const canDelete = isOwner || !!isGroupAdmin;
 
   const imageUrls = React.useMemo(
     () =>
@@ -123,8 +126,9 @@ export default function PostCard({
             onUpdate={() => setOpenEditDialog(true)}
             group={post.group}
             isAnonymous={post.is_anonymous ?? false}
-            isGlobalAdmin={currentUser.data?.global_role === "admin"}
+            isGlobalAdmin={currentUser.data?.global_role === "admin" || currentUser.data?.global_role === "lecturer"}
             isPendingModeration={isPendingModeration}
+            canDelete={canDelete}
           />
 
           <div className="mb-3">
@@ -158,7 +162,7 @@ export default function PostCard({
         onOpenChange={setShowDetailDialog}
         currentUser={currentUser.data}
         allowAnonymousComments={allowAnonymousComments}
-        isGlobalAdmin={currentUser.data?.global_role === "admin"}
+        isGlobalAdmin={currentUser.data?.global_role === "admin" || currentUser.data?.global_role === "lecturer"}
       />
 
       {showGalleryModal && (

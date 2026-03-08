@@ -143,3 +143,31 @@ export async function createReport(
 
   return data;
 }
+
+// Get reported message details
+export async function getReportedMessage(messageId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("messages")
+    .select(`
+      *,
+      sender:profiles(
+        id,
+        display_name,
+        username,
+        avatar_url,
+        slug
+      )
+    `)
+    .eq("id", messageId)
+    .single();
+
+  if (error) {
+    console.error("Failed to fetch reported message:", error);
+    return null;
+  }
+
+  return data;
+}
+

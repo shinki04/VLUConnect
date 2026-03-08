@@ -72,6 +72,12 @@ export function GroupContent({
     canViewPosts ? "discussion" : "overview",
   );
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [loadMoreRef, entry] = useIntersectionObserver({
     threshold: 0.1,
     root: null,
@@ -162,7 +168,7 @@ export function GroupContent({
         <TabsContent value="discussion">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-3 mt-2 md:mt-5 ">
-              {isActiveMember && currentUser && (
+              {mounted && isActiveMember && currentUser && (
                 <AddPostButton
                   currentUser={currentUser}
                   groupId={group.id}
@@ -249,7 +255,7 @@ export function GroupContent({
             </Card>
 
             {/* Friends Section */}
-            {currentUser && (
+            {mounted && currentUser && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">

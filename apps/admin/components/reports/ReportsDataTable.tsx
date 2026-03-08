@@ -45,8 +45,15 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { getAllReports, ReportFilterStatusType, ReportFilterType, updateReportStatus } from "@/app/actions/admin-reports";
+import {
+  getAllReports,
+  getReportedMessage,
+  ReportFilterStatusType,
+  ReportFilterType,
+  updateReportStatus,
+} from "@/app/actions/admin-reports";
 import { useRefresh } from "@/components/common/RefreshContext";
+import Link from "next/link";
 
 interface Report {
   id: string;
@@ -74,7 +81,10 @@ interface ReportsDataTableProps {
 
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100] as const;
 
-const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const statusColors: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   pending: "default",
   reviewed: "secondary",
   resolved: "outline",
@@ -89,13 +99,16 @@ const typeColors: Record<string, string> = {
 };
 
 // Helper function to generate page numbers with ellipsis
-function generatePageNumbers(current: number, total: number): (number | "...")[] {
+function generatePageNumbers(
+  current: number,
+  total: number,
+): (number | "...")[] {
   if (total <= 7) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
   const pages: (number | "...")[] = [];
-  
+
   if (current <= 4) {
     for (let i = 1; i <= 5; i++) pages.push(i);
     pages.push("...");
@@ -111,15 +124,19 @@ function generatePageNumbers(current: number, total: number): (number | "...")[]
     pages.push("...");
     pages.push(total);
   }
-  
+
   return pages;
 }
 
 export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
-  const [reports, setReports] = React.useState<Report[]>(initialData?.reports as Report[] ?? []);
+  const [reports, setReports] = React.useState<Report[]>(
+    (initialData?.reports as Report[]) ?? [],
+  );
   const [loading, setLoading] = React.useState(!initialData);
   const [page, setPage] = React.useState(1);
-  const [totalPages, setTotalPages] = React.useState(initialData?.totalPages ?? 1);
+  const [totalPages, setTotalPages] = React.useState(
+    initialData?.totalPages ?? 1,
+  );
   const [_totalCount, _setTotalCount] = React.useState(initialData?.total ?? 0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [statusFilter, setStatusFilter] =
@@ -487,7 +504,41 @@ interface ReportDetailDialogProps {
   onStatusChange: (reportId: string, status: string) => void;
 }
 
-function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: ReportDetailDialogProps) {
+interface ReportedMessage {
+  id: string;
+  content: string | null;
+  message_type: string | null;
+  sender?: {
+    id: string;
+    display_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+    slug: string | null;
+  } | null;
+}
+
+function ReportDetailDialog({
+  report,
+  open,
+  onOpenChange,
+  onStatusChange,
+}: ReportDetailDialogProps) {
+  const [reportedMessage, setReportedMessage] =
+    React.useState<ReportedMessage | null>(null);
+  const [loadingMessage, setLoadingMessage] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open && report?.reported_type === "message") {
+      setLoadingMessage(true);
+      getReportedMessage(report.reported_id)
+        .then((data) => setReportedMessage(data))
+        .catch(console.error)
+        .finally(() => setLoadingMessage(false));
+    } else {
+      setReportedMessage(null);
+    }
+  }, [open, report]);
+
   if (!report) return null;
 
   const getTargetUrl = (type: string, id: string) => {
@@ -529,9 +580,13 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{report.reporter?.display_name || "Ẩn danh"}</p>
+                <p className="font-medium">
+                  {report.reporter?.display_name || "Ẩn danh"}
+                </p>
                 {report.reporter?.username && (
-                  <p className="text-sm text-muted-foreground">@{report.reporter.username}</p>
+                  <p className="text-sm text-muted-foreground">
+                    @{report.reporter.username}
+                  </p>
                 )}
               </div>
             </div>
@@ -543,20 +598,87 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="text-muted-foreground">Loại:</div>
               <div>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${typeColors[report.reported_type] || "bg-gray-100"}`}>
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${typeColors[report.reported_type] || "bg-gray-100"}`}
+                >
                   {report.reported_type}
                 </span>
               </div>
               <div className="text-muted-foreground">ID:</div>
-              <div className="font-mono text-xs break-all">{report.reported_id}</div>
+              <div className="font-mono text-xs break-all">
+                {report.reported_id}
+              </div>
             </div>
             {targetUrl && (
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <a href={targetUrl}>
+                <Link
+                  href={targetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Xem {report.reported_type}
-                </a>
+                </Link>
               </Button>
+            )}
+
+            {/* MESSAGE CONTENT */}
+            {report.reported_type === "message" && (
+              <div className="mt-4 pt-4 border-t">
+                <h5 className="font-semibold text-sm mb-2">
+                  Nội dung tin nhắn
+                </h5>
+                {loadingMessage ? (
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
+                  </div>
+                ) : reportedMessage ? (
+                  <div className="bg-muted p-3 rounded-lg text-sm">
+                    {reportedMessage.message_type === "image" ? (
+                      <div>
+                        {reportedMessage.content ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={reportedMessage.content}
+                            alt="Reported Image"
+                            className="max-w-full h-auto rounded"
+                            style={{ maxHeight: "200px" }}
+                          />
+                        ) : (
+                          <span className="italic text-muted-foreground">
+                            [Hình ảnh không khả dụng]
+                          </span>
+                        )}
+                      </div>
+                    ) : reportedMessage.message_type === "file" ? (
+                      <span className="italic text-muted-foreground">
+                        [Tệp tin đính kèm]
+                      </span>
+                    ) : (
+                      <p className="whitespace-pre-wrap">
+                        {reportedMessage.content}
+                      </p>
+                    )}
+                    <div className="mt-2 text-xs text-muted-foreground flex gap-2 items-center">
+                      <Link
+                        href={`/dashboard/users/manage?search=${reportedMessage.sender?.username || reportedMessage.sender?.display_name || ""}`}
+                        className="hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Người gửi:{" "}
+                        {reportedMessage.sender?.display_name ||
+                          reportedMessage.sender?.username ||
+                          "Không rõ"}
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-destructive italic">
+                    Không thể tải nội dung tin nhắn hoặc tin nhắn đã bị xóa.
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -567,7 +689,9 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
             {report.description && (
               <>
                 <h4 className="font-semibold text-sm pt-2">Mô tả</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{report.description}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {report.description}
+                </p>
               </>
             )}
           </div>
@@ -578,7 +702,9 @@ function ReportDetailDialog({ report, open, onOpenChange, onStatusChange }: Repo
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="text-muted-foreground">Ngày tạo:</div>
               <div>
-                {report.created_at ? format(new Date(report.created_at), "PPpp") : "-"}
+                {report.created_at
+                  ? format(new Date(report.created_at), "PPpp")
+                  : "-"}
               </div>
               <div className="text-muted-foreground">ID tố cáo:</div>
               <div className="font-mono text-xs break-all">{report.id}</div>

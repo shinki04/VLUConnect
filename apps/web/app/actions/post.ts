@@ -335,31 +335,95 @@ export async function fetchPostByAuthor(
 
 export async function deletePost(
   postId: string,
-  authorId: string
+  // We keep this to not break the signature, but we ignore it and use DB true author
+  _clientAuthorId?: string 
 ): Promise<void> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+  
   const postRabbitMQClient = getPostRabbitMQClient();
   if (!postRabbitMQClient.isReady()) {
     await postRabbitMQClient.connect();
   }
-  const { data, error } = await supabase
-    .from("posts")
-    .delete()
-    .eq("id", postId)
-    .eq("author_id", authorId)
-    .select();
 
-  if (error || !data) {
-    throw new Error(`Failed to delete post: ${error.message}`);
+  // We MUST fetch the true post author to know if we are the owner or just an admin
+  const { data: postRecord, error: fetchError } = await supabase
+    .from("posts")
+    .select(`
+      author_id,
+      media_urls,
+      group_id,
+      groups (
+        name
+      )
+    `)
+    .eq("id", postId)
+    .single();
+
+  if (fetchError || !postRecord) {
+    throw new Error(`Failed to fetch post to delete: ${fetchError?.message}`);
   }
-  const post = data[0];
-  if (post) {
-    if (post.media_urls) {
-      const payload: PostQueueDeletePayload = {
-        media_urls: post.media_urls,
-        queueId: post.id,
+
+  const isOwner = user.id === postRecord.author_id;
+
+  // Determine if user is author
+  if (isOwner) {
+    // Hard delete for author
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId);
+
+    if (error) {
+      throw new Error(`Failed to delete post: ${error.message}`);
+    }
+    
+    if (postRecord.media_urls && postRecord.media_urls.length > 0) {
+        const payload: PostQueueDeletePayload = {
+          media_urls: postRecord.media_urls,
+          queueId: postId,
+        };
+        await postRabbitMQClient.publishPostDelete(payload);
+    }
+  } else {
+    // Soft delete for group admin
+    const { error } = await supabase
+      .from("posts")
+      .update({ is_deleted: true })
+      .eq("id", postId);
+
+    if (error) {
+      throw new Error(`Failed to soft delete post: ${error.message}`);
+    }
+
+    // Attempt to notify the author
+    try {
+      // Supabase 1-to-1 returns an object, not an array
+      const groupData = postRecord.groups as { name: string } | null | undefined | { name: string }[];
+      const groupName = Array.isArray(groupData) 
+        ? groupData[0]?.name 
+        : groupData?.name || "nhóm";
+
+      const notifParams = {
+        recipient_id: postRecord.author_id, // The real author of the post
+        sender_id: user.id,
+        type: "system" as const,
+        entity_type: "post_deleted",
+        entity_id: postId,
+        title: "Bài viết của bạn đã bị xóa",
+        message: `Một quản trị viên đã xóa bài viết của bạn trong ${groupName}.`,
+        metadata: { group_id: postRecord.group_id }
       };
-      await postRabbitMQClient.publishPostDelete(payload);
+
+      const { error: notifError } = await supabase.from("notifications").insert(notifParams);
+      if (notifError) {
+        console.error("🔴 Supabase Notification Insert failed:", notifError);
+      } else {
+        console.log("🟢 Supabase Notification Inserted:", notifParams);
+      }
+    } catch (notifException) {
+      console.error("Failed to send deletion notification:", notifException);
     }
   }
 }

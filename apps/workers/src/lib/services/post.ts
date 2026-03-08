@@ -196,7 +196,33 @@ export async function processPostCreation(payload: PostJobPayload) {
       // Don't fail post creation if logging fails
     }
 
-    // Step 3: Extract and save hashtags
+
+    // Save notification based on moderation status
+    if (moderationStatus === "rejected") {
+      const { error: notificationError } = await supabase.from("notifications").insert({
+        recipient_id: payload.userId,
+        sender_id: null, // System notification
+        entity_type: "post_created" as NotificationType,
+        entity_id: post.id,
+        title: "Bài viết vi phạm tiêu chuẩn cộng đồng",
+        message: moderationReason || "Bài viết của bạn đã bị chặn do vi phạm chính sách.",
+        type: "system" as NotificationType,
+      });
+      if (notificationError) {
+        console.error("⚠️ Failed to save rejection notification:", notificationError);
+      }
+    } else {
+      const { error: notificationError } = await supabase.from("notifications").insert({
+        recipient_id: payload.userId,
+        sender_id: null,
+        entity_type: "post_created" as NotificationType,
+        entity_id: post.id,
+        title: "Bài viết đã được tạo",
+        message: "Bài viết của bạn đã được tạo thành công",
+        type: "post" as NotificationType,
+      });
+
+      // Step 3: Extract and save hashtags
     try {
       const hashtags = await saveHashtagsFromContent(payload.content, post.id);
       if (hashtags.length > 0) {
@@ -207,18 +233,9 @@ export async function processPostCreation(payload: PostJobPayload) {
       // Don't fail the post creation if hashtags fail
     }
 
-    // Save notification
-    const { error: notificationError } = await supabase.from("notifications").insert({
-      recipient_id: payload.userId,
-      sender_id: null,
-      entity_type: "post_created" as NotificationType,
-      entity_id: post.id,
-      title: "Bài viết đã được tạo",
-      message: "Bài viết của bạn đã được tạo thành công",
-      type: "post" as NotificationType,
-    });
-    if (notificationError) {
-      console.error("⚠️ Failed to save notification:", notificationError);
+      if (notificationError) {
+        console.error("⚠️ Failed to save success notification:", notificationError);
+      }
     }
 
     // Update status to 'completed' with post ID

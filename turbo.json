@@ -29,6 +29,13 @@
                 "^check-types"
             ]
         },
+        "start": {
+            "dependsOn": [
+                "^build"
+            ],
+            "cache": false,
+            "persistent": true
+        },
         "dev": {
             "inputs": [
                 "$TURBO_DEFAULT$",

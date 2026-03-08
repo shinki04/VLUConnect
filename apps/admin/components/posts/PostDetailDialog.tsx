@@ -30,10 +30,8 @@ import Image from "next/image";
 import * as React from "react";
 
 import { getModerationActionForTarget, type ModerationActionDetail } from "@/app/actions/moderation";
+import { ModerationStatus } from "@repo/shared/types/post";
 import { getFileInfo, getFileName, isDocumentType, isImageType, isVideoType } from "@/lib/mediaUtils";
-
-// Moderation status type matching database enum
-type ModerationStatus = "approved" | "rejected" | "flagged";
 
 interface PostAuthor {
   id: string;

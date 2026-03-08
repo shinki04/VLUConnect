@@ -100,11 +100,11 @@ export const SIDEBAR_NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    title: "Quản lý yêu cầu tố cáo",
+    title: "Quản lý báo cáo",
     icon: Flag,
     items: [
-      { title: "Thống kê tố cáo", url: ADMIN_ROUTES.REPORTS },
-      { title: "Xử lý yêu cầu tố cáo", url: ADMIN_ROUTES.REPORTS_MANAGE },
+      { title: "Thống kê báo cáo", url: ADMIN_ROUTES.REPORTS },
+      { title: "Danh sách báo cáo", url: ADMIN_ROUTES.REPORTS_MANAGE },
     ],
   },
   {

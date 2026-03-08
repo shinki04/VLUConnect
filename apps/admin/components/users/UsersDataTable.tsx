@@ -27,12 +27,14 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/ui/components/table";
+import { format } from "date-fns";
 import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
   Search,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import * as React from "react";
 
 import { getAllUsers, updateUserRole } from "@/app/actions/admin-users";
@@ -69,9 +71,10 @@ const roleBadgeVariants: Record<
 };
 
 export function UsersDataTable({ initialData }: UsersDataTableProps) {
+  const searchParams = useSearchParams();
   const [users, setUsers] = React.useState<User[]>(initialData?.users ?? []);
   const [loading, setLoading] = React.useState(!initialData);
-  const [search, setSearch] = React.useState("");
+  const [search, setSearch] = React.useState(searchParams.get("search") || "");
   const [role, setRole] = React.useState("all");
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(
@@ -97,9 +100,13 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
   }, [page, search, role]);
 
   React.useEffect(() => {
-    if (isInitialLoad && initialData) {
+    if (isInitialLoad && initialData && !searchParams.get("search")) {
       setIsInitialLoad(false);
       return;
+    }
+
+    if (isInitialLoad && searchParams.get("search")) {
+      setIsInitialLoad(false);
     }
 
     const timer = setTimeout(
@@ -109,7 +116,15 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
       search ? 300 : 0,
     );
     return () => clearTimeout(timer);
-  }, [fetchUsers, search, role, refreshKey, isInitialLoad, initialData]);
+  }, [
+    fetchUsers,
+    search,
+    role,
+    refreshKey,
+    isInitialLoad,
+    initialData,
+    searchParams,
+  ]);
 
   const handleRoleChange = async (
     userId: string,
@@ -228,7 +243,7 @@ export function UsersDataTable({ initialData }: UsersDataTableProps) {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {user.create_at
-                      ? new Date(user.create_at).toLocaleDateString()
+                      ? format(new Date(user.create_at), "dd/MM/yyyy")
                       : "-"}
                   </TableCell>
                   <TableCell>

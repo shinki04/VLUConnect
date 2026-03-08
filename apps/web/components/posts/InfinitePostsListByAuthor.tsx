@@ -44,6 +44,12 @@ export function InfinitePostsListByAuthor({ authorId }: PostByAuthorProps) {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
       const target = e.currentTarget;
@@ -59,7 +65,7 @@ export function InfinitePostsListByAuthor({ authorId }: PostByAuthorProps) {
     [hasNextPage, isFetchingNextPage, fetchNextPage]
   );
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (

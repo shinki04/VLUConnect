@@ -167,7 +167,6 @@ export function useCreatePostMutation() {
 
 export function useDeletePost() {
   const { data: user } = useGetCurrentUser();
-  const queryKey = ["posts", "infinite"];
   const queryClient = getQueryClient();
   return useMutation({
     mutationFn: async (postId: string) => {
@@ -179,7 +178,9 @@ export function useDeletePost() {
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      // Invalidate all post queries across dashboard, groups, authors, and saved feeds
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["groups", "posts"] });
     },
     onError: (error: Error) => {
       console.error("Error queueing post:", error);
@@ -239,9 +240,10 @@ export function useUpdatePost() {
       //   user.id
       // );
     },
-    onSuccess: (data) => {
-      // Invalidate all posts queries to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ["posts", data?.id] });
+    onSuccess: () => {
+      // Invalidate all posts queries to refetch updated data across all screens
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["groups", "posts"] });
 
       toast.success("Cập nhật bài viết thành công");
     },
