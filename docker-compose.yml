@@ -9,9 +9,9 @@ services:
       - "3000:3000"
     env_file:
       - ./apps/web/.env
-# environment:
-    #   - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-    #   - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       - redis
       - rabbitmq
@@ -26,6 +26,9 @@ services:
       - "3001:3000" # Maps local port 3001 to container port 3000
     env_file:
       - ./apps/admin/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       - redis
       - rabbitmq
@@ -39,6 +42,9 @@ services:
     restart: always
     env_file:
       - ./apps/workers/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       - redis
       - rabbitmq

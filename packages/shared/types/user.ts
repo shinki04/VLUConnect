@@ -3,8 +3,7 @@ import { Enums, Tables } from "./database.types.js";
 export type User = Tables<"profiles">;
 export type Global_Roles = Enums<"global_roles">;
 
-export const BLANK_AVATAR =
-  "https://gizvqzsieazwdfncjxrg.supabase.co/storage/v1/object/public/avatars/base/blank-profile-picture-973460_640.webp";
+export const BLANK_AVATAR = "/blank-avatar.png";
 
 export type Avatar = { name: string; fullPath: string };
 

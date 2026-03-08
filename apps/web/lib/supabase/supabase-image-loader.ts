@@ -27,7 +27,12 @@ export default function supabaseLoader({
     return src;
   }
 
-  // Relative path - construct full URL
+  // Local public assets (e.g., /logo_red_noname.png) - serve directly
+  if (src.startsWith('/')) {
+    return src;
+  }
+
+  // Relative path (no leading slash) - treat as Supabase storage path
   // Encode the path segments properly to handle special characters
   const encodedPath = src
     .split('/')
