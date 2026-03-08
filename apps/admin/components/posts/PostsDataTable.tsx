@@ -1,5 +1,6 @@
 "use client";
 
+import { ModerationStatus } from "@repo/shared/types/post";
 import AlertDialog from "@repo/ui/components/AlertDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
@@ -53,8 +54,6 @@ import { useRefresh } from "@/components/common/RefreshContext";
 import { FlagDialog } from "@/components/FlagDialog";
 import { RejectDialog } from "@/components/RejectDialog";
 import { getFileInfo, isDocumentType, isImageType, isVideoType } from "@/lib/mediaUtils";
-
-import { ModerationStatus } from "@repo/shared/types/post";
 
 import { PostDetailDialog } from "./PostDetailDialog";
 
@@ -443,25 +442,31 @@ export function PostsDataTable({ flaggedOnly = false, rejectedOnly = false, init
               {loading ? "..." : `${totalCount} bài viết`}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              Dòng:
-            </span>
-            <Select
-              value={String(rowsPerPage)}
-              onValueChange={handleRowsPerPageChange}
-            >
-              <SelectTrigger className="w-[70px] h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ROWS_PER_PAGE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt} value={String(opt)}>
-                    {opt}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto w-full sm:w-auto justify-between sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => fetchPosts()} title="Tải lại">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span className="ml-2 hidden sm:inline">Tải lại</span>
+            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Dòng:
+              </span>
+              <Select
+                value={String(rowsPerPage)}
+                onValueChange={handleRowsPerPageChange}
+              >
+                <SelectTrigger className="w-[70px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROWS_PER_PAGE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={String(opt)}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -712,15 +717,22 @@ export function PostsDataTable({ flaggedOnly = false, rejectedOnly = false, init
         {/* Pagination */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            Trang {page} / {totalPages} ({totalCount} tổng)
+            Trang {page} / {totalPages || 1} ({totalCount} tổng)
           </p>
           <div className="flex flex-wrap items-center justify-center gap-1">
             <Button
               variant="outline"
-              size="icon"
-              className="h-8 w-8"
+              size="sm"
+              onClick={() => setPage(1)}
+              disabled={page <= 1 || loading}
+            >
+              Đầu
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1 || loading}
+              disabled={page <= 1 || loading}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -736,9 +748,9 @@ export function PostsDataTable({ flaggedOnly = false, rejectedOnly = false, init
                 <Button
                   key={pageNum}
                   variant={page === pageNum ? "default" : "outline"}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setPage(pageNum)}
+                  size="sm"
+                  className="w-9"
+                  onClick={() => setPage(pageNum as number)}
                   disabled={loading}
                 >
                   {pageNum}
@@ -747,12 +759,19 @@ export function PostsDataTable({ flaggedOnly = false, rejectedOnly = false, init
             )}
             <Button
               variant="outline"
-              size="icon"
-              className="h-8 w-8"
+              size="sm"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages || loading}
+              disabled={page >= totalPages || loading}
             >
               <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(totalPages)}
+              disabled={page >= totalPages || loading}
+            >
+              Cuối
             </Button>
           </div>
         </div>
