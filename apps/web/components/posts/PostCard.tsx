@@ -126,7 +126,7 @@ export default function PostCard({
             onUpdate={() => setOpenEditDialog(true)}
             group={post.group}
             isAnonymous={post.is_anonymous ?? false}
-            isGlobalAdmin={currentUser.data?.global_role === "admin"}
+            isGlobalAdmin={currentUser.data?.global_role === "admin" || currentUser.data?.global_role === "lecturer"}
             isPendingModeration={isPendingModeration}
             canDelete={canDelete}
           />
@@ -162,7 +162,7 @@ export default function PostCard({
         onOpenChange={setShowDetailDialog}
         currentUser={currentUser.data}
         allowAnonymousComments={allowAnonymousComments}
-        isGlobalAdmin={currentUser.data?.global_role === "admin"}
+        isGlobalAdmin={currentUser.data?.global_role === "admin" || currentUser.data?.global_role === "lecturer"}
       />
 
       {showGalleryModal && (

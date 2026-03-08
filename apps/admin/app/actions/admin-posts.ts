@@ -1,10 +1,8 @@
 "use server";
 
+import { ModerationStatus } from "@repo/shared/types/post";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
-
-// Moderation status enum
-type ModerationStatus = "approved" | "rejected" | "flagged";
 
 interface PostsFilter {
   search?: string;

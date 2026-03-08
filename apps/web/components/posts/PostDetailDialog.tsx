@@ -81,6 +81,8 @@ export default function PostDetailDialog({
             isOwner={isOwner}
             onDelete={() => {}}
             onUpdate={() => {}}
+            isAnonymous={post.is_anonymous ?? false}
+            isGlobalAdmin={isGlobalAdmin}
           />
 
           <div className="mt-4 mb-4">

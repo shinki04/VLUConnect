@@ -7,7 +7,6 @@
       "@/*": ["./src/*"] // Cho phép import từ apps/web
     }
   },
-  "watch": true,
   "include": ["src/**/*.ts", "src/**/*.tsx"],
 
   "exclude": ["node_modules", "dist"]

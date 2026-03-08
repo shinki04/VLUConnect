@@ -1,0 +1,119 @@
+﻿node.exe : npm warn 
+Unknown project 
+config "shared-works
+pace-lockfile". 
+This will stop 
+working in the next 
+major version of 
+npm.
+At C:\Program Files\
+nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (npm    
+ warn Unknow...v    
+ersion of npm.:    
+String) [], Rem    
+oteException
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+npm warn Unknown 
+project config "link
+-workspace-packages"
+. This will stop 
+working in the next 
+major version of 
+npm.
+ΓÇó turbo 2.8.12
+ΓÇó Packages in scope: @repo/admin, @repo/eslint-config, @repo/rabbitmq, @repo/redis, @repo/shared, @repo/supabase, @repo/typescript-config, @repo/ui, @repo/utils, @repo/web, @repo/worker
+ΓÇó Running build in 11 packages
+ΓÇó Remote caching disabled
+@repo/admin:build: cache miss, executing 8c89e0bd7e433455
+@repo/web:build: cache miss, executing bf1131a087a1ac56
+@repo/worker:build: cache hit, replaying logs 473dd5a74a9676bd
+@repo/worker:build: [6n[m]0;C:\Windows\system32\cmd.exe[?25h[?25l
+@repo/worker:build: > @repo/worker@0.0.1 build D:\Coder\React\the-last\apps\workers
+@repo/worker:build: > tsc -p tsconfig.json[5;1H[?25h
+@repo/web:build: 
+@repo/web:build: > @repo/web@0.1.0 build D:\Coder\React\the-last\apps\web
+@repo/web:build: > next build
+@repo/web:build: 
+@repo/admin:build: 
+@repo/admin:build: > @repo/admin@0.1.0 build D:\Coder\React\the-last\apps\admin
+@repo/admin:build: > next build
+@repo/admin:build: 
+@repo/admin:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@repo/web:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@repo/admin:build:    Γû▓ Next.js 16.0.10 (Turbopack)
+@repo/admin:build:    - Environments: .env.local
+@repo/admin:build:    - Experiments (use with caution):
+@repo/admin:build:      ┬╖ proxyClientMaxBodySize: "10mb"
+@repo/admin:build:      ┬╖ serverActions
+@repo/admin:build: 
+@repo/web:build:    Γû▓ Next.js 16.0.10 (Turbopack)
+@repo/web:build:    - Environments: .env.local, .env
+@repo/web:build:    - Experiments (use with caution):
+@repo/web:build:      ┬╖ proxyClientMaxBodySize: "50mb"
+@repo/web:build:      ┬╖ serverActions
+@repo/web:build: 
+@repo/admin:build:    Creating an optimized production build ...
+@repo/web:build:    Creating an optimized production build ...
+@repo/admin:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@repo/web:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@repo/web:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@repo/admin:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@repo/admin:build:  Γ£ô Compiled successfully in 8.9s
+@repo/admin:build:    Running TypeScript ...
+@repo/web:build:  Γ£ô Compiled successfully in 10.1s
+@repo/web:build:    Running TypeScript ...
+@repo/admin:build: Failed to compile.
+@repo/admin:build: 
+@repo/admin:build: ./app/dashboard/posts/all/page.tsx:20:23
+@repo/admin:build: Type error: Type '{ posts: { author_id: string; comment_count: number | null; content: string; created_at: string | null; deleted_at: string | null; deleted_by: string | null; flag_reason: string | null; ... 12 more ...; author: { ...; }; }[]; total: number; page: number; totalPages: number; }' is not assignable to type '{ posts: Post[]; totalPages: number; total: number; }'.
+@repo/admin:build:   Types of property 'posts' are incompatible.
+@repo/admin:build:     Type '{ author_id: string; comment_count: number | null; content: string; created_at: string | null; deleted_at: string | null; deleted_by: string | null; flag_reason: string | null; group_id: string | null; ... 11 more ...; author: { ...; }; }[]' is not assignable to type 'Post[]'.
+@repo/admin:build:       Type '{ author_id: string; comment_count: number | null; content: string; created_at: string | null; deleted_at: string | null; deleted_by: string | null; flag_reason: string | null; group_id: string | null; ... 11 more ...; author: { ...; }; }' is not assignable to type 'Post'.
+@repo/admin:build:         Types of property 'moderation_status' are incompatible.
+@repo/admin:build:           Type '"pending" | "approved" | "rejected" | "flagged" | null' is not assignable to type 'ModerationStatus | null'.
+@repo/admin:build:             Type '"pending"' is not assignable to type 'ModerationStatus | null'.
+@repo/admin:build: 
+@repo/admin:build: [0m [90m 18 |[39m       ]}
+@repo/admin:build:  [90m 19 |[39m     [33m>[39m
+@repo/admin:build: [31m[1m>[22m[39m[90m 20 |[39m       [33m<[39m[33mPostsDataTable[39m initialData[33m=[39m{initialData} [33m/[39m[33m>[39m
+@repo/admin:build:  [90m    |[39m                       [31m[1m^[22m[39m
+@repo/admin:build:  [90m 21 |[39m     [33m<[39m[33m/[39m[33mPageHeader[39m[33m>[39m
+@repo/admin:build:  [90m 22 |[39m   )[33m;[39m
+@repo/admin:build:  [90m 23 |[39m }[0m
+@repo/admin:build: Next.js build worker exited with code: 1 and signal: null
+@repo/admin:build: ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.
+@repo/admin:build: 
+ERROR: command 
+finished with 
+error: command (D:\C
+oder\React\the-last\
+apps\admin) C:\Users
+\Lenovo\AppData\Loca
+l\pnpm\pnpm.CMD run 
+build exited (1)
+@repo/admin#build: 
+command (D:\Coder\Re
+act\the-last\apps\ad
+min) C:\Users\Lenovo
+\AppData\Local\pnpm\
+pnpm.CMD run build 
+exited (1)
+
+ Tasks:    1 successful, 3 total
+Cached:    1 cached, 3 total
+  Time:    20.819s 
+Failed:    @repo/admin#build
+
+ ERROR  run failed: 
+command  exited (1)

@@ -54,10 +54,9 @@ import { FlagDialog } from "@/components/FlagDialog";
 import { RejectDialog } from "@/components/RejectDialog";
 import { getFileInfo, isDocumentType, isImageType, isVideoType } from "@/lib/mediaUtils";
 
-import { PostDetailDialog } from "./PostDetailDialog";
+import { ModerationStatus } from "@repo/shared/types/post";
 
-// Moderation status type matching database enum
-type ModerationStatus = "approved" | "rejected" | "flagged";
+import { PostDetailDialog } from "./PostDetailDialog";
 
 interface PostAuthor {
   id: string;
