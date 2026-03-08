@@ -158,7 +158,8 @@ ALTER TYPE "public"."method_action_type" OWNER TO "postgres";
 CREATE TYPE "public"."moderation_status" AS ENUM (
     'approved',
     'rejected',
-    'flagged'
+    'flagged',
+    'pending'
 );
 
 
@@ -731,7 +732,7 @@ ALTER FUNCTION "public"."get_conversations_with_details"("p_user_id" "uuid") OWN
 
 
 CREATE OR REPLACE FUNCTION "public"."get_dashboard_posts"("p_filter" "text") RETURNS TABLE("id" "uuid", "created_at" timestamp with time zone, "author" "jsonb", "content" "text", "media_urls" "text"[], "updated_at" timestamp with time zone, "like_count" integer, "comment_count" integer, "share_count" integer, "privacy_level" "public"."privacy_post", "is_anonymous" boolean, "group_id" "uuid", "group" "jsonb")
-    LANGUAGE "plpgsql"
+    LANGUAGE "plpgsql" STABLE
     AS $$
 BEGIN
     RETURN QUERY
@@ -766,17 +767,20 @@ BEGIN
     JOIN profiles pr ON p.author_id = pr.id
     LEFT JOIN groups g ON p.group_id = g.id
     WHERE 
+        (p.moderation_status IS NULL OR (p.moderation_status != 'pending' AND p.moderation_status != 'rejected')) AND
         (
-            p_filter = 'all' AND (
-                p.group_id IS NULL OR 
-                (p.group_id IS NOT NULL AND (g.privacy_level = 'public' OR EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = p.group_id AND gm.user_id = auth.uid() AND gm.status = 'active')))
+            (
+                p_filter = 'all' AND (
+                    p.group_id IS NULL OR 
+                    (p.group_id IS NOT NULL AND (g.privacy_level = 'public' OR EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = p.group_id AND gm.user_id = auth.uid() AND gm.status = 'active')))
+                )
+            ) OR
+            (
+                p_filter = 'user' AND p.group_id IS NULL
+            ) OR
+            (
+                p_filter = 'group' AND p.group_id IS NOT NULL AND (g.privacy_level = 'public' OR EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = p.group_id AND gm.user_id = auth.uid() AND gm.status = 'active'))
             )
-        ) OR
-        (
-            p_filter = 'user' AND p.group_id IS NULL
-        ) OR
-        (
-            p_filter = 'group' AND p.group_id IS NOT NULL AND (g.privacy_level = 'public' OR EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = p.group_id AND gm.user_id = auth.uid() AND gm.status = 'active'))
         )
     ORDER BY p.created_at DESC;
 END;
@@ -1642,6 +1646,87 @@ $$;
 ALTER FUNCTION "public"."rls_auto_enable"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."search_users_with_friendship"("search_query" "text" DEFAULT ''::"text", "role_filter" "text" DEFAULT 'all'::"text", "friend_status_filter" "text" DEFAULT 'all'::"text", "limit_val" integer DEFAULT 20, "offset_val" integer DEFAULT 0) RETURNS TABLE("id" "uuid", "display_name" "text", "username" "text", "avatar_url" "text", "global_role" "public"."global_roles", "friendship_status" "text")
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+  current_user_id uuid := auth.uid();
+BEGIN
+  RETURN QUERY
+  WITH user_friendships AS (
+    SELECT
+      CASE
+        WHEN requester_id = current_user_id THEN addressee_id
+        ELSE requester_id
+      END AS friend_id,
+      status,
+      requester_id
+    FROM public.friendships
+    WHERE requester_id = current_user_id OR addressee_id = current_user_id
+  )
+  SELECT
+    p.id,
+    p.display_name,
+    p.username,
+    p.avatar_url,
+    p.global_role,
+    CASE
+      WHEN uf.status = 'friends' THEN 'friends'
+      WHEN uf.status = 'pending' AND uf.requester_id = current_user_id THEN 'pending_sent'
+      WHEN uf.status = 'pending' AND uf.requester_id = p.id THEN 'pending_received'
+      WHEN uf.status = 'blocked' THEN 'blocked'
+      ELSE 'none'
+    END AS friendship_status
+  FROM public.profiles p
+  LEFT JOIN user_friendships uf ON p.id = uf.friend_id
+  WHERE
+    p.id != current_user_id
+    -- Don't show blocked users
+    AND (uf.status IS NULL OR uf.status != 'blocked')
+    -- Text search
+    AND (
+      NULLIF(search_query, '') IS NULL 
+      OR (p.display_name IS NOT NULL AND p.display_name ILIKE '%' || search_query || '%')
+      OR (p.username IS NOT NULL AND p.username ILIKE '%' || search_query || '%')
+    )
+    -- Role filter ('student', 'teacher', etc.)
+    AND (
+      role_filter = 'all' 
+      OR role_filter = p.global_role::text
+      -- Optional: Fallback matching for Vietnamese words just in case
+      OR (role_filter = 'student' AND p.global_role::text IN ('student', 'sinh_vien', 'sinh viên'))
+      OR (role_filter = 'teacher' AND p.global_role::text IN ('teacher', 'giảng viên', 'giang_vien', 'lecturer'))
+    )
+    -- Friendship status filter
+    AND (
+      friend_status_filter = 'all'
+      OR (
+        CASE
+          WHEN uf.status = 'friends' THEN 'friends'
+          WHEN uf.status = 'pending' AND uf.requester_id = current_user_id THEN 'pending_sent'
+          WHEN uf.status = 'pending' AND uf.requester_id = p.id THEN 'pending_received'
+          ELSE 'none'
+        END = friend_status_filter
+      )
+    )
+  ORDER BY 
+    -- Prioritize friends, then pending, then others if no search query
+    CASE 
+      WHEN search_query = '' AND uf.status = 'friends' THEN 1
+      WHEN search_query = '' AND uf.status = 'pending' THEN 2
+      ELSE 3
+    END ASC,
+    p.display_name ASC NULLS LAST, 
+    p.username ASC
+  LIMIT limit_val OFFSET offset_val;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."search_users_with_friendship"("search_query" "text", "role_filter" "text", "friend_status_filter" "text", "limit_val" integer, "offset_val" integer) OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."share_post"("p_post_id" "uuid", "p_user_id" "uuid", "p_caption" "text" DEFAULT NULL::"text") RETURNS "uuid"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -2145,6 +2230,20 @@ COMMENT ON TABLE "public"."notifications" IS 'Stores user notifications for all 
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."post_appeals" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "post_id" "uuid" NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "reason" "text" NOT NULL,
+    "status" "text" DEFAULT 'pending'::"text" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "post_appeals_status_check" CHECK (("status" = ANY (ARRAY['pending'::"text", 'reviewed'::"text", 'resolved'::"text"])))
+);
+
+
+ALTER TABLE "public"."post_appeals" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."post_comments" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "post_id" "uuid" NOT NULL,
@@ -2404,6 +2503,11 @@ ALTER TABLE ONLY "public"."moderation_actions"
 
 ALTER TABLE ONLY "public"."notifications"
     ADD CONSTRAINT "notifications_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."post_appeals"
+    ADD CONSTRAINT "post_appeals_pkey" PRIMARY KEY ("id");
 
 
 
@@ -2846,6 +2950,16 @@ ALTER TABLE ONLY "public"."notifications"
 
 
 
+ALTER TABLE ONLY "public"."post_appeals"
+    ADD CONSTRAINT "post_appeals_post_id_fkey" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."post_appeals"
+    ADD CONSTRAINT "post_appeals_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id") ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."post_comments"
     ADD CONSTRAINT "post_comments_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."post_comments"("id") ON DELETE CASCADE;
 
@@ -2950,6 +3064,10 @@ CREATE POLICY "Admins can manage system announcements" ON "public"."system_annou
 
 
 
+CREATE POLICY "Admins can update all appeals" ON "public"."post_appeals" FOR UPDATE TO "authenticated" USING ("public"."is_admin"());
+
+
+
 CREATE POLICY "Admins can update reports" ON "public"."reports" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
    FROM "public"."profiles"
   WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."global_role" = 'admin'::"public"."global_roles")))));
@@ -3046,6 +3164,10 @@ CREATE POLICY "User can insert profiles" ON "public"."profiles" FOR INSERT TO "a
 
 
 
+CREATE POLICY "Users can create appeals" ON "public"."post_appeals" FOR INSERT TO "authenticated" WITH CHECK (("user_id" = "auth"."uid"()));
+
+
+
 CREATE POLICY "Users can delete their shares" ON "public"."post_shares" FOR DELETE USING (("auth"."uid"() = "user_id"));
 
 
@@ -3075,6 +3197,10 @@ CREATE POLICY "Users can update their own notifications" ON "public"."notificati
 
 
 CREATE POLICY "Users can view own queue status" ON "public"."post_queue_status" FOR SELECT TO "authenticated" USING (("auth"."uid"() = "user_id"));
+
+
+
+CREATE POLICY "Users can view their own appeals" ON "public"."post_appeals" FOR SELECT TO "authenticated" USING ((("user_id" = "auth"."uid"()) OR "public"."is_admin"()));
 
 
 
@@ -3228,6 +3354,9 @@ ALTER TABLE "public"."moderation_actions" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."notifications" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."post_appeals" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."post_comments" ENABLE ROW LEVEL SECURITY;
@@ -4047,6 +4176,12 @@ GRANT ALL ON FUNCTION "public"."rls_auto_enable"() TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."search_users_with_friendship"("search_query" "text", "role_filter" "text", "friend_status_filter" "text", "limit_val" integer, "offset_val" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."search_users_with_friendship"("search_query" "text", "role_filter" "text", "friend_status_filter" "text", "limit_val" integer, "offset_val" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."search_users_with_friendship"("search_query" "text", "role_filter" "text", "friend_status_filter" "text", "limit_val" integer, "offset_val" integer) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."set_limit"(real) TO "postgres";
 GRANT ALL ON FUNCTION "public"."set_limit"(real) TO "anon";
 GRANT ALL ON FUNCTION "public"."set_limit"(real) TO "authenticated";
@@ -4318,6 +4453,12 @@ GRANT ALL ON TABLE "public"."moderation_actions" TO "service_role";
 GRANT ALL ON TABLE "public"."notifications" TO "anon";
 GRANT ALL ON TABLE "public"."notifications" TO "authenticated";
 GRANT ALL ON TABLE "public"."notifications" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."post_appeals" TO "anon";
+GRANT ALL ON TABLE "public"."post_appeals" TO "authenticated";
+GRANT ALL ON TABLE "public"."post_appeals" TO "service_role";
 
 
 
