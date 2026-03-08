@@ -10,9 +10,9 @@ EXPOSE 15672
 ENV RABBITMQ_DEFAULT_USER=guest
 ENV RABBITMQ_DEFAULT_PASS=guest
 
-# Enable plugins management
-# RUN rabbitmq-plugins enable rabbitmq_management
+# Copy custom RabbitMQ configuration
+COPY rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 
-# Health check
+# Health check to ensure Broker is ready
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=5 \
     CMD rabbitmq-diagnostics -q ping
