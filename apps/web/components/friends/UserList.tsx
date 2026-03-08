@@ -104,7 +104,7 @@ function UserCard({ user }: { user: SearchedUser }) {
         </div>
         {user.global_role && user.global_role !== "lecturer" && (
           <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {user.global_role === "student" ? "Sinh viên" : user.global_role}
+            {user.global_role === "student" && "Sinh viên"}
           </div>
         )}
       </div>
