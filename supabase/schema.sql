@@ -1139,6 +1139,48 @@ $$;
 ALTER FUNCTION "public"."handle_new_post_share"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  assigned_role public.global_roles;
+  base_username text;
+  new_username text;
+  counter integer := 1;
+BEGIN
+  IF new.email LIKE '%@vlu.edu.vn' THEN
+    assigned_role := 'lecturer'::public.global_roles;
+  ELSIF new.email LIKE '%@vanlanguni.vn' THEN
+    assigned_role := 'student'::public.global_roles;
+  ELSE
+    assigned_role := null;
+  END IF;
+
+  base_username := COALESCE(new.raw_user_meta_data->>'preferred_username', split_part(new.email, '@', 1));
+  new_username := base_username;
+  
+  WHILE EXISTS (SELECT 1 FROM public.profiles WHERE username = new_username) LOOP
+    new_username := base_username || counter::text;
+    counter := counter + 1;
+  END LOOP;
+
+  INSERT INTO public.profiles (id, display_name, email, global_role, username)
+  VALUES (
+    new.id, 
+    COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)), 
+    new.email, 
+    assigned_role,
+    new_username
+  );
+  
+  RETURN new;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."handle_post_comment_deleted"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -4041,6 +4083,12 @@ GRANT ALL ON FUNCTION "public"."handle_new_post_like"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."handle_new_post_share"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_post_share"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_post_share"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
+GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
 
 
 

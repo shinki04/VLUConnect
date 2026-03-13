@@ -49,7 +49,7 @@ export default function LoginForm() {
           {/* Microsoft 365 Button */}
           <Button
             type="button"
-            className="btn-mainred w-full flex items-center justify-center gap-2 py-2 bg-custom-white text-white text-sm sm:text-base font-bold rounded-lg border-2 border-mainred hover:border-mainred-hover hover:bg-custom-white/90 transition-all duration-300"
+            className="btn-mainred w-full flex items-center justify-center gap-2 py-2 bg-custom-white dark:text-white text-mainred text-sm sm:text-base font-bold rounded-lg border-2 border-mainred hover:border-mainred-hover hover:bg-custom-white/90 transition-all duration-300"
             onClick={signInWithAzure}
           >
             <span>Microsoft 365</span>
