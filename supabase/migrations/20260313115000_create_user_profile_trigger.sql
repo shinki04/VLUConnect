@@ -12,7 +12,7 @@ BEGIN
   ELSIF new.email LIKE '%@vanlanguni.vn' THEN
     assigned_role := 'student'::public.global_roles;
   ELSE
-    assigned_role := null;
+    RAISE EXCEPTION 'Chỉ cho phép tài khoản email @vlu.edu.vn hoặc @vanlanguni.vn';
   END IF;
 
   -- Use full_name directly as the preferred base username per user request

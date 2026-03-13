@@ -1153,10 +1153,11 @@ BEGIN
   ELSIF new.email LIKE '%@vanlanguni.vn' THEN
     assigned_role := 'student'::public.global_roles;
   ELSE
-    assigned_role := null;
+    RAISE EXCEPTION 'Chỉ cho phép tài khoản email @vlu.edu.vn hoặc @vanlanguni.vn';
   END IF;
 
-  base_username := COALESCE(new.raw_user_meta_data->>'preferred_username', split_part(new.email, '@', 1));
+  -- Use full_name directly as the preferred base username per user request
+  base_username := COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1));
   new_username := base_username;
   
   WHILE EXISTS (SELECT 1 FROM public.profiles WHERE username = new_username) LOOP
@@ -1167,7 +1168,7 @@ BEGIN
   INSERT INTO public.profiles (id, display_name, email, global_role, username)
   VALUES (
     new.id, 
-    COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)), 
+    base_username, 
     new.email, 
     assigned_role,
     new_username
