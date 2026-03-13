@@ -351,7 +351,7 @@ function Profile({ user, children }: ProfileProps) {
                     {friends.slice(0, 6).map((friend) => (
                       <Link
                         key={friend.id}
-                        href={`/profile/${friend.id}`}
+                        href={`/profile/${friend.slug || friend.id}`}
                         className="flex flex-col items-center gap-2 rounded-lg p-2 transition-colors hover:bg-dashboard-background"
                       >
                         <div className="relative shrink-0">
