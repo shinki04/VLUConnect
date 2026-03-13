@@ -55,10 +55,10 @@ export function useInfinitePostsQuery(filter: FeedFilter = "all") {
     },
     initialPageParam: 1,
     // Enhanced caching strategy
-    staleTime: 2 * 60 * 1000, // 2 minutes - data is fresh for 2 min
+    staleTime: 30 * 1000, 
     gcTime: 5 * 60 * 1000, // 5 minutes - cache garbage collection time (formerly cacheTime)
-    refetchOnMount: false, // Don't refetch if data is fresh
-    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: true,
+    refetchOnWindowFocus: true, 
     enabled: !!user?.data?.id,
   });
 }
@@ -87,11 +87,12 @@ export function useInfiniteSavedPostsQuery() {
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.nextPage : undefined;
     },
+
     initialPageParam: 1,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     enabled: !!user?.data?.id,
   });
 }
@@ -122,9 +123,9 @@ export function useInfinitePostsByAuthorQuery(authorId: string) {
     },
     initialPageParam: 1,
     // Enhanced caching strategy
-    staleTime: 2 * 60 * 1000, // 2 minutes - data is fresh for 2 min
+    staleTime: 30 * 1000, 
     gcTime: 5 * 60 * 1000, // 5 minutes - cache garbage collection time (formerly cacheTime)
-    refetchOnMount: false, // Don't refetch if data is fresh
-    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }
