@@ -23,7 +23,7 @@ services:
     container_name: admin-app
     restart: always
     ports:
-      - "3001:3000" # Maps local port 3001 to container port 3000
+      - "3001:3001" # Maps local port 3001 to container port 3001
     env_file:
       - ./apps/admin/.env
     environment:

@@ -46,5 +46,7 @@ COPY --from=installer /app/apps/admin/package.json .
 COPY --from=installer --chown=nextjs:nodejs /app/apps/admin/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/admin/.next/static ./apps/admin/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/admin/public ./apps/admin/public
+ENV PORT=3001
+ENV HOSTNAME="0.0.0.0"
 
 CMD node apps/admin/server.js

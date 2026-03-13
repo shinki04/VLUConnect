@@ -23,7 +23,7 @@ function LoggedForm() {
             <Link href="/dashboard" className="w-full">
               <Button
                 type="button"
-                className="w-full flex items-center justify-center py-2 bg-custom-white text-white/90 text-sm sm:text-base font-bold rounded-lg border-2 border-mainred hover:text-[#99252D] hover:border-[#99252D] hover:bg-custom-white/90 transition-all duration-300"
+                className="w-full flex items-center justify-center py-2 bg-custom-white dark:text-white/90 text-bg-mainred text-sm sm:text-base font-bold rounded-lg border-2 border-mainred hover:text-[#99252D] hover:border-[#99252D] hover:bg-custom-white/90 transition-all duration-300"
               >
                 Quay lại Dashboard
               </Button>

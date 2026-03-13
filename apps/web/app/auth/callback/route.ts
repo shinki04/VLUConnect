@@ -2,17 +2,18 @@ import { getRedisClient } from "@repo/redis/redis";
 import { createClient } from "@repo/supabase/server";
 import { NextResponse } from "next/server";
 
+const redis = getRedisClient();
+
 const COOKIE_CONFIG = {
   path: "/",
   httpOnly: false,
   sameSite: "lax" as const,
-  maxAge: 10,
+  maxAge: 60,
 };
 
-const VLU_EMAIL_DOMAINS = ["@vanlanguni.vn", "@vlu.edu.vn"];
 const USER_CACHE_TTL = 3600;
 
-const redis = getRedisClient();
+
 
 const redirectWithCookie = (url: string, name: string, value: string) => {
   const res = NextResponse.redirect(url);
@@ -20,110 +21,43 @@ const redirectWithCookie = (url: string, name: string, value: string) => {
   return res;
 };
 
-const getRedirectUrl = (
-  origin: string,
-  next: string,
-  request: Request
-): string => {
-  const isLocalEnv = process.env.NODE_ENV === "development";
-
-  if (isLocalEnv) {
-    return `${origin}${next}`;
-  }
-
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  return forwardedHost ? `https://${forwardedHost}${next}` : `${origin}${next}`;
-};
-
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
-  let next = searchParams.get("next") ?? "/dashboard";
-  if (!next.startsWith("/")) next = "/dashboard";
-
   if (!code) {
-    return redirectWithCookie(
-      `${origin}/login`,
-      "access_error",
-      "Có lỗi xảy ra"
-    );
+    return redirectWithCookie(`${origin}/login`, "access_error", "Thiếu mã đăng nhập");
   }
 
   try {
     const supabase = await createClient();
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error || !data?.user) {
-      return redirectWithCookie(
-        `${origin}/login`,
-        "access_error",
-        "Không tìm thấy người dùng"
-      );
+      return redirectWithCookie(`${origin}/login`, "access_error", "Không thể đăng nhập");
     }
 
     const user = data.user;
-
-    if (!VLU_EMAIL_DOMAINS.some(domain => user.email?.endsWith(domain))) {
-      supabase.auth.admin.deleteUser(user.id).catch(console.error);
-
-      return redirectWithCookie(
-        `${origin}/login`,
-        "access_error",
-        "Không thuộc VLU"
-      );
-    }
-
-    const { data: profile, error: upsertError } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select()
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    console.log(profile);
-
-
-
-    if (upsertError) {
-      return NextResponse.json(
-        { message: "Có lỗi xảy ra khi tạo hồ sơ" },
-        {
-          status: 400,
-          headers: {
-            "Set-Cookie": `access_error=Có lỗi xảy ra khi tạo hồ sơ; Path=/; HttpOnly; SameSite=Lax; Max-Age=${COOKIE_CONFIG.maxAge}`,
-          },
-        }
-      );
+    // cache redis
+    if (profile) {
+      try {
+        await redis.setCache(`user:${user.id}`, profile, USER_CACHE_TTL);
+      } catch (err) {
+        console.error("Redis error:", err);
+      }
     }
 
+    return redirectWithCookie(`${origin}/dashboard`, "success", "Đăng nhập thành công");
+  } catch (err) {
+    console.error(err);
 
-
-
-    // Cache user profile (non-blocking)
-    if (profile !== null) {
-      redis
-        .setCache(`user:${user.id}`, profile, USER_CACHE_TTL)
-        .catch((err) => {
-          console.error("Cache set failed:", err);
-        });
-    }
-
-    if (profile.global_role !== 'admin') {
-      return redirectWithCookie(
-        `${origin}/login`,
-        "access_error",
-        "Bạn không có quyền truy cập"
-      );
-    }
-
-    // Successful login - redirect to intended destination
-    const redirectUrl = getRedirectUrl(origin, next, request);
-    return redirectWithCookie(redirectUrl, "success", "Đăng nhập thành công");
-  } catch {
-    return redirectWithCookie(
-      `${origin}/login`,
-      "access_error",
-      "Có lỗi xảy ra"
-    );
+    return redirectWithCookie(`${origin}/login`, "access_error", "Lỗi hệ thống");
   }
 }
