@@ -114,7 +114,7 @@ export function GroupContent({
       className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border mb-2 last:mb-0"
     >
       <Link
-        href={`/profile/${member.profile?.slug}`}
+        href={`/profile/${member.profile?.slug || member.profile?.id}`}
         className="flex items-center gap-3 flex-1"
       >
         <Avatar className="w-10 h-10">
@@ -128,7 +128,7 @@ export function GroupContent({
             {member.profile?.display_name || member.profile?.slug}
           </p>
           <p className="text-sm text-muted-foreground">
-            @{member.profile?.slug}
+            @{member.profile?.display_name || member.profile?.slug}
           </p>
         </div>
       </Link>
