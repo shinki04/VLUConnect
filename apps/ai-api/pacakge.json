@@ -1,8 +1,0 @@
-{
-    "name": "ai-api",
-    "scripts": {
-        "dev": "uvicorn app.main:app --reload",
-        "build": "echo 'skip'",
-        "start": "uvicorn app.main:app --host 0.0.0.0 --port 8000"
-    }
-}

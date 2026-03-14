@@ -629,6 +629,24 @@ $$;
 ALTER FUNCTION "public"."func_is_group_member"("g_id" "uuid", "u_id" "uuid") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."func_is_lecture"() RETURNS boolean
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 
+        FROM public.profiles 
+        WHERE id = auth.uid() 
+        AND global_role = 'lecturer'
+    );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."func_is_lecture"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_comment_count"("p_post_id" "uuid") RETURNS integer
     LANGUAGE "plpgsql" STABLE
     AS $$
@@ -731,14 +749,25 @@ $$;
 ALTER FUNCTION "public"."get_conversations_with_details"("p_user_id" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_dashboard_posts"("p_filter" "text") RETURNS TABLE("id" "uuid", "created_at" timestamp with time zone, "author" "jsonb", "content" "text", "media_urls" "text"[], "updated_at" timestamp with time zone, "like_count" integer, "comment_count" integer, "share_count" integer, "privacy_level" "public"."privacy_post", "is_anonymous" boolean, "group_id" "uuid", "group" "jsonb")
-    LANGUAGE "plpgsql" STABLE
+CREATE OR REPLACE FUNCTION "public"."get_dashboard_posts"("p_filter" "text" DEFAULT 'all'::"text") RETURNS TABLE("id" "uuid", "created_at" timestamp with time zone, "author" "jsonb", "content" "text", "media_urls" "text"[], "updated_at" timestamp with time zone, "like_count" integer, "comment_count" integer, "share_count" integer, "privacy_level" "text", "is_anonymous" boolean, "group_id" "uuid", "group" "jsonb")
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
     AS $$
+DECLARE
+    v_user_id uuid := auth.uid();
+    v_is_admin boolean := func_is_admin();
+    v_is_lecture boolean := func_is_lecture();
 BEGIN
+
+    IF v_user_id IS NULL THEN
+        RETURN;
+    END IF;
+
     RETURN QUERY
-    SELECT 
+    SELECT
         p.id,
         p.created_at,
+
         jsonb_build_object(
             'id', pr.id,
             'username', pr.username,
@@ -746,43 +775,98 @@ BEGIN
             'display_name', pr.display_name,
             'avatar_url', pr.avatar_url,
             'global_role', pr.global_role
-        ) AS author,
+        ),
+
         p.content,
-        p.media_urls,
+
+        COALESCE(p.media_urls, ARRAY[]::text[]),
+
         p.updated_at,
-        p.like_count,
-        p.comment_count,
-        p.share_count,
-        p.privacy_level,
-        p.is_anonymous,
+
+        COALESCE(p.like_count,0),
+        COALESCE(p.comment_count,0),
+        COALESCE(p.share_count,0),
+
+        p.privacy_level::text,
+
+        COALESCE(p.is_anonymous,false),
+
         p.group_id,
-        CASE WHEN p.group_id IS NOT NULL THEN
-            jsonb_build_object(
-                'id', g.id,
-                'name', g.name,
-                'slug', g.slug
-            )
-        ELSE NULL END AS "group"
-    FROM posts p
-    JOIN profiles pr ON p.author_id = pr.id
-    LEFT JOIN groups g ON p.group_id = g.id
-    WHERE 
-        (p.moderation_status IS NULL OR (p.moderation_status != 'pending' AND p.moderation_status != 'rejected')) AND
-        (
-            (
-                p_filter = 'all' AND (
-                    p.group_id IS NULL OR 
-                    (p.group_id IS NOT NULL AND (g.privacy_level = 'public' OR EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = p.group_id AND gm.user_id = auth.uid() AND gm.status = 'active')))
+
+        CASE
+            WHEN p.group_id IS NOT NULL THEN
+                jsonb_build_object(
+                    'id', g.id,
+                    'name', g.name,
+                    'slug', g.slug
                 )
-            ) OR
-            (
-                p_filter = 'user' AND p.group_id IS NULL
-            ) OR
-            (
-                p_filter = 'group' AND p.group_id IS NOT NULL AND (g.privacy_level = 'public' OR EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = p.group_id AND gm.user_id = auth.uid() AND gm.status = 'active'))
+            ELSE NULL::jsonb
+        END
+
+    FROM posts p
+    JOIN profiles pr ON pr.id = p.author_id
+    LEFT JOIN groups g ON g.id = p.group_id
+
+    WHERE
+
+        -- not deleted
+        COALESCE(p.is_deleted,false) = false
+
+        -- moderation
+        AND (
+            p.moderation_status IS NULL
+            OR p.moderation_status IN ('approved','flagged')
+        )
+
+        AND (
+
+            -- admin/lecture see everything
+            v_is_admin
+            OR v_is_lecture
+
+            -- own post
+            OR p.author_id = v_user_id
+
+            -- public
+            OR p.privacy_level = 'public'
+
+            -- friends
+            OR (
+                p.privacy_level = 'friends'
+                AND p.group_id IS NULL
+                AND EXISTS (
+                    SELECT 1
+                    FROM friendships f
+                    WHERE f.status = 'friends'
+                    AND (
+                        (f.requester_id = v_user_id AND f.addressee_id = p.author_id)
+                        OR
+                        (f.requester_id = p.author_id AND f.addressee_id = v_user_id)
+                    )
+                )
+            )
+
+            -- group post
+            OR (
+                p.group_id IS NOT NULL
+                AND EXISTS (
+                    SELECT 1
+                    FROM group_members gm
+                    WHERE gm.group_id = p.group_id
+                    AND gm.user_id = v_user_id
+                    AND gm.status = 'active'
+                )
             )
         )
+
+        AND (
+            p_filter = 'all'
+            OR (p_filter = 'user' AND p.group_id IS NULL)
+            OR (p_filter = 'group' AND p.group_id IS NOT NULL)
+        )
+
     ORDER BY p.created_at DESC;
+
 END;
 $$;
 
@@ -1137,6 +1221,49 @@ $$;
 
 
 ALTER FUNCTION "public"."handle_new_post_share"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+  assigned_role public.global_roles;
+  base_username text;
+  new_username text;
+  counter integer := 1;
+BEGIN
+  IF new.email LIKE '%@vlu.edu.vn' THEN
+    assigned_role := 'lecturer'::public.global_roles;
+  ELSIF new.email LIKE '%@vanlanguni.vn' THEN
+    assigned_role := 'student'::public.global_roles;
+  ELSE
+    RAISE EXCEPTION 'Chỉ cho phép tài khoản email @vlu.edu.vn hoặc @vanlanguni.vn';
+  END IF;
+
+  -- Use full_name directly as the preferred base username per user request
+  base_username := COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1));
+  new_username := base_username;
+  
+  WHILE EXISTS (SELECT 1 FROM public.profiles WHERE username = new_username) LOOP
+    new_username := base_username || counter::text;
+    counter := counter + 1;
+  END LOOP;
+
+  INSERT INTO public.profiles (id, display_name, email, global_role, username)
+  VALUES (
+    new.id, 
+    base_username, 
+    new.email, 
+    assigned_role,
+    new_username
+  );
+  
+  RETURN new;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."handle_post_comment_deleted"() RETURNS "trigger"
@@ -1646,7 +1773,7 @@ $$;
 ALTER FUNCTION "public"."rls_auto_enable"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."search_users_with_friendship"("search_query" "text" DEFAULT ''::"text", "role_filter" "text" DEFAULT 'all'::"text", "friend_status_filter" "text" DEFAULT 'all'::"text", "limit_val" integer DEFAULT 20, "offset_val" integer DEFAULT 0) RETURNS TABLE("id" "uuid", "display_name" "text", "username" "text", "avatar_url" "text", "global_role" "public"."global_roles", "friendship_status" "text")
+CREATE OR REPLACE FUNCTION "public"."search_users_with_friendship"("search_query" "text" DEFAULT ''::"text", "role_filter" "text" DEFAULT 'all'::"text", "friend_status_filter" "text" DEFAULT 'all'::"text", "limit_val" integer DEFAULT 20, "offset_val" integer DEFAULT 0) RETURNS TABLE("id" "uuid", "slug" "text", "display_name" "text", "username" "text", "avatar_url" "text", "global_role" "public"."global_roles", "friendship_status" "text")
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -1667,6 +1794,7 @@ BEGIN
   )
   SELECT
     p.id,
+    p.slug,
     p.display_name,
     p.username,
     p.avatar_url,
@@ -3857,6 +3985,12 @@ GRANT ALL ON FUNCTION "public"."func_is_group_member"("g_id" "uuid", "u_id" "uui
 
 
 
+GRANT ALL ON FUNCTION "public"."func_is_lecture"() TO "anon";
+GRANT ALL ON FUNCTION "public"."func_is_lecture"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."func_is_lecture"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_comment_count"("p_post_id" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."get_comment_count"("p_post_id" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_comment_count"("p_post_id" "uuid") TO "service_role";
@@ -4041,6 +4175,12 @@ GRANT ALL ON FUNCTION "public"."handle_new_post_like"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."handle_new_post_share"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_post_share"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_post_share"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
+GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
 
 
 

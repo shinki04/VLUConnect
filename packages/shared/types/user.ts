@@ -9,6 +9,7 @@ export type Avatar = { name: string; fullPath: string };
 
 export interface SearchedUser {
   id: string;
+  slug: string | null;
   display_name: string | null;
   username: string | null;
   avatar_url: string | null;

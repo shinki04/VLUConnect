@@ -1,5 +1,5 @@
 import { PRIVACY_CONFIG } from "@repo/shared/types/post";
-import { Global_Roles } from "@repo/shared/types/user";
+import { BLANK_AVATAR, Global_Roles } from "@repo/shared/types/user";
 import {
   Avatar,
   AvatarFallback,
@@ -18,7 +18,8 @@ const PRIVACY_ICONS = {
   LockKeyhole,
 } as const;
 
-const ANONYMOUS_AVATAR = "https://api.dicebear.com/7.x/shapes/svg?seed=anonymous";
+const ANONYMOUS_AVATAR =
+  "https://api.dicebear.com/7.x/shapes/svg?seed=anonymous";
 
 interface PostHeaderProps {
   postId: string;
@@ -71,13 +72,17 @@ export default function PostHeader({
 
   // Determine display values based on anonymous status
   const shouldHideIdentity = isAnonymous && !isGlobalAdmin;
+
   const displayName = shouldHideIdentity
     ? "Thành viên ẩn danh"
     : author?.display_name || author?.username;
   const displayAvatar = shouldHideIdentity
     ? ANONYMOUS_AVATAR
-    : author?.avatar_url || "/next.svg";
-  const profileLink = shouldHideIdentity ? null : `/profile/${author?.slug}`;
+    : author?.avatar_url || BLANK_AVATAR;
+
+  const profileLink = shouldHideIdentity
+    ? ""
+    : `/profile/${author?.slug ?? author?.id}`;
 
   return (
     <div className="flex items-center justify-between mb-3">
@@ -138,7 +143,11 @@ export default function PostHeader({
           (isOwner ? (
             <PostOwnerDropdown onUpdate={onUpdate} onDelete={onDelete} />
           ) : (
-            <PostViewerDropdown postId={postId} canDelete={canDelete} onDelete={onDelete} />
+            <PostViewerDropdown
+              postId={postId}
+              canDelete={canDelete}
+              onDelete={onDelete}
+            />
           ))}
       </div>
     </div>

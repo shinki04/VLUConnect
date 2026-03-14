@@ -1,25 +1,63 @@
-# The Last - Hướng Dẫn Triển Khai (Deployment Guide)
+# VLU Connect - Hướng Dẫn Tổ Chức & Cài Đặt Hệ Thống
 
-Hệ thống **The Last** là một mạng xã hội/chia sẻ nội dung hiện đại, xây dựng theo kiến trúc **Monorepo** với **Turborepo**. Sử dụng Next.js (App Router) cho giao diện, Supabase cho Backend/CSDL, cùng Redis và RabbitMQ.
-
----
-
-## 1. Yêu Cầu Cài Đặt (Prerequisites)
-
-- **Docker Desktop** (hoặc Docker Engine + Docker Compose V2).
-- **Supabase Cloud** hoặc **Supabase Local CLI** cho quản trị CSDL.
-- **Node.js** (>= 20.x) và **pnpm** (>= 10.x) dùng hỗ trợ thao tác Sync Database.
+Hệ thống **VLU Connect** là một mạng xã hội/chia sẻ nội dung hiện đại, được xây dựng theo kiến trúc **Monorepo** với **Turborepo**. Hệ thống sử dụng Next.js (App Router) cho phần Giao diện, Supabase cho quản trị CSDL & Backend Service, cùng với các thành phần caching/messaging mạnh mẽ như Redis và RabbitMQ.
 
 ---
 
-## 2. Chuẩn Bị File Môi Trường (.env)
+## 🚀 1. Công Nghệ Sử Dụng (Tech Stack)
 
-Hệ thống Docker yêu cầu biến môi trường cho từng ứng dụng. Tạo các file `.env` sau:
-- `apps/web/.env`
-- `apps/admin/.env`
-- `apps/workers/.env`
+- **Ngôn ngữ:** TypeScript (Node.js >= 20.x)
+- **Kiến trúc:** Turborepo (Monorepo)
+- **Quản lý Package:** `pnpm` (v10.x)
+- **Frontend / Client App:** Next.js 16 (React 19), Tailwind CSS v4, Framer Motion, GSAP, Radix UI.
+- **State & Data Fetching:** Zustand, TanStack Query.
+- **Backend & Cơ sở dữ liệu:** Supabase (PostgreSQL, Auth, Storage, Edge Functions).
+- **Message Broker & Caching:** RabbitMQ, Redis.
 
-> **Lưu ý**: `REDIS_URL` và `RABBITMQ_URL` đã được override trong `docker-compose.yml` qua block `environment` để trỏ tới các container nội bộ. Bạn không cần khai báo chúng trong file `.env` khi chạy Docker. Tuy nhiên, khi chạy dev local (không Docker), bạn cần khai báo URL cloud (Upstash, CloudAMQP) hoặc `localhost` trong `.env`.
+---
+
+## 📋 2. Yêu Cầu Hệ Thống Trước Khi Cài Đặt (Prerequisites)
+
+Hãy đảm bảo máy tính của bạn đã được cài đặt các công cụ sau:
+
+1. **Node.js** (Phiên bản `>= 20.x` được khuyên dùng).
+2. **pnpm** (Phiên bản `10.27.0`): `npm install -g pnpm@10.27.0`
+3. **Turborepo CLI** (Quản lý các Package trong kiến trúc Monorepo): `npm install -g turbo`
+4. **Môi trường Database & Caching**:
+   - Hệ thống được thiết kế linh hoạt. Đối với thiết lập qua dịch vụ Cloud: Bạn cần chuẩn bị sẵn tài khoản **Supabase Cloud** (Database), **Upstash** (Redis) và **CloudAMQP** (RabbitMQ).
+   - *Hoặc nếu muốn chạy dự án Local hoàn toàn giả lập:* Bạn sẽ cần cài đặt [Docker Desktop](https://www.docker.com/products/docker-desktop/) và công cụ dòng lệnh [Supabase CLI](https://supabase.com/docs/guides/cli): `npm install -g supabase`.
+
+---
+
+## ⚙️ 3. Hướng Dẫn Cài Đặt (Step-by-Step Installation)
+
+### Bước 1: Clone dự án và cài đặt Dependencies
+
+Mở Terminal và thực thi các lệnh sau:
+
+```bash
+# Clone dự án từ Github (thay thế URL git của bạn)
+git clone <repository-url>
+
+# Truy cập vào thư mục dự án
+cd <repository-name>
+
+# Cài đặt toàn bộ các packages cho workspace (sử dụng pnpm)
+pnpm install
+```
+
+### Bước 2: Cấu Hình Biến Môi Trường (Environment Variables)
+
+Hệ thống cung cấp sẵn file `env.local.example`. Bạn cần tạo một bản sao để ứng dụng có thể đọc cấu hình.
+
+👉 **Sau đó, mở file `.env.local` và tiến hành thêm URL/Key:**
+
+- **Thiết lập với Cloud (Upstash, CloudAMQP, Supabase Cloud):**
+  Lấy URL kết nối của Redis (`REDIS_URL`) từ **Upstash** và RabbitMQ (`RABBITMQ_URL`) từ **CloudAMQP**, cùng với key cấu hình lấy từ Project API Settings của **Supabase** (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) dán vào cấu hình file môi trường của bạn.
+- **Thiết lập với Docker:**
+  Giữ nguyên các giá trị ban đầu, dự án được thiết lập sẵn kết nối qua Docker File và Docker Compose (`redis://localhost:6379`, `amqp://guest:guest@localhost:5672`).
+
+Hệ thống Docker yêu cầu biến môi trường riêng cho từng ứng dụng. Tạo các file `.env` sau:
 
 #### `apps/web/.env`
 ```env
@@ -59,25 +97,90 @@ HF_TOKEN=<your-huggingface-token>
 > `HF_TOKEN` (Hugging Face) chỉ cần cho Worker — dùng để gọi mô hình AI xử lý tác vụ nền.
 > `BEFORE_USER_CREATED_HOOK_SECRET` dùng cho webhook xác thực từ Supabase Auth.
 
----
+### Bước 3: Đẩy cấu trúc Database lên Supabase Cloud
 
-## 3. Khởi Tạo Cơ Sở Dữ Liệu (Supabase)
+Bởi vì Redis và RabbitMQ đã chạy trực tiếp trên Upstash và CloudAMQP dưới dạng serverless, bạn không cần cài đặt chúng về máy nữa. Điều cần thiết duy nhất là đẩy cấu trúc DB vào trong Supabase Cloud.
 
 ```bash
-pnpm install
+# 1. Liên kết dự án lấy cấu hình thông qua Reference ID trên Supabase Cloud của bạn
+npx supabase link --project-ref <your-supabase-project-id>
 
-# Liên kết với Project trên Supabase Cloud
-npx supabase link --project-ref <mã-project-trên-supabase-của-bạn>
-
-# Đẩy lược đồ (Schema) CSDL lên máy chủ
+# 2. Đồng bộ/Đẩy cấu trúc Database Schema từ máy lên Cloud
 npx supabase db push
 ```
 
-> Bạn có thể chạy seed data thủ công qua SQL Editor trên Dashboard Supabase.
+#### Tùy chọn giả lập khi chạy bằng Docker:
+*Lưu ý: Bạn được quyền bỏ qua bước này nếu bạn đã dùng Upstash và CloudAMQP.*
+
+Chỉ thực hiện khi dùng Docker Desktop cho RabbitMQ và Caching.
+
+```bash
+# 1. Khởi chạy RabbitMQ và Redis
+docker-compose up -d
+
+# 2. Khởi tạo Database Supabase và bảng vào local
+npx supabase start
+```
+
+> **Lưu ý**: Lệnh `start` của Supabase giúp mô phỏng Table/RPC và tự đưa vào dữ liệu mồi (`supabase/seed.sql`). Nếu dùng Cloud ở phía trên, bạn có thể tự mình chạy thủ công seed data thông qua SQL Editor trên Dashboard web của Supabase.
+
+#### Tạo Storage Buckets
+
+Trên **Supabase Dashboard > Storage**, tạo các bucket sau (đặt **Public**):
+
+| Bucket       | Mô tả                           |
+| :----------- | :------------------------------- |
+| `avatars`    | Ảnh đại diện người dùng         |
+| `posts`      | Media đính kèm bài viết         |
+| `messages`   | Media trong tin nhắn             |
+| `groups`     | Ảnh đại diện và ảnh bìa nhóm    |
+| `backgrounds`| Ảnh bìa trang cá nhân           |
+
+> File `supabase/schema.sql` chứa bản dump đầy đủ của schema hiện tại (bao gồm tables, functions, RLS policies, triggers). Bạn có thể tham khảo file này để hiểu cấu trúc cơ sở dữ liệu.
 
 ---
 
-## 4. Xây Dựng Và Khởi Chạy Với Docker
+## 🔐 4. Thiết lập Microsoft Entra ID (Dùng cho Supabase Auth)
+
+Hệ thống có tích hợp đăng nhập qua Microsoft. Bạn cần thiết lập Microsoft Entra ID (trước đây là Azure AD) để có thể xác thực người dùng.
+
+1. **Đăng nhập vào Azure Portal** ([https://portal.azure.com/](https://portal.azure.com/)).
+2. Mở dịch vụ **Microsoft Entra ID** và chọn **App registrations** > **New registration**.
+3. Đặt tên hiển thị cho ứng dụng. Tại phần **Redirect URI**, chọn loại **Web** và nhập địa chỉ callback của Supabase:
+   - Nếu chạy Local/Docker: `http://localhost:54321/auth/v1/callback`
+   - Nếu chạy qua Supabase Cloud: `https://<mã-project-trên-supabase-của-bạn>.supabase.co/auth/v1/callback`
+4. Lấy **Application (client) ID** tại màn hình Overview của app vừa tạo.
+5. Vào menu **Certificates & secrets**, tạo một **New client secret** mới và copy lại `Value` (đây là Secret Key, chỉ hiện một lần).
+6. **Mở Supabase Dashboard** (Local Studio hoặc Cloud), vào **Authentication** > **Providers** > Bật **Azure** và dán Client ID cùng Client Secret vào, sau đó Save lại. Thêm Redirect URLs ở URL Configuration để trang callback về đúng.
+
+---
+
+## 💻 5. Chạy Ứng Dụng (Running the Application)
+
+Với hệ thống Turborepo, bạn chỉ cần thực hiện 1 lệnh đơn giản ở thư mục gốc (root) để khởi động toàn bộ môi trường phát triển:
+
+```bash
+pnpm dev
+```
+
+- Lệnh này sẽ kích hoạt `next dev` tại `apps/web`.
+- Giao diện của Next.js sẽ khởi chạy mặc định tại: **http://localhost:3000**
+- Trong lúc code, bạn có thể chỉnh sửa tại `apps/web/app/`. Hệ thống sẽ tự động Hot Reload.
+
+### 🛠 Các Lệnh Khác Trong Root (Useful Commands)
+
+| Lệnh | Mô tả |
+| :--- | :--- |
+| `pnpm build` | Build toàn bộ các app và packages để chuẩn bị production. |
+| `pnpm dev` | Khởi chạy môi trường Dev cho tất cả ứng dụng. |
+| `pnpm lint` | Kiểm tra cú pháp, lỗi code với ESLint trên toàn hệ thống. |
+| `pnpm format` | Tự động fix lỗi format cho các file `.ts, .tsx, .md`. |
+| `pnpm check-types` | Kiểm tra lỗi TypeScript trên toàn bộ các workspace. |
+| `pnpm --filter @repo/web dev:all` | Khởi chạy Next.js cùng với Post Worker (nằm ở apps/web). |
+
+---
+
+## 🐳 6. Triển Khai Production Với Docker
 
 ```bash
 docker-compose up --build -d
@@ -95,17 +198,7 @@ docker-compose up --build -d
 
 > Trong `docker-compose.yml`, `REDIS_URL` và `RABBITMQ_URL` đã được override bằng block `environment` để trỏ tới các container nội bộ (`redis://redis:6379`, `amqp://guest:guest@rabbitmq:5672`), đảm bảo các service giao tiếp đúng trong mạng Docker.
 
----
-
-## 5. Thiết Lập Microsoft Entra ID (Auth)
-
-1. Đăng ký trên [Azure Portal](https://portal.azure.com/).
-2. Đặt URL Callback: `https://<mã-project-supabase>.supabase.co/auth/v1/callback` (Cloud) hoặc `http://localhost:54321/auth/v1/callback` (Local CLI).
-3. Lấy `Client ID` & `Client Secret` rồi cài vào **Authentication > Providers > Azure** trên Supabase Dashboard.
-
----
-
-## 6. Lệnh Docker Thường Dùng
+### Lệnh Docker Thường Dùng
 
 | Thao Tác                          | Lệnh                              |
 | :-------------------------------- | :--------------------------------- |
@@ -118,347 +211,33 @@ docker-compose up --build -d
 
 ---
 
-## 7. Cấu Trúc Cơ Sở Dữ Liệu (Supabase Schema)
+## 📁 7. Cấu Trúc Thư Mục (Folder Structure)
 
-Schema `public` bao gồm các bảng sau (tất cả đều bật RLS - Row Level Security):
-
-### 7.1 Người dùng & Quan hệ
-
-#### `profiles`
-Thông tin hồ sơ người dùng (liên kết với `auth.users`).
-
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | FK → `auth.users.id` |
-| `display_name` | text | `''` | Unique |
-| `username` | text | — | Unique |
-| `email` | text | — | Unique |
-| `avatar_url` | text | — | URL ảnh đại diện |
-| `background_url` | text | — | Ảnh bìa |
-| `description` | text | — | Mô tả bản thân |
-| `slug` | text | — | Slug URL |
-| `phone_number` | text | `''` | |
-| `birth_date` | date | — | |
-| `global_role` | enum | — | `admin`, `student`, `lecturer`, `moderator`, `banned` |
-| `friend_count` | int | `0` | |
-| `settings` | jsonb | — | Cài đặt cá nhân |
-| `create_at` | timestamp | `now()` | |
-| `updated_at` | timestamp | `now()` | |
-
-#### `friendships`
-Quan hệ bạn bè giữa 2 người dùng.
-
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `requester_id` | uuid | — | FK → `profiles.id` |
-| `addressee_id` | uuid | — | FK → `profiles.id` |
-| `status` | enum | `pending` | `pending`, `friends`, `blocked`, `following` |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | `now()` | |
-
----
-
-### 7.2 Bài viết & Tương tác
-
-#### `posts`
-Bài viết của người dùng.
-
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `author_id` | uuid | — | FK → `profiles.id` |
-| `content` | text | — | Nội dung bài viết |
-| `media_urls` | text[] | — | Danh sách URL media |
-| `privacy_level` | enum | `public` | `public`, `friends`, `private` |
-| `like_count` | int | `0` | |
-| `comment_count` | int | `0` | |
-| `share_count` | int | `0` | |
-| `moderation_status` | enum | — | `approved`, `rejected`, `flagged`, `pending` |
-| `is_flagged` | bool | `false` | |
-| `flag_reason` | text | — | |
-| `moderation_reason` | text | — | |
-| `is_deleted` | bool | `false` | |
-| `deleted_at` | timestamptz | — | |
-| `deleted_by` | uuid | — | FK → `profiles.id` |
-| `group_id` | uuid | — | FK → `groups.id` |
-| `is_anonymous` | bool | `false` | Ẩn danh tác giả |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | — | |
-
-#### `post_comments`
-Bình luận (hỗ trợ reply lồng nhau qua `parent_id`).
-
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `post_id` | uuid | — | FK → `posts.id` |
-| `user_id` | uuid | — | FK → `profiles.id` |
-| `parent_id` | uuid | — | FK → `post_comments.id` (NULL = top-level) |
-| `content` | text | — | `length(trim(content)) > 0` |
-| `like_count` | int | `0` | |
-| `reply_count` | int | `0` | |
-| `is_edited` | bool | `false` | |
-| `is_deleted` | bool | `false` | |
-| `is_anonymous` | bool | `false` | |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | — | |
-
-#### `post_likes`
-| Cột | Kiểu | Ghi chú |
-|:----|:------|:--------|
-| `id` | uuid (PK) | |
-| `post_id` | uuid | FK → `posts.id` |
-| `user_id` | uuid | FK → `auth.users.id` |
-| `created_at` | timestamptz | `now()` |
-
-#### `comment_likes`
-| Cột | Kiểu | Ghi chú |
-|:----|:------|:--------|
-| `id` | uuid (PK) | |
-| `comment_id` | uuid | FK → `post_comments.id` |
-| `user_id` | uuid | FK → `auth.users.id` |
-| `created_at` | timestamptz | `now()` |
-
-#### `post_shares`
-| Cột | Kiểu | Ghi chú |
-|:----|:------|:--------|
-| `id` | uuid (PK) | |
-| `post_id` | uuid | FK → `posts.id` |
-| `user_id` | uuid | FK → `auth.users.id` |
-| `caption` | text | Nội dung chia sẻ kèm theo |
-| `created_at` | timestamptz | `now()` |
-
-#### `hashtags` & `post_hashtags`
-Quản lý hashtag và liên kết many-to-many với bài viết.
-
-| Bảng `hashtags` | Kiểu | Ghi chú |
-|:------|:------|:--------|
-| `id` | uuid (PK) | |
-| `name` | varchar | Unique |
-| `post_count` | int | `0` |
-| `created_at` | timestamp | `now()` |
-
-| Bảng `post_hashtags` | Kiểu | Ghi chú |
-|:------|:------|:--------|
-| `id` | uuid (PK) | |
-| `post_id` | uuid | FK → `posts.id` |
-| `hashtag_id` | uuid | FK → `hashtags.id` |
-
----
-
-### 7.3 Nhóm (Groups)
-
-#### `groups`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `name` | text | — | |
-| `slug` | text | — | Unique |
-| `description` | text | — | |
-| `avatar_url` | text | — | |
-| `cover_url` | text | — | |
-| `privacy_level` | text | `public` | `public`, `private` |
-| `membership_mode` | text | `auto` | `auto`, `request` |
-| `allow_anonymous_posts` | bool | `false` | |
-| `allow_anonymous_comments` | bool | `false` | |
-| `created_by` | uuid | — | FK → `profiles.id` |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | `now()` | |
-
-#### `group_members`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `group_id` | uuid (PK) | — | FK → `groups.id` |
-| `user_id` | uuid (PK) | — | FK → `profiles.id` |
-| `role` | enum | `member` | `admin`, `sub_admin`, `moderator`, `member` |
-| `status` | enum | `pending` | `active`, `banned`, `pending` |
-| `joined_at` | timestamptz | `now()` | |
-
----
-
-### 7.4 Nhắn tin (Messaging)
-
-#### `conversations`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `type` | enum | `direct` | `direct`, `group` |
-| `name` | text | — | Tên nhóm chat |
-| `avatar_url` | text | — | |
-| `created_by` | uuid | — | FK → `profiles.id` |
-| `last_message_at` | timestamptz | `now()` | |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | `now()` | |
-
-#### `conversation_members`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `conversation_id` | uuid | — | FK → `conversations.id` |
-| `user_id` | uuid | — | FK → `profiles.id` |
-| `role` | text | `member` | |
-| `is_muted` | bool | `false` | |
-| `last_read_at` | timestamptz | — | |
-| `joined_at` | timestamptz | `now()` | |
-
-#### `messages`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `conversation_id` | uuid | — | FK → `conversations.id` |
-| `sender_id` | uuid | — | FK → `profiles.id` |
-| `content` | text | — | |
-| `message_type` | enum | `text` | `text`, `image`, `file`, `system` |
-| `media_urls` | text[] | — | |
-| `reply_to_id` | uuid | — | FK → `messages.id` |
-| `is_edited` | bool | `false` | |
-| `is_deleted` | bool | `false` | |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | — | |
-
----
-
-### 7.5 Thông báo & Hệ thống
-
-#### `notifications`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `recipient_id` | uuid | — | FK → `profiles.id` |
-| `sender_id` | uuid | — | FK → `profiles.id` |
-| `type` | enum | — | `follow`, `friend`, `like`, `comment`, `share`, `mention`, `post_reply`, `system`, `group`, `post` |
-| `entity_type` | text | — | |
-| `entity_id` | uuid | — | |
-| `title` | text | — | |
-| `message` | text | — | |
-| `metadata` | jsonb | `{}` | |
-| `is_read` | bool | `false` | |
-| `read_at` | timestamptz | — | |
-| `created_at` | timestamptz | `now()` | |
-
-#### `system_announcements`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `title` | text | — | |
-| `message` | text | — | |
-| `type` | text | `info` | `info`, `warning`, `success`, `error` |
-| `start_time` | timestamptz | — | |
-| `end_time` | timestamptz | — | |
-| `is_active` | bool | `true` | |
-| `created_by` | uuid | — | FK → `profiles.id` |
-| `created_at` | timestamptz | `now()` | |
-
----
-
-### 7.6 Kiểm duyệt & Báo cáo (Moderation)
-
-#### `reports`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `reporter_id` | uuid | — | FK → `profiles.id` |
-| `reported_type` | text | — | `post`, `comment`, `user`, `message` |
-| `reported_id` | uuid | — | |
-| `reason` | text | — | |
-| `description` | text | — | |
-| `status` | enum | — | `pending`, `reviewed`, `resolved`, `dismissed` |
-| `reviewed_by` | uuid | — | FK → `profiles.id` |
-| `reviewed_at` | timestamptz | — | |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | `now()` | |
-
-#### `post_appeals`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `post_id` | uuid | — | FK → `posts.id` |
-| `user_id` | uuid | — | FK → `profiles.id` |
-| `reason` | text | — | |
-| `status` | text | `pending` | `pending`, `reviewed`, `resolved` |
-| `created_at` | timestamptz | `now()` | |
-
-#### `blocked_keywords`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `gen_random_uuid()` | |
-| `keyword` | text | — | |
-| `match_type` | enum | `partial` | `exact`, `partial` |
-| `scope` | text | `global` | `global`, `group` |
-| `group_id` | uuid | — | FK → `groups.id` |
-| `created_by` | uuid | — | FK → `profiles.id` |
-| `created_at` | timestamptz | `now()` | |
-
-#### `moderation_actions`
-| Cột | Kiểu | Ghi chú |
-|:----|:------|:--------|
-| `id` | uuid (PK) | |
-| `target_type` | text | |
-| `target_id` | uuid | |
-| `action_type` | enum | `ai_flagged`, `keyword_blocked`, `admin_deleted`, `user_recalled`, `admin_flagged` |
-| `reason` | text | |
-| `matched_keyword` | text | |
-| `ai_score` | float | |
-| `created_by` | uuid | FK → `auth.users.id` |
-| `created_at` | timestamptz | `now()` |
-
-#### `ai_analysis_logs`
-| Cột | Kiểu | Ghi chú |
-|:----|:------|:--------|
-| `id` | uuid (PK) | |
-| `target_type` | text | `post`, `comment`, `review`, `message` |
-| `target_id` | uuid | |
-| `model_name` | text | Tên model AI đã dùng |
-| `analysis_type` | text | |
-| `label` | text | Nhãn phân loại |
-| `score` | float | |
-| `confidence` | float | |
-| `metadata` | jsonb | `{}` |
-| `created_at` | timestamptz | `now()` |
-
----
-
-### 7.7 Hàng đợi xử lý (Queue)
-
-#### `post_queue_status`
-| Cột | Kiểu | Mặc định | Ghi chú |
-|:----|:------|:---------|:--------|
-| `id` | uuid (PK) | `uuid_generate_v4()` | |
-| `user_id` | uuid | — | FK → `profiles.id` |
-| `post_id` | uuid | — | FK → `posts.id` |
-| `status` | enum | — | `pending`, `processing`, `completed`, `failed` |
-| `content` | text | — | |
-| `privacy_level` | enum | — | `public`, `friends`, `private` |
-| `media_count` | int | `0` | |
-| `error_message` | text | — | |
-| `retry_count` | int | `0` | |
-| `operation_type` | enum | — | `SELECT`, `CREATE`, `UPDATE`, `DELETE` |
-| `group_id` | uuid | — | FK → `groups.id` |
-| `created_at` | timestamptz | `now()` | |
-| `updated_at` | timestamptz | `now()` | |
-
----
-
-## 8. Cấu Trúc Thư Mục
+Kiến trúc monorepo phân tách chức năng thành các phần rõ ràng:
 
 ```text
 the-last/
 ├── apps/
-│   ├── web/           # Ứng dụng Frontend chính (Next.js)
-│   ├── admin/         # Ứng dụng Quản trị (Next.js)
-│   └── workers/       # Background Worker (RabbitMQ, HF_TOKEN...)
-├── packages/          # Thư viện dùng chung
+│   ├── web/           # Ứng dụng Frontend chính dành cho người dùng (Next.js 16)
+│   ├── admin/         # Ứng dụng Quản trị nội bộ / Dashboard (Next.js)
+│   └── workers/       # Background Worker xử lý hàng đợi (RabbitMQ, HF_TOKEN...)
+├── packages/          # Các thư viện dùng chung cho toàn bộ dự án
 │   ├── eslint-config/ # Cấu hình ESLint chung
-│   ├── rabbitmq/      # Client RabbitMQ
-│   ├── redis/         # Client Redis
-│   ├── shared/        # Types, Interface dùng chung
-│   ├── supabase/      # Supabase Client/Server
-│   ├── typescript-config/
+│   ├── rabbitmq/      # Cấu hình & Client RabbitMQ
+│   ├── redis/         # Cấu hình & Client Redis
+│   ├── shared/        # Nơi chứa Types (TypeScript), Interface dùng chung
+│   ├── supabase/      # Cấu hình Database Supabase Client/Server
+│   ├── typescript-config/ # Cấu hình TS config
 │   ├── ui/            # UI Component Library (Tailwind, Radix UI)
-│   └── utils/         # Utility helpers
-├── supabase/          # Migrations, Seed, Edge Functions
+│   └── utils/         # Các utility helper functions
+├── supabase/          # Backend configuration: Migrations, Seed, Schema dump
 ├── infra/             # Dockerfiles cho Redis, RabbitMQ
-├── docker-compose.yml
-└── turbo.json
+├── docker-compose.yml # File chạy toàn bộ hệ thống qua Docker
+└── turbo.json         # Cấu hình orchestration của Turborepo
 ```
+
+---
+
+## 📚 Tác Giả & Hỗ Trợ
+
+Nếu gặp sự cố trong lúc cài đặt môi trường, vui lòng kiểm tra lại cấu hình Docker và tham khảo trực tiếp [Tài liệu Turborepo](https://turborepo.dev/docs), [Tài liệu Next.js](https://nextjs.org/docs) và [Tài liệu Supabase](https://supabase.com/docs). Mọi đóng góp xin vui lòng tạo Pull Request vào nhánh chính! 🎉

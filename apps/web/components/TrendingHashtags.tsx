@@ -88,16 +88,25 @@ export function TrendingHashtags({
           </p>
         ) : (
           hashtags.map((tag) => (
-            <Link
+            // <Link
+            //   key={tag.id}
+            //   href={`/explore/hashtag/${tag.name}`}
+            //   className="group flex items-center gap-1.5 rounded-full border border-border bg-accent/50 px-3 py-1.5 text-sm  text-accent-foreground transition-all hover:border-primary/20 hover:bg-primary/10 hover:text-primary"
+            // >
+            //   <span>#{tag.name}</span>
+            //   {/* <span className="text-xs opacity-70 transition-colors group-hover:text-primary">
+            //     ({formatNumber(tag.post_count)})
+            //   </span> */}
+            // </Link>
+            <div
               key={tag.id}
-              href={`/explore/hashtag/${tag.name}`}
               className="group flex items-center gap-1.5 rounded-full border border-border bg-accent/50 px-3 py-1.5 text-sm  text-accent-foreground transition-all hover:border-primary/20 hover:bg-primary/10 hover:text-primary"
             >
               <span>#{tag.name}</span>
               {/* <span className="text-xs opacity-70 transition-colors group-hover:text-primary">
                 ({formatNumber(tag.post_count)})
               </span> */}
-            </Link>
+            </div>
           ))
         )}
       </div>

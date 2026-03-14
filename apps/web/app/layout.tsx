@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import "./globals.css";
 
 import Providers from "./provider";
@@ -12,10 +13,10 @@ import Providers from "./provider";
 //   subsets: ["latin"],
 // });
 
-// export const metadata: Metadata = {
-//   title: "Social",
-//   description: "A modern social media platform built with Next.js 16",
-// };
+export const metadata: Metadata = {
+  title: "Social",
+  description: "A modern social media platform built with Next.js 16",
+};
 
 export default function RootLayout({
   children,

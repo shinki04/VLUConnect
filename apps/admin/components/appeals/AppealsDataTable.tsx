@@ -212,9 +212,15 @@ export function AppealsDataTable({ initialData }: AppealsDataTableProps) {
                       @{appeal.user?.username}
                     </span>
                   </TableCell>
-                  <TableCell>{appeal.reason}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs line-clamp-2">
-                    {appeal.post?.content || "Không có nội dung"}
+                  <TableCell className="max-w-[30vw]">
+                    <div className="line-clamp-2" title={appeal.reason}>
+                      {appeal.reason}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-[30vw]">
+                    <div className="text-muted-foreground text-xs line-clamp-2" title={appeal.post?.content || "Không có nội dung"}>
+                      {appeal.post?.content || "Không có nội dung"}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {formatDistanceToNow(new Date(appeal.created_at), {
@@ -273,7 +279,7 @@ export function AppealsDataTable({ initialData }: AppealsDataTableProps) {
         open={!!selectedAppeal}
         onOpenChange={(open) => !open && setSelectedAppeal(null)}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90%] w-[95vw] md:w-full overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl font-bold">
               <AlertCircle className="w-6 h-6 text-yellow-500" />
@@ -287,22 +293,24 @@ export function AppealsDataTable({ initialData }: AppealsDataTableProps) {
 
           {selectedAppeal && (
             <div className="space-y-6 py-4">
-              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={selectedAppeal.user?.avatar_url || ""} />
-                  <AvatarFallback>
-                    {selectedAppeal.user?.display_name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h4 className="font-semibold">
-                    {selectedAppeal.user?.display_name || "Người dùng ẩn danh"}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    @{selectedAppeal.user?.username}
-                  </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-muted/50 rounded-lg border">
+                <div className="flex items-center gap-4">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={selectedAppeal.user?.avatar_url || ""} />
+                    <AvatarFallback>
+                      {selectedAppeal.user?.display_name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h4 className="font-semibold">
+                      {selectedAppeal.user?.display_name || "Người dùng ẩn danh"}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      @{selectedAppeal.user?.username}
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-auto text-sm text-muted-foreground">
+                <div className="sm:ml-auto mt-2 sm:mt-0 text-sm text-muted-foreground">
                   Kháng cáo{" "}
                   {formatDistanceToNow(new Date(selectedAppeal.created_at), {
                     addSuffix: true,
@@ -315,7 +323,7 @@ export function AppealsDataTable({ initialData }: AppealsDataTableProps) {
                 <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">
                   Lý do khiếu nại
                 </h4>
-                <div className="p-4 bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 border border-yellow-500/20 rounded-lg whitespace-pre-wrap">
+                <div className="p-4 bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 border border-yellow-500/20 rounded-lg whitespace-pre-wrap max-h-[30vh] overflow-y-auto custom-scrollbar wrap-break-word">
                   {selectedAppeal.reason}
                 </div>
               </div>
@@ -325,9 +333,11 @@ export function AppealsDataTable({ initialData }: AppealsDataTableProps) {
                   Nội dung bài viết vi phạm
                 </h4>
                 <div className="p-4 bg-card border rounded-lg space-y-4">
-                  <p className="whitespace-pre-wrap">
-                    {selectedAppeal.post?.content || "Không có nội dung"}
-                  </p>
+                  <div className="max-h-[30vh] overflow-y-auto custom-scrollbar pr-2">
+                    <p className="whitespace-pre-wrap wrap-break-word">
+                      {selectedAppeal.post?.content || "Không có nội dung"}
+                    </p>
+                  </div>
 
                   {selectedAppeal.post?.media_urls &&
                     selectedAppeal.post.media_urls.length > 0 && (

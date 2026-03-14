@@ -2,7 +2,6 @@
 
 import { QueryClientProvider } from "@tanstack/react-query";
 // import { SessionProvider } from 'next-auth/react'
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
@@ -20,7 +19,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools />
+      {/* <ReactQueryDevtools /> */}
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <Toaster />
         {children}

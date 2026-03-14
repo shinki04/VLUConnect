@@ -43,6 +43,7 @@ import {
   MoreHorizontal,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import * as React from "react";
 
 import {
@@ -53,7 +54,6 @@ import {
   updateReportStatus,
 } from "@/app/actions/admin-reports";
 import { useRefresh } from "@/components/common/RefreshContext";
-import Link from "next/link";
 
 interface Report {
   id: string;
@@ -279,9 +279,9 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Người tố cáo</TableHead>
+                <TableHead>Người báo cáo</TableHead>
                 <TableHead>Loại</TableHead>
-                <TableHead>ID bị tố cáo</TableHead>
+                <TableHead>ID bị báo cáo</TableHead>
                 <TableHead className="min-w-[200px]">Lý do</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead>Ngày tạo</TableHead>
@@ -303,7 +303,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                     colSpan={7}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    Không tìm thấy tố cáo nào
+                    Không tìm thấy báo cáo nào
                   </TableCell>
                 </TableRow>
               ) : (
@@ -341,10 +341,18 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                         {report.reported_id.slice(0, 8)}...
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <p className="font-medium text-sm">{report.reason}</p>
+                    <TableCell className="max-w-[30vw]">
+                      <p
+                        className="font-medium text-sm line-clamp-2"
+                        title={report.reason}
+                      >
+                        {report.reason}
+                      </p>
                       {report.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">
+                        <p
+                          className="text-xs text-muted-foreground line-clamp-2"
+                          title={report.description}
+                        >
                           {report.description}
                         </p>
                       )}
@@ -558,10 +566,10 @@ function ReportDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90%] md:h-auto overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Chi tiết tố cáo
+            Chi tiết báo cáo
             <Badge variant={statusColors[report.status ?? ""] || "outline"}>
               {report.status}
             </Badge>
@@ -571,7 +579,7 @@ function ReportDetailDialog({
         <div className="space-y-4">
           {/* Reporter Info */}
           <div className="rounded-lg border p-4 space-y-3">
-            <h4 className="font-semibold text-sm">Người tố cáo</h4>
+            <h4 className="font-semibold text-sm">Người báo cáo</h4>
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={report.reporter?.avatar_url || undefined} />
@@ -594,7 +602,7 @@ function ReportDetailDialog({
 
           {/* Reported Target */}
           <div className="rounded-lg border p-4 space-y-3">
-            <h4 className="font-semibold text-sm">Đối tượng bị tố cáo</h4>
+            <h4 className="font-semibold text-sm">Đối tượng bị báo cáo</h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="text-muted-foreground">Loại:</div>
               <div>
@@ -641,8 +649,7 @@ function ReportDetailDialog({
                           <img
                             src={reportedMessage.content}
                             alt="Reported Image"
-                            className="max-w-full h-auto rounded"
-                            style={{ maxHeight: "200px" }}
+                            className="max-w-full h-auto max-h-[30vh] object-contain rounded"
                           />
                         ) : (
                           <span className="italic text-muted-foreground">
@@ -655,9 +662,11 @@ function ReportDetailDialog({
                         [Tệp tin đính kèm]
                       </span>
                     ) : (
-                      <p className="whitespace-pre-wrap">
-                        {reportedMessage.content}
-                      </p>
+                      <div className="max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
+                        <p className="whitespace-pre-wrap wrap-break-word">
+                          {reportedMessage.content}
+                        </p>
+                      </div>
                     )}
                     <div className="mt-2 text-xs text-muted-foreground flex gap-2 items-center">
                       <Link
@@ -689,9 +698,11 @@ function ReportDetailDialog({
             {report.description && (
               <>
                 <h4 className="font-semibold text-sm pt-2">Mô tả</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {report.description}
-                </p>
+                <div className="max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                    {report.description}
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -706,7 +717,7 @@ function ReportDetailDialog({
                   ? format(new Date(report.created_at), "PPpp")
                   : "-"}
               </div>
-              <div className="text-muted-foreground">ID tố cáo:</div>
+              <div className="text-muted-foreground">ID báo cáo:</div>
               <div className="font-mono text-xs break-all">{report.id}</div>
             </div>
           </div>

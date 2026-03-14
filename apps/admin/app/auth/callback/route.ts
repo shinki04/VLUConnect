@@ -74,7 +74,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const { data: profile, error: upsertError } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select()
       .eq("id", user.id)
@@ -84,15 +84,11 @@ export async function GET(request: Request) {
 
 
 
-    if (upsertError) {
-      return NextResponse.json(
-        { message: "Có lỗi xảy ra khi tạo hồ sơ" },
-        {
-          status: 400,
-          headers: {
-            "Set-Cookie": `access_error=Có lỗi xảy ra khi tạo hồ sơ; Path=/; HttpOnly; SameSite=Lax; Max-Age=${COOKIE_CONFIG.maxAge}`,
-          },
-        }
+    if (profileError) {
+      return redirectWithCookie(
+        `${origin}/login`,
+        "access_error",
+        "Có lỗi xảy ra"
       );
     }
 

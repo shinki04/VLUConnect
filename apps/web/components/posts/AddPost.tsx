@@ -191,7 +191,7 @@ function AddPost({
             }}
           >
             {(field) => (
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nội dung
                 </label>
@@ -199,8 +199,8 @@ function AddPost({
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 resize-none shadow-none"
+                  rows={8}
+                  className="w-full px-3 py-2 resize-none shadow-none min-h-[250px]"
                   placeholder="Bạn đang nghĩ gì?..."
                 />
                 <div className="flex justify-between text-sm text-gray-500 mt-1">
@@ -222,8 +222,10 @@ function AddPost({
             // id="uppy-dashboard-container"
             //   className="border-2 border-dashed rounded-lg h-4"
             />
-            <Dropzone />
-            <FilesGrid imageThumbnail={true} columns={2} />
+            <div className="max-h-[300px] overflow-y-auto border rounded-xl border-dashed [&_.uppy-DropZone]:min-h-[80px] [&_.uppy-DropZone-container]:py-4 [&_.uppy-Root]:h-auto! bg-gray-50/50 dark:bg-slate-900/50">
+              <Dropzone />
+              <FilesGrid imageThumbnail={true} columns={4} />
+            </div>
           </div>
 
           {/* Quyền riêng tư - ẩn khi đăng trong group (theo quyền riêng tư của group) */}

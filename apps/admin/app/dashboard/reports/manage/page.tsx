@@ -9,12 +9,12 @@ export default async function ReportsManagePage() {
 
   return (
     <PageHeader
-      title="Xử lý yêu cầu tố cáo"
-      description="Xem xét và xử lý các yêu cầu tố cáo từ người dùng"
+      title="Xử lý yêu cầu báo cáo"
+      description="Xem xét và xử lý các yêu cầu báo cáo từ người dùng"
       breadcrumbs={[
         { label: "Bảng điều khiển", href: ADMIN_ROUTES.DASHBOARD },
-        { label: "Quản lý tố cáo", href: ADMIN_ROUTES.REPORTS },
-        { label: "Xử lý yêu cầu tố cáo" },
+        { label: "Quản lý báo cáo", href: ADMIN_ROUTES.REPORTS },
+        { label: "Xử lý yêu cầu báo cáo" },
       ]}
     >
       <ReportsDataTable initialData={initialData} />

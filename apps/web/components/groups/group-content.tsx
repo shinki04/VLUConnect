@@ -114,7 +114,7 @@ export function GroupContent({
       className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border mb-2 last:mb-0"
     >
       <Link
-        href={`/profile/${member.profile?.username}`}
+        href={`/profile/${member.profile?.slug || member.profile?.id}`}
         className="flex items-center gap-3 flex-1"
       >
         <Avatar className="w-10 h-10">
@@ -125,10 +125,10 @@ export function GroupContent({
         </Avatar>
         <div>
           <p className="font-medium">
-            {member.profile?.display_name || member.profile?.username}
+            {member.profile?.display_name || member.profile?.slug}
           </p>
           <p className="text-sm text-muted-foreground">
-            @{member.profile?.username}
+            @{member.profile?.display_name || member.profile?.slug}
           </p>
         </div>
       </Link>
@@ -325,7 +325,7 @@ export function GroupContent({
             {group.description && (
               <div>
                 <h3 className="font-medium mb-2">Mô tả</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">
+                <p className="text-muted-foreground whitespace-pre-wrap text-sm">
                   {group.description}
                 </p>
               </div>

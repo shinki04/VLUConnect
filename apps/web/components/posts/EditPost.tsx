@@ -260,7 +260,7 @@ function EditPost({ open, onOpenChange, onConfirm, post }: EditPostProps) {
                 }}
               >
                 {(field) => (
-                  <div>
+                  <div className="flex-1">
                     <label className="block text-sm font-medium mb-2">
                       Nội dung
                     </label>
@@ -268,8 +268,8 @@ function EditPost({ open, onOpenChange, onConfirm, post }: EditPostProps) {
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      rows={4}
-                      className="w-full resize-none"
+                      rows={8}
+                      className="w-full resize-none min-h-[250px]"
                       placeholder="Nội dung bài viết..."
                       disabled={isLoadingFiles}
                     />
@@ -285,15 +285,17 @@ function EditPost({ open, onOpenChange, onConfirm, post }: EditPostProps) {
 
               {/* Media Upload */}
               <div
-                className={
-                  isLoadingFiles ? "opacity-50 pointer-events-none" : ""
-                }
+                className={`
+                  ${isLoadingFiles ? "opacity-50 pointer-events-none" : ""}
+                `}
               >
                 <label className="block text-sm font-medium mb-2">
                   Media (tối đa 10 file)
                 </label>
-                <Dropzone />
-                <FilesGrid imageThumbnail columns={2} />
+                <div className="max-h-[300px] overflow-y-auto border rounded-xl border-dashed [&_.uppy-DropZone]:min-h-[80px] [&_.uppy-DropZone-container]:py-4 [&_.uppy-Root]:h-auto! bg-gray-50/50 dark:bg-slate-900/50">
+                  <Dropzone />
+                  <FilesGrid imageThumbnail columns={4} />
+                </div>
               </div>
 
               {/* Privacy Level */}

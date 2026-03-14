@@ -181,7 +181,7 @@ export function MessagesClient({
   );
 
   return (
-    <div className="flex flex-col h-screen h-[100dvh] pb-[72px] md:pb-0">
+    <div className="flex flex-col h-screen pb-[72px] md:pb-0">
       <div className="flex-1 overflow-hidden chat-layout rounded-none md:rounded-lg border-0 md:border shadow-sm">
         {/* Nav Sidebar */}
         <ChatNavSidebar unreadCount={totalUnreadCount} />

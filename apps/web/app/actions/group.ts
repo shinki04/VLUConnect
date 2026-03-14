@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { createGroupSchema } from "@/lib/validations/group";
+import { GroupMember, GroupWithDetails } from "@repo/shared/types/group";
 
 export async function createGroup(formData: FormData) {
   const supabase = await createClient();
@@ -509,41 +510,7 @@ export async function updateGroupImages(
 
 // ================== DATA FETCHING ==================
 
-export interface GroupData {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  avatar_url: string | null;
-  cover_url: string | null;
-  privacy_level: string | null;
-  membership_mode: string | null;
-  allow_anonymous_posts: boolean | null;
-  allow_anonymous_comments: boolean | null;
-  created_by: string | null;
-  created_at: string | null;
-}
-
-export interface MemberProfile {
-  id: string;
-  display_name: string | null;
-  username: string | null;
-  avatar_url: string | null;
-  global_role?: string | null;
-}
-
-export interface GroupMember {
-  user_id: string;
-  role: "admin" | "sub_admin" | "moderator" | "member";
-  status: "active" | "banned" | "pending";
-  joined_at: string | null;
-  profile?: MemberProfile | null;
-}
-
-export interface GroupWithDetails extends GroupData {
-  members_count: number;
-  my_membership: GroupMember | null;
-}
+export type { GroupData, MemberProfile, GroupMember, GroupWithDetails } from "@repo/shared/types/group";
 
 /**
  * Get group by slug with membership info for current user
@@ -614,7 +581,8 @@ export async function getGroupPosts(groupId: string, page = 1, pageSize = 10) {
         username,
         display_name,
         avatar_url,
-        global_role
+        global_role,
+        slug
       ),
       content,
       media_urls,
@@ -698,7 +666,7 @@ export async function getGroupOverviewMembers(groupId: string) {
       role,
       status,
       joined_at,
-      profile:profiles!user_id(id, display_name, username, avatar_url, global_role)
+      profile:profiles!user_id(id, display_name, username, avatar_url, global_role, slug)
     `)
     .eq("group_id", groupId)
     .in("role", ["admin", "sub_admin", "moderator"])
@@ -729,7 +697,7 @@ export async function getGroupOverviewMembers(groupId: string) {
                 role,
                 status,
                 joined_at,
-                profile:profiles!user_id(id, display_name, username, avatar_url, global_role)
+                profile:profiles!user_id(id, display_name, username, avatar_url, global_role, slug)
             `)
             .eq("group_id", groupId)
             .eq("status", "active")
