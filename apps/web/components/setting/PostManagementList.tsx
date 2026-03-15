@@ -270,20 +270,20 @@ export function PostManagementList() {
       const formattedPost: PostResponse = {
         id: post.id,
         content: post.content,
-        created_at: post.created_at ?? "",
+        created_at: post.created_at ?? null,
         updated_at: null,
         privacy_level: post.privacy_level ?? "public",
         media_urls: post.post_media?.map((m) => m.media_url) ?? null,
         author: {
-          id: currentUser?.id || "",
-          username: currentUser?.username || "",
-          display_name: currentUser?.display_name || "",
-          avatar_url: currentUser?.avatar_url || null,
+          id: currentUser?.id ?? "",
+          username: currentUser?.username ?? null,
+          display_name: currentUser?.display_name ?? null,
+          avatar_url: currentUser?.avatar_url ?? null,
           global_role:
             currentUser?.global_role === "banned"
-              ? "student"
-              : currentUser?.global_role || "student",
-          slug: currentUser?.slug || "",
+              ? ("student" as const)
+              : (currentUser?.global_role ?? null),
+          slug: currentUser?.slug || undefined,
         },
         is_liked_by_viewer: false,
         like_count: 0,

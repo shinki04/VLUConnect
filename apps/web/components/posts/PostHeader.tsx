@@ -82,7 +82,7 @@ export default function PostHeader({
 
   const profileLink = shouldHideIdentity
     ? ""
-    : `/profile/${author?.slug ?? author?.id}`;
+    : `/profile/${author?.slug || author?.id || ""}`;
 
   return (
     <div className="flex items-center justify-between mb-3">

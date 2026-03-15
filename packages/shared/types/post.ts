@@ -3,7 +3,7 @@ import { Tables, Enums, TablesUpdate } from "./database.types";
 export type privacyPost = Enums<"privacy_post">;
 export type Post = Tables<"posts">;
 export type UpdatePost = TablesUpdate<"posts">;
-
+export type GlobalRole = Enums<"global_roles">;
 export type PostAppeal = Tables<"post_appeals"> & {
   user: {
     display_name: string | null;
@@ -47,7 +47,7 @@ export type PostResponse = {
     slug?: string;
     display_name: string | null;
     avatar_url: string | null;
-    global_role: "admin" | "moderator" | "student" | "lecturer" | "banned" | null;
+    global_role: GlobalRole | null;
   };
   content: string;
   media_urls: string[] | null;
