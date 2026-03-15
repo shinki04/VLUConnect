@@ -13,15 +13,15 @@ import { type ChartType, ChartTypeSelector, PeriodSelector, type TimePeriod } fr
 
 const chartConfig: ChartConfig = {
   total: {
-    label: "Total Posts",
+    label: "Tổng số bài viết",
     color: "var(--chart-1)",
   },
   flagged: {
-    label: "Flagged Posts", 
+    label: "Bài viết bị báo cáo", 
     color: "var(--chart-2)",
   },
   rejected: {
-    label: "Rejected Posts",
+    label: "Bài viết bị từ chối",
     color: "var(--chart-4)",
   },
 };
@@ -52,9 +52,11 @@ export function PostStatsChart() {
   return (
     <Card>
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <CardTitle>Post Statistics</CardTitle>
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <PeriodSelector value={period} onChange={setPeriod} />
+        <CardTitle>Thống kê bài viết</CardTitle>
+        <div className="flex items-center w-full sm:w-auto gap-2">
+          <div className="flex-1 min-w-0">
+            <PeriodSelector value={period} onChange={setPeriod} />
+          </div>
           <ChartTypeSelector
             value={chartType}
             onChange={setChartType}

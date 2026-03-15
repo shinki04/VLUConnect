@@ -88,7 +88,7 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
         ]);
         setCurrentPage(1); // Go to first page to see new item
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra");
     } finally {
       setIsAdding(false);
@@ -118,7 +118,7 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
           setCurrentPage(newTotalPages);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra");
     } finally {
       setDeletingId(null);
@@ -139,12 +139,12 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
   return (
     <div className="space-y-6">
       {/* Add new keyword form */}
-      <div className="flex gap-2 p-4 bg-muted/50 rounded-lg">
+      <div className="flex md:gap-2 gap-1 p-4 bg-muted/50 rounded-lg">
         <Input
           placeholder="Nhập từ khóa cần chặn..."
           value={newKeyword}
           onChange={(e) => setNewKeyword(e.target.value)}
-          className="flex-1"
+          className="flex-1 text-sm"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -152,13 +152,20 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
             }
           }}
         />
-        <Select value={matchType} onValueChange={(v) => setMatchType(v as "exact" | "partial")}>
-          <SelectTrigger className="w-[160px]">
+        <Select
+          value={matchType}
+          onValueChange={(v) => setMatchType(v as "exact" | "partial")}
+        >
+          <SelectTrigger className="md:w-full w-15">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="partial">Chứa từ (partial)</SelectItem>
-            <SelectItem value="exact">Chính xác (exact)</SelectItem>
+            <SelectItem className="wrap-break-word" value="partial">
+              Chứa từ (partial)
+            </SelectItem>
+            <SelectItem className="wrap-break-word" value="exact">
+              Chính xác (exact)
+            </SelectItem>
           </SelectContent>
         </Select>
         <Button onClick={handleAdd} disabled={isAdding}>
@@ -192,8 +199,13 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
           <TableBody>
             {paginatedKeywords.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  {searchQuery ? "Không tìm thấy từ khóa nào" : "Chưa có từ khóa nào bị chặn"}
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  {searchQuery
+                    ? "Không tìm thấy từ khóa nào"
+                    : "Chưa có từ khóa nào bị chặn"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -201,7 +213,11 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
                 <TableRow key={kw.id}>
                   <TableCell className="font-medium">{kw.keyword}</TableCell>
                   <TableCell>
-                    <Badge variant={kw.match_type === "exact" ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        kw.match_type === "exact" ? "default" : "secondary"
+                      }
+                    >
                       {kw.match_type === "exact" ? "Chính xác" : "Chứa từ"}
                     </Badge>
                   </TableCell>
@@ -229,10 +245,12 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Hiển thị {filteredKeywords.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredKeywords.length)} của {filteredKeywords.length} từ khóa
+          Hiển thị {filteredKeywords.length > 0 ? startIndex + 1 : 0}-
+          {Math.min(endIndex, filteredKeywords.length)} của{" "}
+          {filteredKeywords.length} từ khóa
           {searchQuery && ` (lọc từ ${keywords.length} tổng)`}
         </p>
-        
+
         {totalPages > 1 && (
           <div className="flex items-center gap-2">
             <Button
@@ -244,7 +262,7 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
               <ChevronLeft className="w-4 h-4" />
               Trước
             </Button>
-            
+
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((page) => {
@@ -271,7 +289,7 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
                   </span>
                 ))}
             </div>
-            
+
             <Button
               variant="outline"
               size="sm"

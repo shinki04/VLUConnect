@@ -40,23 +40,28 @@ export function HashtagStatsCards({ stats, loading }: HashtagStatsCardsProps) {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 wrap-break-word ">
             <Hash className="h-4 w-4" />
-            <span>Total Usage</span>
+            <span>Tổng lượt dùng</span>
           </div>
-          <p className="text-2xl font-bold">{stats.totalUsage.toLocaleString()}</p>
+          <p className="text-2xl font-bold">
+            {stats.totalUsage.toLocaleString()}
+          </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 wrap-break-word">
             <TrendingUp className="h-4 w-4" />
-            <span>Growth</span>
+            <span>Tăng trưởng</span>
           </div>
           <div className="flex items-center gap-1">
-            <p className={`text-2xl font-bold ${isGrowthPositive ? "text-green-600" : "text-red-600"}`}>
-              {isGrowthPositive ? "+" : ""}{stats.growthPercent}%
+            <p
+              className={`text-2xl font-bold ${isGrowthPositive ? "text-green-600" : "text-red-600"}`}
+            >
+              {isGrowthPositive ? "+" : ""}
+              {stats.growthPercent}%
             </p>
             {isGrowthPositive ? (
               <ArrowUp className="h-5 w-5 text-green-600" />
@@ -69,13 +74,15 @@ export function HashtagStatsCards({ stats, loading }: HashtagStatsCardsProps) {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 wrap-break-word">
             <Calendar className="h-4 w-4" />
-            <span>Peak Day</span>
+            <span>Ngày cao điểm</span>
           </div>
           {stats.peakDay ? (
             <div>
-              <p className="text-lg font-bold">{stats.peakDay.count} posts</p>
+              <p className="text-lg font-bold">
+                {stats.peakDay.count} bài viết
+              </p>
               <p className="text-xs text-muted-foreground">
                 {new Date(stats.peakDay.date).toLocaleDateString()}
               </p>
@@ -88,11 +95,13 @@ export function HashtagStatsCards({ stats, loading }: HashtagStatsCardsProps) {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 wrap-break-word">
             <TrendingUp className="h-4 w-4" />
-            <span>Avg per Day</span>
+            <span>Trung bình mỗi ngày</span>
           </div>
-          <p className="text-2xl font-bold">{stats.avgPerDay}</p>
+          <p className="text-2xl font-bold">
+            {stats.avgPerDay.toLocaleString()}
+          </p>
         </CardContent>
       </Card>
     </div>

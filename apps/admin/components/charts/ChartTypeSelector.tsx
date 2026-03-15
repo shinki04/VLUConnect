@@ -27,11 +27,11 @@ const chartIcons: Record<ChartType, React.ElementType> = {
 };
 
 const chartLabels: Record<ChartType, string> = {
-  area: "Area Chart",
-  bar: "Bar Chart",
-  line: "Line Chart",
-  pie: "Pie Chart",
-  radial: "Radial Chart",
+  area: "Biểu đồ diện tích",
+  bar: "Biểu đồ cột",
+  line: "Biểu đồ đường",
+  pie: "Biểu đồ tròn",
+  radial: "Biểu đồ radar",
 };
 
 export function ChartTypeSelector({
@@ -77,15 +77,15 @@ interface PeriodSelectorProps {
 }
 
 const periodLabels: Record<TimePeriod, string> = {
-  daily: "Daily",
-  weekly: "Weekly",
-  monthly: "Monthly",
-  yearly: "Yearly",
+  daily: "Ngày",
+  weekly: "Tuần",
+  monthly: "Tháng",
+  yearly: "Năm",
 };
 
 export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1 max-w-full overflow-hidden">
+    <div className="flex flex-nowrap gap-1 rounded-lg bg-muted p-1 max-w-full overflow-x-auto overflow-y-hidden scrollbar-none">
       {(Object.keys(periodLabels) as TimePeriod[]).map((period) => (
         <Button
           key={period}

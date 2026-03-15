@@ -35,7 +35,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const chartConfig: ChartConfig = {
   count: {
-    label: "Count",
+    label: "Số lượng",
     color: "var(--chart-1)",
   },
 };
@@ -85,7 +85,7 @@ export function ReportsChart() {
     if (data.byStatus.length === 0) {
       return (
         <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-          No reports yet
+          Chưa có báo cáo nào
         </div>
       );
     }
@@ -139,13 +139,15 @@ export function ReportsChart() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <CardTitle>Reports by Status</CardTitle>
-          <CardDescription>Total: {data.total} reports</CardDescription>
+          <CardTitle>Báo cáo theo trạng thái</CardTitle>
+          <CardDescription>Tổng: {data.total} báo cáo</CardDescription>
         </div>
-        <div className="flex items-center gap-2">
-          <PeriodSelector value={period} onChange={setPeriod} />
+        <div className="flex items-center w-full sm:w-auto gap-2">
+          <div className="flex-1 min-w-0">
+            <PeriodSelector value={period} onChange={setPeriod} />
+          </div>
           <ChartTypeSelector 
             value={chartType} 
             onChange={setChartType}

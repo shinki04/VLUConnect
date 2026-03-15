@@ -38,7 +38,7 @@ const COLORS = [
 
 const chartConfig: ChartConfig = {
   post_count: {
-    label: "Post Count",
+    label: "Số lượng bài viết",
     color: "var(--chart-1)",
   },
 };
@@ -131,10 +131,12 @@ export function HashtagTrendsChart() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Top Hashtags</CardTitle>
-        <div className="flex items-center gap-2">
-          <PeriodSelector value={period} onChange={setPeriod} />
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <CardTitle>Hashtag hàng đầu</CardTitle>
+        <div className="flex items-center w-full sm:w-auto gap-2">
+          <div className="flex-1 min-w-0">
+            <PeriodSelector value={period} onChange={setPeriod} />
+          </div>
           <ChartTypeSelector
             value={chartType}
             onChange={setChartType}
