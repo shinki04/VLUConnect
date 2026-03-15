@@ -133,7 +133,9 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
       {/* Header */}
       <div className="flex items-center gap-2 text-muted-foreground">
         <AlertTriangle className="w-4 h-4" />
-        <span className="text-sm font-medium">Từ khóa bị cấm trong group này</span>
+        <span className="text-sm font-medium">
+          Từ khóa bị cấm trong group này
+        </span>
       </div>
 
       {/* Add new keyword form */}
@@ -142,7 +144,7 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
           placeholder="Nhập từ khóa cần chặn..."
           value={newKeyword}
           onChange={(e) => setNewKeyword(e.target.value)}
-          className="flex-1"
+          className="flex-1 text-sm"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -150,8 +152,11 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
             }
           }}
         />
-        <Select value={matchType} onValueChange={(v) => setMatchType(v as "exact" | "partial")}>
-          <SelectTrigger className="w-[140px]">
+        <Select
+          value={matchType}
+          onValueChange={(v) => setMatchType(v as "exact" | "partial")}
+        >
+          <SelectTrigger className="w-25">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -190,7 +195,12 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
                   <TableRow key={kw.id}>
                     <TableCell className="font-medium">{kw.keyword}</TableCell>
                     <TableCell>
-                      <Badge variant={kw.match_type === "exact" ? "default" : "secondary"} className="text-xs">
+                      <Badge
+                        variant={
+                          kw.match_type === "exact" ? "default" : "secondary"
+                        }
+                        className="text-xs"
+                      >
                         {kw.match_type === "exact" ? "Chính xác" : "Chứa từ"}
                       </Badge>
                     </TableCell>
@@ -217,9 +227,10 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
           {/* Pagination */}
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              Hiển thị {startIndex + 1}-{Math.min(endIndex, keywords.length)} / {keywords.length}
+              Hiển thị {startIndex + 1}-{Math.min(endIndex, keywords.length)} /{" "}
+              {keywords.length}
             </p>
-            
+
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 <Button
@@ -231,15 +242,17 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                
+
                 <span className="text-sm px-2">
                   {currentPage} / {totalPages}
                 </span>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="h-8 px-2"
                 >
@@ -252,7 +265,8 @@ export function BlockedKeywordsForm({ groupId, canManage }: BlockedKeywordsFormP
       )}
 
       <p className="text-xs text-muted-foreground">
-        Các bài đăng và bình luận chứa từ khóa bị cấm sẽ bị chặn tự động trong group này.
+        Các bài đăng và bình luận chứa từ khóa bị cấm sẽ bị chặn tự động trong
+        group này.
       </p>
     </div>
   );

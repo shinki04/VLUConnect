@@ -32,7 +32,7 @@ export function SystemAnnouncementBanner() {
 
   useEffect(() => {
     // Load closed ids from local storage
-    const stored = localStorage.getItem("closed_announcements");
+    const stored = sessionStorage.getItem("closed_announcements");
     if (stored) {
       try {
         const parsedIds = new Set<string>(JSON.parse(stored));
@@ -50,7 +50,7 @@ export function SystemAnnouncementBanner() {
     const updated = new Set(closedIds);
     updated.add(id);
     setClosedIds(updated);
-    localStorage.setItem(
+    sessionStorage.setItem(
       "closed_announcements",
       JSON.stringify(Array.from(updated)),
     );

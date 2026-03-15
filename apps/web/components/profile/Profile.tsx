@@ -808,14 +808,14 @@ function Profile({ user, children }: ProfileProps) {
                           variant="outline"
                           disabled={!canSubmit || isSubmitting}
                         >
-                          Cancel
+                          Hủy
                         </Button>
                       </DialogClose>
                       <Button
                         type="submit"
                         disabled={!canSubmit || isSubmitting}
                       >
-                        {isSubmitting ? "Đang cập nhật..." : "Save changes"}
+                        {isSubmitting ? "Đang cập nhật..." : "Lưu thay đổi"}
                       </Button>
                     </>
                   )}
