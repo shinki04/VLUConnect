@@ -184,7 +184,6 @@ export async function processPostCreation(payload: PostJobPayload) {
         analysis_type: matchedKeyword ? "keyword_match" : "sentiment",
         label: matchedKeyword ? "BLOCKED" : aiLabel,
         score: matchedKeyword ? 1.0 : (sentimentResults[0]?.score || 0),
-        confidence: matchedKeyword ? 1.0 : aiScore,
         metadata: {
           all_labels: sentimentResults,
           matched_keyword: matchedKeyword

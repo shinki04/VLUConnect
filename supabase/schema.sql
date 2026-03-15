@@ -2163,7 +2163,6 @@ CREATE TABLE IF NOT EXISTS "public"."ai_analysis_logs" (
     "analysis_type" "text" NOT NULL,
     "label" "text" NOT NULL,
     "score" double precision NOT NULL,
-    "confidence" double precision,
     "metadata" "jsonb" DEFAULT '{}'::"jsonb",
     "created_at" timestamp with time zone DEFAULT "now"(),
     CONSTRAINT "ai_analysis_logs_target_type_check" CHECK (("target_type" = ANY (ARRAY['post'::"text", 'comment'::"text", 'review'::"text", 'message'::"text"])))
