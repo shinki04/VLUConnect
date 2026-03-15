@@ -174,7 +174,12 @@ export function PostShareDialog({
         </DialogHeader>
         <div className="flex items-center gap-2">
           <InputGroup>
-            <InputGroupInput value={shareUrl} readOnly disabled />
+            <InputGroupInput
+              value={shareUrl}
+              readOnly
+              disabled
+              className="text-sm"
+            />
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 aria-label="Copy"
