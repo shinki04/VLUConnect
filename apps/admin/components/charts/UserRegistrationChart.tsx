@@ -66,7 +66,7 @@ export function UserRegistrationChart() {
           </div>
         ) : data.length === 0 ? (
           <div className="flex h-[400px] items-center justify-center text-muted-foreground">
-            No data available
+            Không có dữ liệu
           </div>
         ) : (
           <BaseChart
