@@ -95,8 +95,8 @@ export async function Header({
 
         <UserDropdown
           avatarUrl={user?.avatar_url ?? BLANK_AVATAR}
-          displayName={user?.display_name ?? undefined}
-          slug={user?.slug ?? undefined}
+          displayName={user?.display_name ?? user?.username ?? ""}
+          slug={user?.slug ?? user?.id ?? ""}
         />
       </div>
     </header>
