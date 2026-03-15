@@ -49,10 +49,12 @@ export function HashtagGrowthChart({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Hashtag Growth Trends</CardTitle>
-        <div className="flex items-center gap-2">
-          <PeriodSelector value={period} onChange={onPeriodChange} />
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <CardTitle>Xu hướng tăng trưởng Hashtag</CardTitle>
+        <div className="flex items-center w-full sm:w-auto gap-2">
+          <div className="flex-1 min-w-0">
+            <PeriodSelector value={period} onChange={onPeriodChange} />
+          </div>
           <ChartTypeSelector
             value={chartType}
             onChange={setChartType}
@@ -72,7 +74,7 @@ export function HashtagGrowthChart({
           </div>
         ) : data.length === 0 ? (
           <div className="flex h-[400px] items-center justify-center text-muted-foreground">
-            No data available for selected hashtags
+            Không có dữ liệu
           </div>
         ) : (
           <BaseChart

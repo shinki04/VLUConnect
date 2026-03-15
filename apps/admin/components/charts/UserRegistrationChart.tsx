@@ -13,7 +13,7 @@ import { type ChartType, ChartTypeSelector, PeriodSelector, type TimePeriod } fr
 
 const chartConfig: ChartConfig = {
   count: {
-    label: "New Users",
+    label: "Người dùng mới",
     color: "var(--chart-1)",
   },
 };
@@ -43,10 +43,12 @@ export function UserRegistrationChart() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>User Registrations</CardTitle>
-        <div className="flex items-center gap-2">
-          <PeriodSelector value={period} onChange={setPeriod} />
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <CardTitle>Người dùng đăng ký</CardTitle>
+        <div className="flex items-center w-full sm:w-auto gap-2">
+          <div className="flex-1 min-w-0">
+            <PeriodSelector value={period} onChange={setPeriod} />
+          </div>
           <ChartTypeSelector
             value={chartType}
             onChange={setChartType}
@@ -72,7 +74,7 @@ export function UserRegistrationChart() {
             chartType={chartType}
             dataKey="count"
             config={chartConfig}
-            className="h-[400px] w-full"
+            className="h-full w-full"
           />
         )}
       </CardContent>

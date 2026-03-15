@@ -81,8 +81,8 @@ export function HashtagSelector({
           >
             <span className="truncate">
               {selectedHashtags.length === 0
-                ? "Select hashtags..."
-                : `${selectedHashtags.length} selected`}
+                ? "Chọn hashtag..."
+                : `${selectedHashtags.length} đã chọn`}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -90,18 +90,21 @@ export function HashtagSelector({
         <PopoverContent className="w-[300px] p-0" align="start">
           <Command>
             <CommandInput
-              placeholder="Search hashtags..."
+              placeholder="Tìm kiếm hashtag..."
               value={search}
               onValueChange={setSearch}
             />
             <CommandList>
               <CommandEmpty>
-                {loading ? "Loading..." : "No hashtags found."}
+                {loading ? "Đang tải..." : "Không tìm thấy hashtag."}
               </CommandEmpty>
               <CommandGroup>
                 {hashtags.map((hashtag) => {
-                  const isSelected = selectedHashtags.some((h) => h.id === hashtag.id);
-                  const isDisabled = !isSelected && selectedHashtags.length >= maxSelection;
+                  const isSelected = selectedHashtags.some(
+                    (h) => h.id === hashtag.id,
+                  );
+                  const isDisabled =
+                    !isSelected && selectedHashtags.length >= maxSelection;
                   return (
                     <CommandItem
                       key={hashtag.id}
@@ -114,7 +117,7 @@ export function HashtagSelector({
                         <Hash className="h-3 w-3 text-muted-foreground" />
                         <span>{hashtag.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          ({hashtag.post_count ?? 0} posts)
+                          ({hashtag.post_count ?? 0} bài viết)
                         </span>
                       </div>
                       {isSelected && <Check className="h-4 w-4" />}
@@ -146,7 +149,7 @@ export function HashtagSelector({
 
       {selectedHashtags.length >= maxSelection && (
         <p className="text-xs text-muted-foreground">
-          Maximum {maxSelection} hashtags can be compared
+          Tối đa {maxSelection} hashtag có thể so sánh
         </p>
       )}
     </div>

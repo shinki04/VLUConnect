@@ -136,16 +136,19 @@ export function HashtagsDataTable({ initialData }: HashtagsDataTableProps) {
             className="pl-9"
           />
         </div>
-        
+
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" onClick={() => fetchHashtags()} title="Tải lại">
+          {/* <Button variant="outline" size="sm" onClick={() => fetchHashtags()} title="Tải lại">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span className="ml-2 hidden sm:inline">Tải lại</span>
-          </Button>
+          </Button> */}
           <span className="text-sm text-muted-foreground whitespace-nowrap ml-2">
             Số dòng:
           </span>
-          <Select value={String(rowsPerPage)} onValueChange={handleRowsPerPageChange}>
+          <Select
+            value={String(rowsPerPage)}
+            onValueChange={handleRowsPerPageChange}
+          >
             <SelectTrigger className="w-[70px] h-9">
               <SelectValue />
             </SelectTrigger>
@@ -256,7 +259,10 @@ export function HashtagsDataTable({ initialData }: HashtagsDataTableProps) {
 
           {generatePageNumbers(page, totalPages).map((pageNum, idx) =>
             pageNum === "..." ? (
-              <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+              <span
+                key={`ellipsis-${idx}`}
+                className="px-2 text-muted-foreground"
+              >
                 ...
               </span>
             ) : (

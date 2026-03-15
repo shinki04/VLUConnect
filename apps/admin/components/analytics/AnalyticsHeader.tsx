@@ -42,8 +42,10 @@ export function AnalyticsHeader({ title, description, children }: AnalyticsHeade
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-          Reload
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+          Tải lại
         </Button>
       </div>
     </div>

@@ -366,7 +366,10 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {report.created_at
-                        ? format(new Date(report.created_at), "MMM d, HH:mm")
+                        ? format(
+                            new Date(report.created_at),
+                            "dd/MM/yyyy HH:mm",
+                          )
                         : "-"}
                     </TableCell>
                     <TableCell>

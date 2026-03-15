@@ -54,15 +54,19 @@ interface GroupsDataTableProps {
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 50] as const;
 
 export function GroupsDataTable({ initialData }: GroupsDataTableProps) {
-  const [groups, setGroups] = React.useState<Group[]>(initialData?.groups ?? []);
+  const [groups, setGroups] = React.useState<Group[]>(
+    initialData?.groups ?? [],
+  );
   const [loading, setLoading] = React.useState(!initialData);
   const [search, setSearch] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(10);
-  const [totalPages, setTotalPages] = React.useState(initialData?.totalPages ?? 1);
+  const [totalPages, setTotalPages] = React.useState(
+    initialData?.totalPages ?? 1,
+  );
   const [totalCount, setTotalCount] = React.useState(initialData?.total ?? 0);
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
-  
+
   // Dialog states
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -89,10 +93,13 @@ export function GroupsDataTable({ initialData }: GroupsDataTableProps) {
       setIsInitialLoad(false);
       return;
     }
-    
-    const timer = setTimeout(() => {
+
+    const timer = setTimeout(
+      () => {
         fetchGroups();
-    }, search ? 300 : 0);
+      },
+      search ? 300 : 0,
+    );
     return () => clearTimeout(timer);
   }, [fetchGroups, search, isInitialLoad, initialData]);
 
@@ -100,19 +107,19 @@ export function GroupsDataTable({ initialData }: GroupsDataTableProps) {
     if (!deleteId) return;
     setIsDeleting(true);
     try {
-        const result = await deleteGroup(deleteId);
-        if (result.error) {
-            toast.error(result.error);
-        } else {
-            toast.success("Xóa nhóm thành công");
-            setGroups((prev) => prev.filter((g) => g.id !== deleteId));
-            setDeleteId(null);
-            // Optionally refresh list if needed, but filtering locally is faster UI feedback
-        }
+      const result = await deleteGroup(deleteId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Xóa nhóm thành công");
+        setGroups((prev) => prev.filter((g) => g.id !== deleteId));
+        setDeleteId(null);
+        // Optionally refresh list if needed, but filtering locally is faster UI feedback
+      }
     } catch {
-        toast.error("Đã xảy ra lỗi khi xóa nhóm");
+      toast.error("Đã xảy ra lỗi khi xóa nhóm");
     } finally {
-        setIsDeleting(false);
+      setIsDeleting(false);
     }
   };
 
@@ -129,7 +136,11 @@ export function GroupsDataTable({ initialData }: GroupsDataTableProps) {
     } else {
       pages.push(1);
       if (page > 3) pages.push("...");
-      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+      for (
+        let i = Math.max(2, page - 1);
+        i <= Math.min(totalPages - 1, page + 1);
+        i++
+      ) {
         pages.push(i);
       }
       if (page < totalPages - 2) pages.push("...");
@@ -255,7 +266,7 @@ export function GroupsDataTable({ initialData }: GroupsDataTableProps) {
                       </TableCell>
                       <TableCell>{group.members_count}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(group.created_at), "MMM d, yyyy")}
+                        {format(new Date(group.created_at), "dd/MM/yyyy")}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
