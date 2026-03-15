@@ -1,7 +1,6 @@
 "use client";
 
-import { BLANK_AVATAR } from "@repo/shared/types/user";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
+
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -13,7 +12,7 @@ import {
 } from "@repo/ui/components/dropdown-menu";
 import { Input } from "@repo/ui/components/input";
 import { Crown, MoreHorizontal, Search,Shield, ShieldCheck, User } from "lucide-react";
-import Link from "next/link";
+import { UserCard } from "@/components/user-card";
 import { useState } from "react";
 
 import {
@@ -55,23 +54,18 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
   const actions = useGroupMemberActions(groupId);
 
   const canManage = ["admin", "sub_admin", "moderator"].includes(
-    currentUserRole || ""
+    currentUserRole || "",
   );
   const isAdmin = currentUserRole === "admin";
 
   const filteredMembers = members.filter((member) => {
-    const name =
-      member.profile?.display_name ||
-      member.profile?.username ||
-      "";
+    const name = member.profile?.display_name || member.profile?.username || "";
     return name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   if (isLoading) {
     return (
-      <div className="text-center py-10 text-muted-foreground">
-        Đang tải...
-      </div>
+      <div className="text-center py-10 text-muted-foreground">Đang tải...</div>
     );
   }
 
@@ -98,46 +92,36 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
           </div>
           <div className="space-y-3">
             {pendingMembers.map((member) => (
-              <div
+              <UserCard
                 key={member.user_id}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src={member.profile?.avatar_url || BLANK_AVATAR}
-                    />
-                    <AvatarFallback>
-                      {member.profile?.display_name?.[0] || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">
-                      {member.profile?.display_name || member.profile?.username}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      @{member.profile?.username}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => actions.approveMember(member.user_id)}
-                    disabled={actions.isApproving}
-                  >
-                    Chấp nhận
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => actions.rejectMember(member.user_id)}
-                    disabled={actions.isRejecting}
-                  >
-                    Từ chối
-                  </Button>
-                </div>
-              </div>
+                user={{
+                  id: member.profile?.id || member.user_id,
+                  slug: member.profile?.slug,
+                  displayName: member.profile?.display_name,
+                  username: member.profile?.username,
+                  avatarUrl: member.profile?.avatar_url,
+                }}
+                className="bg-muted/50 border-0"
+                rightAction={
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={() => actions.approveMember(member.user_id)}
+                      disabled={actions.isApproving}
+                    >
+                      Chấp nhận
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => actions.rejectMember(member.user_id)}
+                      disabled={actions.isRejecting}
+                    >
+                      Từ chối
+                    </Button>
+                  </>
+                }
+              />
             ))}
           </div>
         </div>
@@ -146,138 +130,130 @@ export function MemberList({ groupId, currentUserRole }: MemberListProps) {
       {/* Members Section */}
       <div className="bg-card rounded-xl border p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Thành viên ({members.length})</h3>
+          <h3 className="md:font-semibold text-sm sm:font-normal">
+            Thành viên ({members.length})
+          </h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Tìm thành viên..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-[200px]"
+              className="pl-9 w-full h-9 text-sm"
             />
           </div>
         </div>
 
         <div className="space-y-2">
           {filteredMembers.map((member) => (
-            <div
+            <UserCard
               key={member.user_id}
-              className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors"
-            >
-              <Link
-                href={`/profile/${member.profile?.slug}`}
-                className="flex items-center gap-3 flex-1"
-              >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage
-                    src={member.profile?.avatar_url || BLANK_AVATAR}
-                  />
-                  <AvatarFallback>
-                    {member.profile?.display_name?.[0] || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">
-                    {member.profile?.display_name || member.profile?.username}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    @{member.profile?.username}
-                  </p>
-                </div>
-              </Link>
+              className="border-0"
+              user={{
+                id: member.profile?.id || member.user_id,
+                slug: member.profile?.slug,
+                displayName: member.profile?.display_name,
+                username: member.profile?.username,
+                avatarUrl: member.profile?.avatar_url,
+              }}
+              rightAction={
+                <>
+                  <Badge
+                    variant="outline"
+                    className={`${ROLE_COLORS[member.role]} flex items-center gap-1`}
+                  >
+                    {ROLE_ICONS[member.role]}
+                    <span className="hidden sm:inline">
+                      {ROLE_LABELS[member.role]}
+                    </span>
+                  </Badge>
 
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={`${ROLE_COLORS[member.role]} flex items-center gap-1`}
-                >
-                  {ROLE_ICONS[member.role]}
-                  {ROLE_LABELS[member.role]}
-                </Badge>
-
-                {canManage && member.role !== "admin" && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {isAdmin && member.role !== "sub_admin" && (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            actions.updateRole({
-                              userId: member.user_id,
-                              role: "sub_admin",
-                            })
-                          }
-                        >
-                          <ShieldCheck className="w-4 h-4 mr-2" />
-                          Thăng Phó Admin
-                        </DropdownMenuItem>
-                      )}
-                      {(isAdmin || currentUserRole === "sub_admin") &&
-                        member.role !== "moderator" && (
+                  {canManage && member.role !== "admin" && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isAdmin && member.role !== "sub_admin" && (
                           <DropdownMenuItem
                             onClick={() =>
                               actions.updateRole({
                                 userId: member.user_id,
-                                role: "moderator",
+                                role: "sub_admin",
                               })
                             }
                           >
-                            <Shield className="w-4 h-4 mr-2" />
-                            Thăng Điều hành
+                            <ShieldCheck className="w-4 h-4 mr-2" />
+                            Thăng Phó Admin
                           </DropdownMenuItem>
                         )}
-                      {member.role !== "member" && (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            actions.updateRole({
-                              userId: member.user_id,
-                              role: "member",
-                            })
-                          }
-                        >
-                          <User className="w-4 h-4 mr-2" />
-                          Hạ xuống Thành viên
-                        </DropdownMenuItem>
-                      )}
-                      {isAdmin && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  `Bạn có chắc muốn chuyển quyền Admin cho ${member.profile?.display_name}?`,
-                                )
-                              ) {
-                                actions.transferAdmin(member.user_id);
+                        {(isAdmin || currentUserRole === "sub_admin") &&
+                          member.role !== "moderator" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                actions.updateRole({
+                                  userId: member.user_id,
+                                  role: "moderator",
+                                })
                               }
-                            }}
+                            >
+                              <Shield className="w-4 h-4 mr-2" />
+                              Thăng Điều hành
+                            </DropdownMenuItem>
+                          )}
+                        {member.role !== "member" && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              actions.updateRole({
+                                userId: member.user_id,
+                                role: "member",
+                              })
+                            }
                           >
-                            <Crown className="w-4 h-4 mr-2" />
-                            Chuyển quyền Admin
+                            <User className="w-4 h-4 mr-2" />
+                            Hạ xuống Thành viên
                           </DropdownMenuItem>
-                        </>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => {
-                          if (confirm("Bạn có chắc muốn xóa thành viên này?")) {
-                            actions.removeMember(member.user_id);
-                          }
-                        }}
-                      >
-                        Xóa khỏi group
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </div>
+                        )}
+                        {isAdmin && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (
+                                  confirm(
+                                    `Bạn có chắc muốn chuyển quyền Admin cho ${member.profile?.display_name}?`,
+                                  )
+                                ) {
+                                  actions.transferAdmin(member.user_id);
+                                }
+                              }}
+                            >
+                              <Crown className="w-4 h-4 mr-2" />
+                              Chuyển quyền Admin
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => {
+                            if (
+                              confirm("Bạn có chắc muốn xóa thành viên này?")
+                            ) {
+                              actions.removeMember(member.user_id);
+                            }
+                          }}
+                        >
+                          Xóa khỏi group
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </>
+              }
+            />
           ))}
 
           {filteredMembers.length === 0 && (

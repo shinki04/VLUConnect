@@ -192,7 +192,7 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
         toast.success("Đã cập nhật group");
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra");
     } finally {
       setIsSubmitting(false);
@@ -225,19 +225,24 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
         <CardHeader>
           <CardTitle>Hình ảnh</CardTitle>
           <CardDescription>
-            Thay đổi ảnh đại diện và ảnh bìa của group (JPG, PNG, WEBP - tối đa 5MB)
+            Thay đổi ảnh đại diện và ảnh bìa của group (JPG, PNG, WEBP - tối đa
+            5MB)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Cover Image */}
           <div className="space-y-2">
             <Label>Ảnh bìa</Label>
-            <div 
+            <div
               className="relative h-32 w-full rounded-lg overflow-hidden bg-muted cursor-pointer group"
               onClick={() => coverInputRef.current?.click()}
             >
               {coverPreview ? (
-                <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
+                <img
+                  src={coverPreview}
+                  alt="Cover"
+                  className="w-full h-full object-contain md:object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-gradient-to-r from-primary/10 to-primary/30" />
               )}
@@ -261,12 +266,16 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
           {/* Avatar Image */}
           <div className="space-y-2">
             <Label>Ảnh đại diện</Label>
-            <div 
+            <div
               className="relative w-24 h-24 rounded-xl overflow-hidden bg-muted cursor-pointer group"
               onClick={() => avatarInputRef.current?.click()}
             >
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                <img
+                  src={avatarPreview}
+                  alt="Avatar"
+                  className="w-full h-full object-contain md:object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
                   <Users className="w-8 h-8 text-primary/60" />
@@ -310,6 +319,7 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="Tên group"
+                className="text-sm"
               />
             </div>
 
@@ -323,6 +333,7 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
                 }
                 placeholder="Mô tả về group..."
                 rows={4}
+                className="text-sm"
               />
             </div>
 
@@ -341,14 +352,14 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
                   <SelectContent>
                     <SelectItem value="public">
                       <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4" />
-                        <span>Công khai</span>
+                        <Globe className="w-4 h-4 hidden sm:inline" />
+                        <span className="text-sm">Công khai</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="private">
                       <div className="flex items-center gap-2">
-                        <Lock className="w-4 h-4" />
-                        <span>Riêng tư</span>
+                        <Lock className="w-4 h-4 hidden sm:inline" />
+                        <span className="text-sm">Riêng tư</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -367,8 +378,18 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">Tự động (Mở)</SelectItem>
-                    <SelectItem value="request">Cần duyệt</SelectItem>
+                    <SelectItem value="auto">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 hidden sm:inline" />
+                        <span className="text-sm">Tự động (Mở)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="request">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 hidden sm:inline" />
+                        <span className="text-sm">Cần duyệt</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -380,34 +401,48 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
                 <EyeOff className="w-4 h-4" />
                 <span className="text-sm font-medium">Cài đặt ẩn danh</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="allow_anonymous_posts">Cho phép đăng bài ẩn danh</Label>
-                  <p className="text-xs text-muted-foreground">Thành viên có thể đăng bài mà không hiển thị tên</p>
+                  <Label htmlFor="allow_anonymous_posts">
+                    Cho phép đăng bài ẩn danh
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Thành viên có thể đăng bài mà không hiển thị tên
+                  </p>
                 </div>
                 <input
                   type="checkbox"
                   id="allow_anonymous_posts"
                   checked={formData.allow_anonymous_posts}
                   onChange={(e) =>
-                    setFormData({ ...formData, allow_anonymous_posts: e.target.checked })
+                    setFormData({
+                      ...formData,
+                      allow_anonymous_posts: e.target.checked,
+                    })
                   }
                   className="h-5 w-5 rounded border-gray-300"
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="allow_anonymous_comments">Cho phép bình luận ẩn danh</Label>
-                  <p className="text-xs text-muted-foreground">Thành viên có thể bình luận mà không hiển thị tên</p>
+                  <Label htmlFor="allow_anonymous_comments">
+                    Cho phép bình luận ẩn danh
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Thành viên có thể bình luận mà không hiển thị tên
+                  </p>
                 </div>
                 <input
                   type="checkbox"
                   id="allow_anonymous_comments"
                   checked={formData.allow_anonymous_comments}
                   onChange={(e) =>
-                    setFormData({ ...formData, allow_anonymous_comments: e.target.checked })
+                    setFormData({
+                      ...formData,
+                      allow_anonymous_comments: e.target.checked,
+                    })
                   }
                   className="h-5 w-5 rounded border-gray-300"
                 />
@@ -425,9 +460,7 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
       <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="text-destructive">Vùng nguy hiểm</CardTitle>
-          <CardDescription>
-            Các hành động không thể hoàn tác
-          </CardDescription>
+          <CardDescription>Các hành động không thể hoàn tác</CardDescription>
         </CardHeader>
         <CardContent>
           <Button

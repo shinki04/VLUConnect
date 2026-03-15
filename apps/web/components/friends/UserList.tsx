@@ -1,6 +1,6 @@
 "use client";
 
-import { BLANK_AVATAR, SearchedUser } from "@repo/shared/types/user";
+import { SearchedUser } from "@repo/shared/types/user";
 import { Button } from "@repo/ui/components/button";
 import {
   DropdownMenu,
@@ -18,10 +18,11 @@ import {
   UserPlus,
   X,
 } from "lucide-react";
-import Image from "next/image";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { UserCard as UserCardComponent } from "@/components/user-card";
 
 import { createOrGetDirectConversation } from "@/app/actions/messaging";
 import {
@@ -36,7 +37,7 @@ function UserCard({ user }: { user: SearchedUser }) {
   const queryClient = useQueryClient();
   const { sendRequest, isSending, unfriend, isUnfriending } = useFriendship(user.id);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const handleMessage = async () => {
     try {
       const conversation = await createOrGetDirectConversation(user.id);
@@ -46,9 +47,6 @@ function UserCard({ user }: { user: SearchedUser }) {
     }
   };
 
-  const handleViewProfile = () => {
-    router.push(`/profile/${user.slug || user.id}`);
-  };
 
   const handleAction = async (
     actionFn: () => Promise<void>,
@@ -67,144 +65,147 @@ function UserCard({ user }: { user: SearchedUser }) {
     }
   };
 
-  return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-shadow hover:shadow-md">
-      <div
-        className="relative shrink-0 cursor-pointer"
-        onClick={handleViewProfile}
-      >
-        <Image
-          src={user.avatar_url || BLANK_AVATAR}
-          alt={user.display_name || user.username || "User"}
-          width={64}
-          height={64}
-          className="rounded-full object-cover aspect-square"
-        />
-        {(user.global_role === "lecturer" || user.global_role === "admin") && (
-          <div title="Giảng viên" className="absolute -bottom-1 -right-1">
-            <BadgeCheck
-              className="w-6 h-6 text-blue-500 bg-white dark:bg-slate-900 rounded-full"
-              fill="currentColor"
-              stroke="white"
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div
-          className="font-semibold text-lg hover:underline cursor-pointer truncate"
-          onClick={handleViewProfile}
-        >
-          {user.display_name || user.username}
-        </div>
-        <div className="text-sm text-muted-foreground truncate">
-          @{user.username}
-        </div>
-        {user.global_role && user.global_role !== "lecturer" && (
-          <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {user.global_role === "student" && "Sinh viên"}
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
-        {user.friendship_status === "friends" && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleMessage}
-              className="flex-1 sm:flex-none"
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Nhắn tin
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-10 px-0"
-                  disabled={isUnfriending || isProcessing}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  className="text-red-500 cursor-pointer"
-                  onClick={() =>
-                    handleAction(async () => unfriend(), "Đã hủy kết bạn")
-                  }
-                >
-                  <X className="mr-2 h-4 w-4" /> Hủy kết bạn
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        )}
-
-        {user.friendship_status === "none" && (
+  const rightAction = (
+    <>
+      {user.friendship_status === "friends" && (
+        <>
           <Button
-            className="flex-1 sm:flex-none bg-mainred hover:bg-mainred-hover text-white"
+            variant="outline"
             size="sm"
-            onClick={() =>
-              handleAction(async () => sendRequest(), "Đã gửi lời mời kết bạn")
-            }
-            disabled={isSending || isProcessing}
+            onClick={(e) => { e.preventDefault(); handleMessage(); }}
+            className="flex-1 sm:flex-none"
           >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Kết bạn
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Nhắn tin
           </Button>
-        )}
-
-        {user.friendship_status === "pending_sent" && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
-                className="flex-1 sm:flex-none text-muted-foreground font-medium"
-                disabled={isProcessing}
+                className="w-10 px-0"
+                disabled={isUnfriending || isProcessing}
+                onClick={(e) => e.preventDefault()}
               >
-                <Clock className="h-4 w-4 mr-2" />
-                Đã gửi lời mời
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 className="text-red-500 cursor-pointer"
-                onClick={() =>
-                  handleAction(
-                    () => cancelSentRequestToUser(user.id),
-                    "Đã hủy lời mời",
-                  )
-                }
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleAction(async () => unfriend(), "Đã hủy kết bạn");
+                }}
               >
-                <X className="mr-2 h-4 w-4" /> Hủy lời mời
+                <X className="mr-2 h-4 w-4" /> Hủy kết bạn
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+        </>
+      )}
 
-        {user.friendship_status === "pending_received" && (
-          <Button
-            className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
-            size="sm"
-            onClick={() =>
-              handleAction(async () => {
-                await acceptRequestFromUser(user.id);
-              }, "Đã trở thành bạn bè")
-            }
-            disabled={isProcessing}
-          >
-            <UserCheck className="h-4 w-4 mr-2" />
-            Chấp nhận
-          </Button>
-        )}
+      {user.friendship_status === "none" && (
+        <Button
+          className="flex-1 sm:flex-none bg-mainred hover:bg-mainred-hover text-white"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAction(async () => sendRequest(), "Đã gửi lời mời kết bạn");
+          }}
+          disabled={isSending || isProcessing}
+        >
+          <UserPlus className="h-4 w-4 mr-2" />
+          Kết bạn
+        </Button>
+      )}
+
+      {user.friendship_status === "pending_sent" && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex-1 sm:flex-none text-muted-foreground font-medium"
+              disabled={isProcessing}
+              onClick={(e) => e.preventDefault()}
+            >
+              <Clock className="h-4 w-4 mr-2" />
+              Đã gửi lời mời
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="text-red-500 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                handleAction(
+                  () => cancelSentRequestToUser(user.id),
+                  "Đã hủy lời mời",
+                );
+              }}
+            >
+              <X className="mr-2 h-4 w-4" /> Hủy lời mời
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      {user.friendship_status === "pending_received" && (
+        <Button
+          className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAction(async () => {
+              await acceptRequestFromUser(user.id);
+            }, "Đã trở thành bạn bè");
+          }}
+          disabled={isProcessing}
+        >
+          <UserCheck className="h-4 w-4 mr-2" />
+          Chấp nhận
+        </Button>
+      )}
+    </>
+  );
+
+  const avatarAction =
+    user.global_role === "lecturer" || user.global_role === "admin" ? (
+      <div title="Giảng viên">
+        <BadgeCheck
+          className="w-6 h-6 text-blue-500 bg-white dark:bg-slate-900 rounded-full"
+          fill="currentColor"
+          stroke="white"
+        />
       </div>
-    </div>
+    ) : undefined;
+
+  const subtitle = (
+    <>
+      <span className="block">{user.username}</span>
+      {user.global_role && user.global_role !== "lecturer" && (
+        <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          {user.global_role === "student" && "Sinh viên"}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <UserCardComponent
+      variant="grid"
+      user={{
+        id: user.id,
+        slug: user.slug,
+        displayName: user.display_name,
+        username: user.username,
+        avatarUrl: user.avatar_url,
+      }}
+      subtitle={subtitle}
+      rightAction={rightAction}
+      avatarAction={avatarAction}
+    />
   );
 }
 

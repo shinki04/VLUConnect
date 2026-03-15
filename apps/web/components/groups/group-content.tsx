@@ -2,15 +2,14 @@
 
 import { GroupMemberRole } from "@repo/shared/types/group";
 import { PostResponse } from "@repo/shared/types/post";
-import { BLANK_AVATAR } from "@repo/shared/types/user";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
+
 import { Badge } from "@repo/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/card";
 import { Tabs, TabsContent,TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { formatPostDate } from "@repo/utils/formatDate";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
 import { Calendar, Crown, Globe, Loader2,Lock, Shield, ShieldCheck, User as UserIcon, Users } from "lucide-react";
-import Link from "next/link";
+
 import { useEffect,useState } from "react";
 
 import type { GroupMember, GroupWithDetails } from "@/app/actions/group";
@@ -18,6 +17,7 @@ import { BlockedKeywordsForm } from "@/components/groups/blocked-keywords-form";
 import { GroupSettingsForm } from "@/components/groups/group-settings-form";
 import { MemberList } from "@/components/groups/member-list";
 import PostCard from "@/components/posts/PostCard";
+import { UserCard } from "@/components/user-card";
 import { useGetCurrentUser } from "@/hooks/useAuth";
 import { useInfiniteGroupPosts } from "@/hooks/useGroup";
 import { canManageGroup } from "@/lib/utils/group-permissions";
@@ -109,40 +109,26 @@ export function GroupContent({
   }, [entry, hasNextPage, isFetchingNextPage, fetchNextPage, canViewPosts]);
 
   const renderMemberItem = (member: GroupMember) => (
-    <div
+    <UserCard
       key={member.user_id}
-      className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border mb-2 last:mb-0"
-    >
-      <Link
-        href={`/profile/${member.profile?.slug || member.profile?.id}`}
-        className="flex items-center gap-3 flex-1"
-      >
-        <Avatar className="w-10 h-10">
-          <AvatarImage src={member.profile?.avatar_url || BLANK_AVATAR} />
-          <AvatarFallback>
-            {member.profile?.display_name?.[0] || "?"}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <p className="font-medium">
-            {member.profile?.display_name || member.profile?.slug}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            @{member.profile?.display_name || member.profile?.slug}
-          </p>
-        </div>
-      </Link>
-
-      <div className="flex items-center gap-2">
+      user={{
+        id: member.profile?.id || member.user_id,
+        slug: member.profile?.slug,
+        displayName: member.profile?.display_name,
+        username: member.profile?.username,
+        avatarUrl: member.profile?.avatar_url,
+      }}
+      subtitle={`@${member.profile?.display_name || member.profile?.slug}`}
+      rightAction={
         <Badge
           variant="outline"
-          className={`${ROLE_COLORS[member.role]} flex items-center gap-1`}
+          className={`${ROLE_COLORS[member.role]} flex items-center gap-1 wrap-break-word`}
         >
           {ROLE_ICONS[member.role]}
-          {ROLE_LABELS[member.role]}
+          <span className="hidden sm:inline">{ROLE_LABELS[member.role]}</span>
         </Badge>
-      </div>
-    </div>
+      }
+    />
   );
 
   return (
@@ -151,7 +137,10 @@ export function GroupContent({
       onValueChange={setActiveTab}
       defaultValue={canViewPosts ? "discussion" : "overview"}
     >
-      <TabsList className="w-full overflow-x-auto justify-start flex-nowrap">
+      <TabsList
+        variant="line"
+        className="w-full overflow-x-auto overflow-y-hidden justify-start flex-nowrap scrollbar-none"
+      >
         {canViewPosts && (
           <TabsTrigger value="discussion">Thảo luận</TabsTrigger>
         )}
@@ -382,7 +371,7 @@ export function GroupContent({
 
             {/* Settings (Admin only) */}
             {isAdmin && (
-              <div className="max-w-2xl">
+              <div className="w-full">
                 <GroupSettingsForm group={group} />
               </div>
             )}

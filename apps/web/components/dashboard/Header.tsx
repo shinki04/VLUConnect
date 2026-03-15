@@ -42,7 +42,13 @@ export async function Header({
           href="/dashboard"
           className="flex items-center gap-2 text-mainred"
         >
-          <Image src="/logo_red_noname.png" alt="VLU Connect Logo" width={36} height={36} className="object-contain" />
+          <Image
+            src="/logo_red_noname.png"
+            alt="VLU Connect Logo"
+            width={36}
+            height={36}
+            className="object-contain"
+          />
 
           <div className="flex flex-col leading-none">
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -59,7 +65,7 @@ export async function Header({
       {centerContent || title ? (
         <div className="flex flex-col items-center flex-1 md:w-2/4 md:flex-initial max-w-2xl">
           {centerContent || (
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h2 className="md:text-lg sm:text-sm  font-bold text-slate-900 dark:text-slate-100">
               {title}
             </h2>
           )}
