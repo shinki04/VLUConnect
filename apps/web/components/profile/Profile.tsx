@@ -324,7 +324,7 @@ function Profile({ user, children }: ProfileProps) {
                       <span className="text-muted-foreground">
                         Tên người dùng:
                       </span>{" "}
-                      <span className="font-bold">@{user.username}</span>
+                      <span className="font-bold">{user.username}</span>
                     </div>
                   </li>
                   {user.email && (
@@ -404,7 +404,7 @@ function Profile({ user, children }: ProfileProps) {
                     Mã SN sinh viên/cán bộ
                   </p>
                   <p className="text-[14px] font-semibold text-foreground text-wrap break-all">
-                    @{user.username}
+                    {user.username}
                   </p>
                 </div>
                 <div>
@@ -504,14 +504,16 @@ function Profile({ user, children }: ProfileProps) {
                 Thông tin tài khoản
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
-                    ID Tài khoản
-                  </p>
-                  <p className="text-[12px] font-mono text-muted-foreground break-all">
-                    {user.id}
-                  </p>
-                </div>
+                {isOwner && (
+                  <div className="md:col-span-2">
+                    <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
+                      ID Tài khoản
+                    </p>
+                    <p className="text-[12px] font-mono text-muted-foreground break-all">
+                      {user.id}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <p className="text-[11px] text-muted-foreground font-bold uppercase mb-1">
                     Ngày tham gia

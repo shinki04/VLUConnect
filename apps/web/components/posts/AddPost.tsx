@@ -199,8 +199,8 @@ function AddPost({
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  rows={8}
-                  className="w-full px-3 py-2 resize-none shadow-none min-h-[250px]"
+                  rows={5}
+                  className="w-full px-3 py-2 resize-none shadow-none min-h-[120px] sm:min-h-[250px]"
                   placeholder="Bạn đang nghĩ gì?..."
                 />
                 <div className="flex justify-between text-sm text-gray-500 mt-1">

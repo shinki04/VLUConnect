@@ -36,7 +36,7 @@ function UserCard({ user }: { user: SearchedUser }) {
   const queryClient = useQueryClient();
   const { sendRequest, isSending, unfriend, isUnfriending } = useFriendship(user.id);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const handleMessage = async () => {
     try {
       const conversation = await createOrGetDirectConversation(user.id);
@@ -69,43 +69,45 @@ function UserCard({ user }: { user: SearchedUser }) {
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-shadow hover:shadow-md">
-      <div
-        className="relative shrink-0 cursor-pointer"
-        onClick={handleViewProfile}
-      >
-        <Image
-          src={user.avatar_url || BLANK_AVATAR}
-          alt={user.display_name || user.username || "User"}
-          width={64}
-          height={64}
-          className="rounded-full object-cover aspect-square"
-        />
-        {(user.global_role === "lecturer" || user.global_role === "admin") && (
-          <div title="Giảng viên" className="absolute -bottom-1 -right-1">
-            <BadgeCheck
-              className="w-6 h-6 text-blue-500 bg-white dark:bg-slate-900 rounded-full"
-              fill="currentColor"
-              stroke="white"
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
+      <div className="flex flex-row items-center gap-4 w-full sm:w-auto flex-1 min-w-0">
         <div
-          className="font-semibold text-lg hover:underline cursor-pointer truncate"
+          className="relative shrink-0 cursor-pointer"
           onClick={handleViewProfile}
         >
-          {user.display_name || user.username}
+          <Image
+            src={user.avatar_url || BLANK_AVATAR}
+            alt={user.display_name || user.username || "User"}
+            width={64}
+            height={64}
+            className="rounded-full object-cover aspect-square"
+          />
+          {(user.global_role === "lecturer" || user.global_role === "admin") && (
+            <div title="Giảng viên" className="absolute -bottom-1 -right-1">
+              <BadgeCheck
+                className="w-6 h-6 text-blue-500 bg-white dark:bg-slate-900 rounded-full"
+                fill="currentColor"
+                stroke="white"
+              />
+            </div>
+          )}
         </div>
-        <div className="text-sm text-muted-foreground truncate">
-          @{user.username}
-        </div>
-        {user.global_role && user.global_role !== "lecturer" && (
-          <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {user.global_role === "student" && "Sinh viên"}
+
+        <div className="flex-1 min-w-0">
+          <div
+            className="font-semibold text-lg hover:underline cursor-pointer break-words"
+            onClick={handleViewProfile}
+          >
+            {user.display_name || user.username}
           </div>
-        )}
+          <div className="text-sm text-muted-foreground break-words">
+            {user.username}
+          </div>
+          {user.global_role && user.global_role !== "lecturer" && (
+            <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              {user.global_role === "student" && "Sinh viên"}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
