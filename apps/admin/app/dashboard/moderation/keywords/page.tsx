@@ -1,7 +1,3 @@
-import { getGlobalKeywords } from "@/app/actions/admin-keywords";
-import { PageHeader } from "@/components/common/PageHeader";
-import { KeywordsManager } from "@/components/moderation/KeywordsManager";
-import { ADMIN_ROUTES } from "@/constants/admin-sidebar";
 import {
   Card,
   CardContent,
@@ -9,6 +5,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/components/card";
+
+import { getGlobalKeywords } from "@/app/actions/admin-keywords";
+import { PageHeader } from "@/components/common/PageHeader";
+import { KeywordsManager } from "@/components/moderation/KeywordsManager";
+import { ADMIN_ROUTES } from "@/constants/admin-sidebar";
 
 export const metadata = {
   title: "Quản lý từ cấm | Admin",

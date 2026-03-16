@@ -1,7 +1,24 @@
 "use client";
 
-import { SYSTEM_ANNOUNCEMENT_TYPES } from "@repo/shared/types/notification";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
+import {
+  SYSTEM_ANNOUNCEMENT_TYPES,
+  SystemAnnouncementType,
+} from "@repo/shared/types/notification";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/components/alert-dialog";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { Calendar } from "@repo/ui/components/calendar";
@@ -67,7 +84,7 @@ interface Announcement {
   id: string;
   title: string;
   message: string;
-  type: string;
+  type: SystemAnnouncementType;
   start_time: string;
   end_time: string | null;
   is_active: boolean;
@@ -92,27 +109,36 @@ const ROWS_PER_PAGE_OPTIONS = [10, 20, 50] as const;
 
 const typeColors: Record<
   string,
-  "info" | "warning" | "success" | "destructive"
+  "info" | "warning" | "success" | "destructive" | "maintenance" | "event"
 > = {
   info: "info",
   warning: "warning",
   success: "success",
   error: "destructive",
+  maintenance: "maintenance",
+  event: "event",
 };
 
-export function AnnouncementsDataTable({ initialData }: AnnouncementsDataTableProps) {
+export function AnnouncementsDataTable({
+  initialData,
+}: AnnouncementsDataTableProps) {
   const [announcements, setAnnouncements] = React.useState<Announcement[]>(
-    (initialData?.announcements as Announcement[]) ?? []
+    (initialData?.announcements as Announcement[]) ?? [],
   );
   const [loading, setLoading] = React.useState(!initialData);
   const [page, setPage] = React.useState(1);
-  const [totalPages, setTotalPages] = React.useState(initialData?.totalPages ?? 1);
+  const [totalPages, setTotalPages] = React.useState(
+    initialData?.totalPages ?? 1,
+  );
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
-  
+
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [editingItem, setEditingItem] = React.useState<Announcement | null>(null);
-  
+  const [editingItem, setEditingItem] = React.useState<Announcement | null>(
+    null,
+  );
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+
   const { refreshKey } = useRefresh();
 
   const fetchAnnouncements = React.useCallback(async () => {
@@ -136,13 +162,15 @@ export function AnnouncementsDataTable({ initialData }: AnnouncementsDataTablePr
     fetchAnnouncements();
   }, [fetchAnnouncements, refreshKey, isInitialLoad, initialData]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc muốn xóa thông báo này?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteAnnouncement(id);
+      await deleteAnnouncement(deleteId);
       fetchAnnouncements();
     } catch (error) {
       console.error("Error deleting announcement", error);
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -242,9 +270,24 @@ export function AnnouncementsDataTable({ initialData }: AnnouncementsDataTablePr
                         : "Không giới hạn"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={item.is_active ? "default" : "secondary"}>
-                        {item.is_active ? "Đang bật" : "Đã tắt"}
-                      </Badge>
+                      {(() => {
+                        const isExpired = item.end_time
+                          ? new Date(item.end_time) < new Date()
+                          : false;
+                        const effectiveActive = item.is_active && !isExpired;
+
+                        return (
+                          <Badge
+                            variant={effectiveActive ? "default" : "secondary"}
+                          >
+                            {effectiveActive
+                              ? "Đang bật"
+                              : isExpired
+                                ? "Đã hết hạn"
+                                : "Đã tắt"}
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -276,8 +319,8 @@ export function AnnouncementsDataTable({ initialData }: AnnouncementsDataTablePr
                             <Edit2 className="mr-2 h-4 w-4" /> Sửa
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(item.id)}
+                            variant="destructive"
+                            onClick={() => setDeleteId(item.id)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" /> Xóa
                           </DropdownMenuItem>
@@ -317,6 +360,30 @@ export function AnnouncementsDataTable({ initialData }: AnnouncementsDataTablePr
         </div>
       </div>
 
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa thông báo này không? Hành động này không
+              thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AnnouncementFormDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
@@ -343,6 +410,10 @@ function AnnouncementFormDialog({
 }) {
   const [loading, setLoading] = React.useState(false);
 
+  const isExpired = initialData?.end_time
+    ? new Date(initialData.end_time) < new Date()
+    : false;
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -352,11 +423,13 @@ function AnnouncementFormDialog({
         title: formData.get("title") as string,
         message: formData.get("message") as string,
         type: formData.get("type") as string,
-        start_time: new Date(formData.get("start_time") as string).toISOString(),
+        start_time: new Date(
+          formData.get("start_time") as string,
+        ).toISOString(),
         end_time: formData.get("end_time")
           ? new Date(formData.get("end_time") as string).toISOString()
           : null,
-        is_active: formData.get("is_active") === "true",
+        is_active: isExpired ? false : formData.get("is_active") === "true",
       };
 
       if (initialData) {
@@ -374,103 +447,114 @@ function AnnouncementFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {initialData ? "Sửa thông báo" : "Tạo thông báo mới"}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      {" "}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {initialData ? "Sửa thông báo" : "Tạo thông báo mới"}
+            </DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Tiêu đề</Label>
-            <Input
-              id="title"
-              name="title"
-              defaultValue={initialData?.title}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="message">Nội dung</Label>
-            <Textarea
-              id="message"
-              name="message"
-              defaultValue={initialData?.message}
-              rows={3}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="type">Loại thông báo</Label>
-              <Select name="type" defaultValue={initialData?.type || "info"}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SYSTEM_ANNOUNCEMENT_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="is_active">Trạng thái (Bật/Tắt)</Label>
-              <Select
-                name="is_active"
-                defaultValue={String(initialData?.is_active ?? true)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Đang bật</SelectItem>
-                  <SelectItem value="false">Đã tắt</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_time">Thời gian bắt đầu</Label>
-              <DateTimePicker
-                name="start_time"
-                defaultValue={initialData?.start_time}
+              <Label htmlFor="title">Tiêu đề</Label>
+              <Input
+                id="title"
+                name="title"
+                defaultValue={initialData?.title}
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="end_time">Thời gian kết thúc (Tùy chọn)</Label>
-              <DateTimePicker
-                name="end_time"
-                defaultValue={initialData?.end_time || ""}
+              <Label htmlFor="message">Nội dung</Label>
+              <Textarea
+                id="message"
+                name="message"
+                defaultValue={initialData?.message}
+                rows={3}
+                required
               />
             </div>
-          </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Hủy
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Đang lưu..." : "Lưu lại"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="type">Loại thông báo</Label>
+                <Select name="type" defaultValue={initialData?.type || "info"}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SYSTEM_ANNOUNCEMENT_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="is_active">Trạng thái (Bật/Tắt)</Label>
+                <Select
+                  name="is_active"
+                  defaultValue={
+                    isExpired ? "false" : String(initialData?.is_active ?? true)
+                  }
+                  disabled={isExpired}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Đang bật</SelectItem>
+                    <SelectItem value="false">Đã tắt</SelectItem>
+                  </SelectContent>
+                </Select>
+                {isExpired && (
+                  <p className="text-xs text-muted-foreground">
+                    Đã hết hạn — trạng thái tự động tắt
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start_time">Thời gian bắt đầu</Label>
+                <DateTimePicker
+                  name="start_time"
+                  defaultValue={initialData?.start_time}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_time">Thời gian kết thúc (Tùy chọn)</Label>
+                <DateTimePicker
+                  name="end_time"
+                  defaultValue={initialData?.end_time || ""}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Hủy
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Đang lưu..." : "Lưu lại"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -517,7 +601,7 @@ function DateTimePicker({
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {fullDate ? (
-              format(fullDate, "MMM d, yyyy HH:mm")
+              format(fullDate, "MM d, yyyy HH:mm")
             ) : (
               <span>Chọn ngày giờ</span>
             )}

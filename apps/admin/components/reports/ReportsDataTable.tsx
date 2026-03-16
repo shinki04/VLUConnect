@@ -98,6 +98,36 @@ const typeColors: Record<string, string> = {
   message: "bg-orange-100 text-orange-800",
 };
 
+const typeLabels: Record<string, string> = {
+  post: "Bài viết",
+  comment: "Bình luận",
+  user: "Người dùng",
+  message: "Tin nhắn",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "Đang chờ",
+  reviewed: "Đã xem xét",
+  resolved: "Đã giải quyết",
+  dismissed: "Bỏ qua",
+};
+
+const reasonLabels: Record<string, string> = {
+  spam: "Spam",
+  harassment: "Quấy rối",
+  hate_speech: "Ngôn từ thù ghét",
+  misinformation: "Thông tin sai lệch",
+  violence: "Bạo lực",
+  nudity: "Nội dung khiêu dâm",
+  self_harm: "Tự gây thương tích",
+  terrorism: "Khủng bố",
+  fraud: "Lừa đảo",
+  copyright: "Vi phạm bản quyền",
+  privacy: "Vi phạm quyền riêng tư",
+  inappropriate: "Nội dung không phù hợp",
+  other: "Khác",
+};
+
 // Helper function to generate page numbers with ellipsis
 function generatePageNumbers(
   current: number,
@@ -333,7 +363,8 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${typeColors[report.reported_type] || "bg-gray-100"}`}
                       >
-                        {report.reported_type}
+                        {typeLabels[report.reported_type] ||
+                          report.reported_type}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -346,7 +377,7 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                         className="font-medium text-sm line-clamp-2"
                         title={report.reason}
                       >
-                        {report.reason}
+                        {reasonLabels[report.reason] || report.reason}
                       </p>
                       {report.description && (
                         <p
@@ -359,9 +390,9 @@ export function ReportsDataTable({ initialData }: ReportsDataTableProps) {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={statusColors[report.status ?? ""] || "outline"}
+                        variant={statusColors[report.status || ""] || "outline"}
                       >
-                        {report.status ?? "Không rõ"}
+                        {statusLabels[report.status || ""] || "Không rõ"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
@@ -574,7 +605,7 @@ function ReportDetailDialog({
           <DialogTitle className="flex items-center gap-2">
             Chi tiết báo cáo
             <Badge variant={statusColors[report.status ?? ""] || "outline"}>
-              {report.status}
+              {statusLabels[report.status ?? ""] || report.status}
             </Badge>
           </DialogTitle>
         </DialogHeader>
@@ -612,7 +643,7 @@ function ReportDetailDialog({
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${typeColors[report.reported_type] || "bg-gray-100"}`}
                 >
-                  {report.reported_type}
+                  {typeLabels[report.reported_type] || report.reported_type}
                 </span>
               </div>
               <div className="text-muted-foreground">ID:</div>
@@ -628,7 +659,7 @@ function ReportDetailDialog({
                   rel="noopener noreferrer"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Xem {report.reported_type}
+                  Xem {typeLabels[report.reported_type] || report.reported_type}
                 </Link>
               </Button>
             )}
@@ -697,7 +728,9 @@ function ReportDetailDialog({
           {/* Reason & Description */}
           <div className="rounded-lg border p-4 space-y-2">
             <h4 className="font-semibold text-sm">Lý do</h4>
-            <p className="text-sm font-medium">{report.reason}</p>
+            <p className="text-sm font-medium">
+              {reasonLabels[report.reason] || report.reason}
+            </p>
             {report.description && (
               <>
                 <h4 className="font-semibold text-sm pt-2">Mô tả</h4>

@@ -19,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@repo/ui/components/sidebar";
+import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import {
   ChevronsUpDown,
   LogOut,
@@ -26,9 +27,9 @@ import {
   MoonStarIcon,
   SunIcon,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
-import { signOut } from "@/app/auth/action";
 import { useTheme } from "next-themes";
+
+import { signOut } from "@/app/auth/action";
 
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();

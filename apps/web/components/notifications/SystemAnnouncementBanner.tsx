@@ -1,7 +1,15 @@
 "use client";
 
 import { Card } from "@repo/ui/components/card";
-import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle,
+  Info,
+  Wrench,
+  X,
+} from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
@@ -12,6 +20,8 @@ const typeIcons = {
   warning: <AlertTriangle className="h-5 w-5" />,
   success: <CheckCircle className="h-5 w-5" />,
   error: <AlertCircle className="h-5 w-5" />,
+  maintenance: <Wrench className="h-5 w-5" />,
+  event: <CalendarDays className="h-5 w-5" />,
 };
 
 const typeColors = {
@@ -22,6 +32,10 @@ const typeColors = {
     "border-green-500/50 bg-green-50/50 text-green-900 dark:bg-green-950/50 dark:border-green-800 dark:text-green-200",
   error:
     "border-red-500/50 bg-red-50/50 text-red-900 dark:bg-red-950/50 dark:border-red-800 dark:text-red-200",
+  maintenance:
+    "border-orange-500/50 bg-orange-50/50 text-orange-900 dark:bg-orange-950/50 dark:border-orange-800 dark:text-orange-200",
+  event:
+    "border-purple-500/50 bg-purple-50/50 text-purple-900 dark:bg-purple-950/50 dark:border-purple-800 dark:text-purple-200",
 };
 
 export function SystemAnnouncementBanner() {

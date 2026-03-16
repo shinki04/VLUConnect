@@ -5,12 +5,12 @@ import { Calendar } from "@repo/ui/components/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/card";
 import { Label } from "@repo/ui/components/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/components/popover";
+import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 import { cn } from "@repo/ui/lib/utils";
 import { format, subDays, subMonths } from "date-fns";
 import { CalendarIcon, RefreshCw } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
-import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 
 import {
   getHashtagGrowthStats,

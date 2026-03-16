@@ -1,5 +1,6 @@
 "use client";
 
+import { ModerationStatus } from "@repo/shared/types/post";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
@@ -30,7 +31,6 @@ import Image from "next/image";
 import * as React from "react";
 
 import { getModerationActionForTarget, type ModerationActionDetail } from "@/app/actions/moderation";
-import { ModerationStatus } from "@repo/shared/types/post";
 import { getFileInfo, getFileName, isDocumentType, isImageType, isVideoType } from "@/lib/mediaUtils";
 
 interface PostAuthor {
