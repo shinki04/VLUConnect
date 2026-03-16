@@ -156,7 +156,7 @@ export function KeywordsManager({ initialKeywords }: KeywordsManagerProps) {
           value={matchType}
           onValueChange={(v) => setMatchType(v as "exact" | "partial")}
         >
-          <SelectTrigger className="md:w-full w-15">
+          <SelectTrigger className="md:w-100 w-15">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
