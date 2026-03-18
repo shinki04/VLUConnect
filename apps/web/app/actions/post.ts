@@ -418,9 +418,9 @@ export async function deletePost(
 
       const { error: notifError } = await supabase.from("notifications").insert(notifParams);
       if (notifError) {
-        console.error("🔴 Supabase Notification Insert failed:", notifError);
+        console.error("Supabase Notification Insert failed:", notifError);
       } else {
-        console.log("🟢 Supabase Notification Inserted:", notifParams);
+        console.log("Supabase Notification Inserted:", notifParams);
       }
     } catch (notifException) {
       console.error("Failed to send deletion notification:", notifException);

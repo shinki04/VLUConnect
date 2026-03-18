@@ -29,7 +29,7 @@
 //         input.media.length
 //       );
 
-//       console.log(`✅ Queue entry created with ID: ${queueStatus.id}`);
+//       console.log(`Queue entry created with ID: ${queueStatus.id}`);
 
 //       // Create FormData with files
 //       const formData = new FormData();
@@ -98,9 +98,6 @@ export function useCreatePostMutation() {
       if (!user?.id) {
         throw new Error("User is not authenticated");
       }
-
-      console.log(input);
-
       // Create queue status entry
 
       // const queueStatus = await createQueueStatus(
@@ -110,7 +107,7 @@ export function useCreatePostMutation() {
       //   input.media.length
       // );
 
-      // console.log(`✅ Queue entry created with ID: ${queueStatus.id}`);
+      // console.log(`Queue entry created with ID: ${queueStatus.id}`);
 
       // // Create FormData with files
       // const formData = new FormData();

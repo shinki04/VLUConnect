@@ -73,9 +73,9 @@ function EditPost({ open, onOpenChange, onConfirm, post }: EditPostProps) {
         );
 
         if (removedFileUrls.length > 0) {
-          console.log("Deleting removed files:", removedFileUrls);
+          // console.log("Deleting removed files:", removedFileUrls);
           const deletePromises = removedFileUrls.map((url) =>
-            deleteSupabaseFile(url, "posts")
+            deleteSupabaseFile(url, "posts"),
           );
           await Promise.all(deletePromises);
         }
@@ -85,11 +85,11 @@ function EditPost({ open, onOpenChange, onConfirm, post }: EditPostProps) {
         let newFileUrls: string[] = [];
 
         if (newFiles.length > 0) {
-          console.log("Uploading new files:", newFiles.length);
+          // console.log("Uploading new files:", newFiles.length);
 
           // Temporarily remove remote files from Uppy to avoid upload errors
           const remoteFiles = currentFiles.filter(
-            (file) => file.meta.originalUrl || file.source === "remote"
+            (file) => file.meta.originalUrl || file.source === "remote",
           );
           const remoteFileIds = remoteFiles.map((f) => f.id);
 

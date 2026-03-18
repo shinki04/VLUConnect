@@ -1,13 +1,13 @@
 "use server";
 
 import { ExploreGroup, GroupPrivacyFilter } from "@repo/shared/types/explore-groups";
+import { GroupMember, GroupWithDetails } from "@repo/shared/types/group";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { createGroupSchema } from "@/lib/validations/group";
-import { GroupMember, GroupWithDetails } from "@repo/shared/types/group";
 
 export async function createGroup(formData: FormData) {
   const supabase = await createClient();
@@ -510,7 +510,7 @@ export async function updateGroupImages(
 
 // ================== DATA FETCHING ==================
 
-export type { GroupData, MemberProfile, GroupMember, GroupWithDetails } from "@repo/shared/types/group";
+export type { GroupData, GroupMember, GroupWithDetails,MemberProfile } from "@repo/shared/types/group";
 
 /**
  * Get group by slug with membership info for current user

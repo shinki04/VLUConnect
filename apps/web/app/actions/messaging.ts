@@ -1,30 +1,29 @@
 "use server";
 
+import { getMessageCacheService } from "@repo/redis/messageCacheService";
 import { Tables } from "@repo/shared/types/database.types";
+// Types
+import {
+  Conversation,
+  ConversationMember,
+  ConversationType,
+  ConversationWithDetails,
+  Message,
+  MessageType,
+  MessageWithSender,
+} from "@repo/shared/types/messaging";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// Types
-export type Conversation = Tables<"conversations">;
-export type ConversationMember = Tables<"conversation_members">;
-export type Message = Tables<"messages">;
-
-export type ConversationType = "direct" | "group";
-export type MessageType = "text" | "image" | "file" | "system";
-
-export interface ConversationWithDetails extends Conversation {
-  members: (ConversationMember & {
-    profile: Tables<"profiles">;
-  })[];
-  lastMessage?: Message & {
-    sender?: Tables<"profiles">;
-  };
-  unreadCount?: number;
-}
-
-export interface MessageWithSender extends Message {
-  sender?: Tables<"profiles">;
-}
+export type {
+  Conversation,
+  ConversationMember,
+  ConversationType,
+  ConversationWithDetails,
+  Message,
+  MessageType,
+  MessageWithSender,
+};
 
 // ============================================================
 // Helper Functions
@@ -79,6 +78,11 @@ export async function areFriends(
  */
 export async function getConversations(): Promise<ConversationWithDetails[]> {
   const currentUserId = await getCurrentUserId();
+  const messageCache = getMessageCacheService();
+
+  const cached = await messageCache.getConversations(currentUserId);
+  if (cached) return cached;
+
   const supabase = await createClient();
 
   // Use RPC function to fetch all data in a single query
@@ -93,8 +97,9 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
     throw new Error("Failed to fetch conversations");
   }
 
-  // The RPC returns data in the correct structure, just need to cast it
-  return (data as unknown) as ConversationWithDetails[];
+  const result = (data as unknown) as ConversationWithDetails[];
+  await messageCache.setConversations(currentUserId, result);
+  return result;
 }
 
 /**
@@ -231,6 +236,8 @@ export async function createOrGetDirectConversation(
     throw new Error("Failed to create conversation");
   }
 
+  await getMessageCacheService().invalidateConversationsForMembers([currentUserId, targetUserId]);
+
   revalidatePath("/messages");
   return newConv;
 }
@@ -316,7 +323,7 @@ export async function createGroupConversation(
     }
   }
 
-
+  await getMessageCacheService().invalidateConversationsForMembers([currentUserId, ...memberIds]);
 
   revalidatePath("/messages");
   return newConv;
@@ -385,6 +392,18 @@ export async function addMemberToGroup(
     throw new Error("Failed to add member");
   }
 
+  // Fetch all members to invalidate their cache
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  if (allMembers) {
+    await getMessageCacheService().invalidateConversationsForMembers(
+      allMembers.map((m) => m.user_id)
+    );
+  }
+
   revalidatePath(`/messages/${conversationId}`);
 }
 
@@ -405,6 +424,16 @@ export async function leaveConversation(conversationId: string): Promise<void> {
     console.error("Error leaving conversation:", error);
     throw new Error("Failed to leave conversation");
   }
+
+  // Fetch all remaining members to invalidate their cache + the user who left
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  const memberIds = allMembers ? allMembers.map((m) => m.user_id) : [];
+  memberIds.push(currentUserId);
+  await getMessageCacheService().invalidateConversationsForMembers(memberIds);
 
   revalidatePath("/messages");
 }
@@ -481,6 +510,16 @@ export async function removeMemberFromGroup(
     console.error("Error removing member:", error);
     throw new Error("Không thể xóa thành viên");
   }
+
+  // Fetch all remaining members to invalidate their cache + the user who was removed
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  const memberIds = allMembers ? allMembers.map((m) => m.user_id) : [];
+  memberIds.push(userId);
+  await getMessageCacheService().invalidateConversationsForMembers(memberIds);
 
   revalidatePath(`/messages/${conversationId}`);
 }
@@ -791,6 +830,14 @@ export async function getMessages(
   before?: string // cursor for pagination
 ): Promise<MessageWithSender[]> {
   const currentUserId = await getCurrentUserId();
+  const messageCache = getMessageCacheService();
+
+  // Only try cache for the first page
+  if (!before) {
+    const cached = await messageCache.getMessages(conversationId);
+    if (cached) return cached;
+  }
+
   const supabase = await createClient();
 
   // Verify user is a member
@@ -847,8 +894,14 @@ export async function getMessages(
     throw new Error("Failed to fetch messages");
   }
 
-  // Return in chronological order - cast is safe as we selected all required fields
-  return (data || []).reverse() as MessageWithSender[];
+  const result = (data || []).reverse() as MessageWithSender[];
+
+  // Cache the first page
+  if (!before) {
+    await messageCache.setMessages(conversationId, result);
+  }
+
+  return result;
 }
 
 /**
@@ -918,6 +971,20 @@ export async function sendMessage(
     .update({ last_message_at: new Date().toISOString() })
     .eq("id", conversationId);
 
+  // Invalidate messages cache
+  const messageCache = getMessageCacheService();
+  await messageCache.invalidateMessages(conversationId);
+
+  // Fetch all members to invalidate their conversations cache
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  if (allMembers) {
+    await messageCache.invalidateConversationsForMembers(allMembers.map((m) => m.user_id));
+  }
+
   return data;
 }
 
@@ -925,7 +992,6 @@ export async function sendMessage(
  * Mark messages as read (update last_read_at)
  */
 export async function markAsRead(conversationId: string): Promise<void> {
-  const currentUserId = await getCurrentUserId();
   const supabase = await createClient();
 
   const { error } = await supabase.rpc("mark_conversation_as_read", {
@@ -1029,6 +1095,20 @@ export async function editMessage(
     throw new Error("Không thể chỉnh sửa tin nhắn");
   }
 
+  // Invalidate messages cache
+  const messageCache = getMessageCacheService();
+  await messageCache.invalidateMessages(message.conversation_id);
+
+  // Fetch all members to invalidate their conversations cache
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", message.conversation_id);
+
+  if (allMembers) {
+    await messageCache.invalidateConversationsForMembers(allMembers.map((m) => m.user_id));
+  }
+
   return data;
 }
 
@@ -1042,7 +1122,7 @@ export async function recallMessage(messageId: string): Promise<void> {
   // Verify ownership
   const { data: message } = await supabase
     .from("messages")
-    .select("sender_id")
+    .select("sender_id, conversation_id")
     .eq("id", messageId)
     .single();
 
@@ -1062,5 +1142,19 @@ export async function recallMessage(messageId: string): Promise<void> {
   if (error) {
     console.error("Error recalling message:", error);
     throw new Error("Không thể thu hồi tin nhắn");
+  }
+
+  // Invalidate messages cache
+  const messageCache = getMessageCacheService();
+  await messageCache.invalidateMessages(message.conversation_id);
+
+  // Fetch all members to invalidate their conversations cache
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", message.conversation_id);
+
+  if (allMembers) {
+    await messageCache.invalidateConversationsForMembers(allMembers.map((m) => m.user_id));
   }
 }

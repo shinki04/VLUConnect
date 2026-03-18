@@ -2,14 +2,12 @@
 
 import { GroupMemberRole } from "@repo/shared/types/group";
 import { PostResponse } from "@repo/shared/types/post";
-
 import { Badge } from "@repo/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/card";
 import { Tabs, TabsContent,TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { formatPostDate } from "@repo/utils/formatDate";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
 import { Calendar, Crown, Globe, Loader2,Lock, Shield, ShieldCheck, User as UserIcon, Users } from "lucide-react";
-
 import { useEffect,useState } from "react";
 
 import type { GroupMember, GroupWithDetails } from "@/app/actions/group";

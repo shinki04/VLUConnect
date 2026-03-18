@@ -1,5 +1,5 @@
 @echo off
-echo 🚀 Starting RabbitMQ...
+echo Starting RabbitMQ...
 
 docker run -d ^
   --name rabbitmq_dev ^
@@ -14,8 +14,8 @@ echo ⏳ Waiting for RabbitMQ to be ready...
 timeout /t 10 /nobreak
 
 echo.
-echo ✅ RabbitMQ is ready!
-echo 📊 Management UI: http://localhost:15672 (guest/guest)
+echo RabbitMQ is ready!
+echo Management UI: http://localhost:15672 (guest/guest)
 echo.
 echo Next steps:
 echo 1. In another terminal: pnpm dev

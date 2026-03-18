@@ -31,11 +31,11 @@ export function useInfinitePostsQuery(filter: FeedFilter = "all") {
       const cacheStatus = res.headers.get("X-Cache-Status");
       const cacheKey = res.headers.get("X-Cache-Key");
 
-      if (cacheStatus === "HIT") {
-        console.log(`🎯 Cache HIT for ${cacheKey}`);
-      } else if (cacheStatus === "MISS") {
-        console.log(`❌ Cache MISS for ${cacheKey}`);
-      }
+      // if (cacheStatus === "HIT") {
+      //   console.log(`Cache HIT for ${cacheKey}`);
+      // } else if (cacheStatus === "MISS") {
+      //   console.log(`Cache MISS for ${cacheKey}`);
+      // }
 
       const data = await res.json();
 

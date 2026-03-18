@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting RabbitMQ..."
+echo "Starting RabbitMQ..."
 docker run -d \
   --name rabbitmq_dev \
   -p 5672:5672 \
@@ -12,8 +12,8 @@ docker run -d \
 echo "⏳ Waiting for RabbitMQ to be ready..."
 sleep 10
 
-echo "✅ RabbitMQ is ready!"
-echo "📊 Management UI: http://localhost:15672 (guest/guest)"
+echo "RabbitMQ is ready!"
+echo "Management UI: http://localhost:15672 (guest/guest)"
 echo ""
 echo "Next steps:"
 echo "1. In another terminal: pnpm dev"

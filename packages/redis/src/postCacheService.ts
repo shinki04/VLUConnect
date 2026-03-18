@@ -118,11 +118,11 @@ class PostCacheService {
 
       const cached = await this.redis.getCache<CachedPost>(key);
       if (cached) {
-        console.log(`✅ Cache HIT: post:${postId}`);
+        console.log(`Cache HIT: post:${postId}`);
         return cached;
       }
 
-      console.log(`❌ Cache MISS: post:${postId}`);
+      console.log(`Cache MISS: post:${postId}`);
       return null;
     } catch (error) {
       console.error(`Error getting cached post ${postId}:`, error);
@@ -142,7 +142,7 @@ class PostCacheService {
       await this.redis.connect();
       const key = this.getPostKey(postId);
       await this.redis.setCache(key, post, ttl);
-      console.log(`💾 Cached post:${postId} (TTL: ${ttl}s)`);
+      console.log(` Cached post:${postId} (TTL: ${ttl}s)`);
     } catch (error) {
       console.error(`Error caching post ${postId}:`, error);
     }
@@ -171,7 +171,7 @@ class PostCacheService {
 
     try {
       // Fetch from source
-      console.log(`🔄 Fetching post:${postId} from source`);
+      console.log(`Fetching post:${postId} from source`);
       const post = await fetchFn();
       
       if (post) {
@@ -202,7 +202,7 @@ class PostCacheService {
         }
       });
 
-      console.log(`📦 Batch get: ${postsMap.size}/${postIds.length} posts from cache`);
+      console.log(`Batch get: ${postsMap.size}/${postIds.length} posts from cache`);
       return postsMap;
     } catch (error) {
       console.error("Error batch getting posts:", error);
@@ -235,7 +235,7 @@ class PostCacheService {
       });
       await pipeline.exec();
 
-      console.log(`💾 Batch cached ${posts.length} posts (TTL: ${ttl}s)`);
+      console.log(` Batch cached ${posts.length} posts (TTL: ${ttl}s)`);
     } catch (error) {
       console.error("Error batch caching posts:", error);
     }
@@ -249,7 +249,7 @@ class PostCacheService {
       await this.redis.connect();
       const key = this.getPostKey(postId);
       await this.redis.delCache(key);
-      console.log(`🗑️  Invalidated cache: post:${postId}`);
+      console.log(`Invalidated cache: post:${postId}`);
     } catch (error) {
       console.error(`Error invalidating post ${postId}:`, error);
     }
@@ -267,7 +267,7 @@ class PostCacheService {
       keys.forEach((key) => pipeline.del(key));
       await pipeline.exec();
 
-      console.log(`🗑️  Invalidated ${postIds.length} posts from cache`);
+      console.log(`Invalidated ${postIds.length} posts from cache`);
     } catch (error) {
       console.error("Error invalidating posts:", error);
     }

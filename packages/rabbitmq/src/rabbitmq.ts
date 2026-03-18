@@ -53,10 +53,10 @@ class RabbitMQClient {
    */
   async connect(): Promise<void> {
     try {
-      console.log("🔄 Connecting to RabbitMQ...");
+      console.log("Connecting to RabbitMQ...");
 
       this.connection = await amqplib.connect(this.config.url!);
-      console.log("✅ RabbitMQ connected");
+      console.log("RabbitMQ connected");
 
       // Setup publisher channel
       await this.setupPublisherChannel();
@@ -68,7 +68,7 @@ class RabbitMQClient {
 
       this.setupEventHandlers();
     } catch (error) {
-      console.error("❌ Failed to connect to RabbitMQ:", error);
+      console.error("Failed to connect to RabbitMQ:", error);
       throw error;
     }
   }
@@ -79,7 +79,7 @@ class RabbitMQClient {
   private async setupPublisherChannel(): Promise<void> {
     this.publisherChannel = await this.connection!.createChannel();
     await this.publisherChannel.prefetch(this.config.publisherPrefetch!);
-    console.log("✅ Publisher channel ready");
+    console.log("Publisher channel ready");
   }
 
   /**
@@ -95,7 +95,7 @@ class RabbitMQClient {
       await this.publisherChannel.assertExchange(exchange.name, exchange.type, {
         durable: exchange.durable ?? true,
       });
-      console.log(`✅ Exchange asserted: ${exchange.name} (${exchange.type})`);
+      console.log(`Exchange asserted: ${exchange.name} (${exchange.type})`);
     }
 
     // Setup queues
@@ -103,14 +103,14 @@ class RabbitMQClient {
       await this.publisherChannel.assertQueue(queue.name, {
         durable: queue.durable ?? true,
       });
-      console.log(`✅ Queue asserted: ${queue.name}`);
+      console.log(`Queue asserted: ${queue.name}`);
 
       // Setup DLQ if specified
       if (queue.dlq) {
         await this.publisherChannel.assertQueue(queue.dlq, {
           durable: true,
         });
-        console.log(`✅ DLQ asserted: ${queue.dlq}`);
+        console.log(`DLQ asserted: ${queue.dlq}`);
       }
     }
 
@@ -122,7 +122,7 @@ class RabbitMQClient {
         binding.routingKey
       );
       console.log(
-        `✅ Binding: ${binding.queue} -> ${binding.exchange} (${binding.routingKey})`
+        `Binding: ${binding.queue} -> ${binding.exchange} (${binding.routingKey})`
       );
     }
   }
@@ -139,7 +139,7 @@ class RabbitMQClient {
         await existingChannel.checkQueue(queue);
         return existingChannel;
       } catch (error) {
-        console.log(`⚠️ Consumer channel for ${queue} is stale, creating new one`);
+        console.log(`Consumer channel for ${queue} is stale, creating new one`);
         this.consumerChannels.delete(queue);
       }
     }
@@ -148,17 +148,17 @@ class RabbitMQClient {
     
     // Add event handlers for debugging
     consumerChannel.on('error', (err) => {
-      console.error(`❌ Consumer channel error for ${queue}:`, err);
+      console.error(`Consumer channel error for ${queue}:`, err);
     });
     
     consumerChannel.on('close', () => {
-      console.log(`⚠️ Consumer channel for ${queue} closed`);
+      console.log(`Consumer channel for ${queue} closed`);
       this.consumerChannels.delete(queue);
     });
 
     this.consumerChannels.set(queue, consumerChannel);
 
-    console.log(`✅ Consumer channel created for queue: ${queue}`);
+    console.log(`Consumer channel created for queue: ${queue}`);
     return consumerChannel;
   }
 
@@ -167,22 +167,22 @@ class RabbitMQClient {
    */
   private setupEventHandlers(): void {
     this.connection!.on("close", () => {
-      console.log("⚠️ RabbitMQ connection closed");
+      console.log("RabbitMQ connection closed");
       this.isConnected = false;
       this.reconnect();
     });
 
     this.connection!.on("error", (err) => {
-      console.error("❌ RabbitMQ connection error:", err);
+      console.error("RabbitMQ connection error:", err);
       this.isConnected = false;
     });
 
     this.publisherChannel!.on("error", (err) => {
-      console.error("❌ Publisher channel error:", err);
+      console.error("Publisher channel error:", err);
     });
 
     this.publisherChannel!.on("close", () => {
-      console.log("⚠️ Publisher channel closed");
+      console.log("Publisher channel closed");
     });
   }
 
@@ -193,19 +193,19 @@ class RabbitMQClient {
     const maxAttempts = 5;
     const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
 
-    console.log(`🔄 Reconnection attempt ${attempt} in ${delay}ms...`);
+    console.log(`Reconnection attempt ${attempt} in ${delay}ms...`);
 
     if (attempt > maxAttempts) {
-      console.error("❌ Max reconnection attempts reached");
+      console.error("Max reconnection attempts reached");
       return;
     }
 
     try {
       await new Promise((resolve) => setTimeout(resolve, delay));
       await this.connect();
-      console.log("✅ Reconnected successfully");
+      console.log("Reconnected successfully");
     } catch (error) {
-      console.error(`❌ Reconnection attempt ${attempt} failed:`, error);
+      console.error(`Reconnection attempt ${attempt} failed:`, error);
       await this.reconnect(attempt + 1);
     }
   }
@@ -244,7 +244,7 @@ class RabbitMQClient {
     if (published) {
       console.log(`📤 Message published to queue: ${queue}`);
     } else {
-      console.error(`❌ Failed to publish message to queue: ${queue}`);
+      console.error(`Failed to publish message to queue: ${queue}`);
     }
 
     return published;
@@ -286,7 +286,7 @@ class RabbitMQClient {
         `📤 Message published to exchange: ${exchange} (${routingKey})`
       );
     } else {
-      console.error(`❌ Failed to publish message to exchange: ${exchange}`);
+      console.error(`Failed to publish message to exchange: ${exchange}`);
     }
 
     return published;
@@ -311,33 +311,33 @@ class RabbitMQClient {
 
     await consumerChannel.consume(queue, async (msg: Message | null) => {
       if (!msg) {
-        console.warn(`⚠️ Received null message from queue: ${queue}`);
+        console.warn(`Received null message from queue: ${queue}`);
         return;
       }
 
       try {
         const payload = JSON.parse(msg.content.toString()) as T;
-        console.log(`📥 Processing message from queue: ${queue}`);
+        console.log(`Processing message from queue: ${queue}`);
 
         await callback(payload, msg);
 
         consumerChannel.ack(msg);
-        console.log(`✅ Message processed successfully: ${queue}`);
+        console.log(`Message processed successfully: ${queue}`);
       } catch (error) {
-        console.error(`❌ Error processing message from ${queue}:`, error);
+        console.error(`Error processing message from ${queue}:`, error);
 
         if (options?.sendToDLQ && options.dlqName) {
           await this.sendToDLQ(options.dlqName, msg.content, consumerChannel);
           consumerChannel.ack(msg);
-          console.log(`↪️ Message moved to DLQ: ${options.dlqName}`);
+          console.log(`Message moved to DLQ: ${options.dlqName}`);
         } else {
           consumerChannel.nack(msg, false, false);
-          console.log(`❌ Message rejected from: ${queue}`);
+          console.log(`Message rejected from: ${queue}`);
         }
       }
     });
 
-    console.log(`🎯 Started consuming queue: ${queue}`);
+    console.log(`Started consuming queue: ${queue}`);
   }
 
   /**
@@ -361,13 +361,13 @@ class RabbitMQClient {
    * Close all channels and connection
    */
   public async close(): Promise<void> {
-    console.log("🔄 Closing RabbitMQ connection...");
+    console.log("Closing RabbitMQ connection...");
 
     // Close all consumer channels
     for (const [queue, channel] of this.consumerChannels) {
       try {
         await channel.close();
-        console.log(`✅ Closed consumer channel for: ${queue}`);
+        console.log(`Closed consumer channel for: ${queue}`);
       } catch (error) {
         console.error(`Error closing consumer channel for ${queue}:`, error);
       }
@@ -378,7 +378,7 @@ class RabbitMQClient {
     if (this.publisherChannel) {
       try {
         await this.publisherChannel.close();
-        console.log("✅ Publisher channel closed");
+        console.log("Publisher channel closed");
       } catch (error) {
         console.error("Error closing publisher channel:", error);
       }
@@ -389,7 +389,7 @@ class RabbitMQClient {
     if (this.connection) {
       try {
         await this.connection.close();
-        console.log("✅ RabbitMQ connection closed");
+        console.log("RabbitMQ connection closed");
       } catch (error) {
         console.error("Error closing connection:", error);
       }

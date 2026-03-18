@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
 
 //     // Extract all file uploads (sent as "files" from FormData)
 //     const filesFromFormData = formData.getAll("files");
-//     console.log(`📥 Received ${filesFromFormData.length} files`);
+//     console.log(`Received ${filesFromFormData.length} files`);
 
 //     for (const file of filesFromFormData) {
 //       if (file instanceof File) {
