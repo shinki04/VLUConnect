@@ -223,19 +223,19 @@ export function ChatWindow({
       setTimeout(() => {
         virtuosoRef.current?.scrollToIndex({
           index: "LAST",
-          behavior: "smooth",
+          behavior: "auto",
           align: "end",
         });
-      }, 50);
+      }, 100);
 
-      // Second scroll after 200ms to handle any state updates from file processing
+      // Second scroll after 300ms to handle any state updates from file processing
       setTimeout(() => {
         virtuosoRef.current?.scrollToIndex({
           index: "LAST",
-          behavior: "smooth",
+          behavior: "auto",
           align: "end",
         });
-      }, 200);
+      }, 300);
 
       return sendPromise;
     },
@@ -278,9 +278,9 @@ export function ChatWindow({
         setTimeout(() => {
           virtuosoRef.current?.scrollToIndex({
             index: virtualizedItems.length - 1,
-            behavior: "smooth",
+            behavior: isOwnMessage ? "auto" : "smooth",
           });
-        }, 50);
+        }, 100);
       }
     }
 

@@ -725,6 +725,7 @@ export function useMessages({
   // Fetch messages when conversation changes
   useEffect(() => {
     if (!enabled || !conversationId) return;
+    setHasFetchedOnce(false);
     fetchMessages();
   }, [conversationId, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 

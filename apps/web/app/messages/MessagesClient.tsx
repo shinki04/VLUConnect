@@ -212,11 +212,10 @@ export function MessagesClient({
           )}
         >
           {activeConversationId ? (
-            // Show loading only when actually fetching and no data yet
-            isLoadingConversation ||
-            (isFetchingConversation && !displayConversation) ? (
+            // Show loading only when there's no conversation data at all
+            !displayConversation ? (
               <ChatWindowLoading />
-            ) : displayConversation ? (
+            ) : (
               <div className="flex flex-1 overflow-hidden relative">
                 <ChatWindow
                   key={activeConversationId} // Force remount on change
@@ -235,17 +234,7 @@ export function MessagesClient({
                     setIsRightSidebarOpen(!isRightSidebarOpen)
                   }
                 />
-                {/* <ChatRightSidebar
-                  conversation={displayConversation}
-                  currentUserId={currentUser.id}
-                  isOpen={isRightSidebarOpen}
-                  onClose={() => setIsRightSidebarOpen(false)}
-                  onLeaveGroup={handleLeave}
-                /> */}
               </div>
-            ) : (
-              // Fallback: show error or retry state
-              <ChatWindowLoading />
             )
           ) : (
             <EmptyState onNewConversation={() => setIsCreateDialogOpen(true)} />
