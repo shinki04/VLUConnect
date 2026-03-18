@@ -1,11 +1,11 @@
 "use client";
 
+import { Tables } from "@repo/shared/types/database.types";
 import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import { Tables } from "@repo/shared/types/database.types";
 import { ChatWindow } from "@/components/messaging/ChatWindow";
 import { useConversation } from "@/hooks/useConversations";
 import { cn } from "@/lib/utils";

@@ -39,7 +39,8 @@ export function MessagesLayoutClient({
   useEffect(() => {
     const handleOpenDialog = () => setIsCreateDialogOpen(true);
     window.addEventListener("open-create-conversation", handleOpenDialog);
-    return () => window.removeEventListener("open-create-conversation", handleOpenDialog);
+    return () =>
+      window.removeEventListener("open-create-conversation", handleOpenDialog);
   }, []);
 
   // Fetch conversations
@@ -63,12 +64,13 @@ export function MessagesLayoutClient({
     0,
   );
 
-
-
   // Handle selecting a conversation - full route switch
-  const handleSelectConversation = useCallback((id: string) => {
-    router.push(`/messages/${id}`);
-  }, [router]);
+  const handleSelectConversation = useCallback(
+    (id: string) => {
+      router.push(`/messages/${id}`);
+    },
+    [router],
+  );
 
   // Handle creating direct conversation
   const handleCreateDirect = useCallback(
@@ -103,8 +105,6 @@ export function MessagesLayoutClient({
     },
     [createGroup, handleSelectConversation],
   );
-
-
 
   return (
     <div className="flex flex-col h-screen pb-[72px] md:pb-0">
@@ -205,14 +205,16 @@ function ChatWindowLoading() {
             key={i}
             className={cn(
               "flex items-end gap-2",
-              i % 2 === 0 ? "" : "flex-row-reverse"
+              i % 2 === 0 ? "" : "flex-row-reverse",
             )}
           >
-            {i % 2 === 0 && <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />}
+            {i % 2 === 0 && (
+              <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+            )}
             <div
               className={cn(
                 "h-12 rounded-2xl bg-muted animate-pulse",
-                i % 2 === 0 ? "w-48 rounded-bl-md" : "w-64 rounded-br-md"
+                i % 2 === 0 ? "w-48 rounded-bl-md" : "w-64 rounded-br-md",
               )}
             />
           </div>
