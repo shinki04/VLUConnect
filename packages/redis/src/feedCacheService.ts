@@ -60,11 +60,11 @@ class FeedCacheService {
       const cached = await this.redis.getCache<FeedPage>(key);
 
       if (cached) {
-        console.log(`✅ Cache HIT: feed page ${page} for user ${userId}`);
+        console.log(`Cache HIT: feed page ${page} for user ${userId}`);
         return cached;
       }
 
-      console.log(`❌ Cache MISS: feed page ${page} for user ${userId}`);
+      console.log(`Cache MISS: feed page ${page} for user ${userId}`);
       return null;
     } catch (error) {
       console.error(`Error getting cached feed page:`, error);
@@ -86,7 +86,7 @@ class FeedCacheService {
       await this.redis.connect();
       const key = this.getFeedPageKey(userId, page, itemsPerPage);
       await this.redis.setCache(key, feedPage, ttl);
-      console.log(`💾 Cached feed page ${page} for user ${userId} (TTL: ${ttl}s)`);
+      console.log(` Cached feed page ${page} for user ${userId} (TTL: ${ttl}s)`);
     } catch (error) {
       console.error(`Error caching feed page:`, error);
     }
@@ -102,11 +102,11 @@ class FeedCacheService {
       const cached = await this.redis.getCache<FeedMetadata>(key);
 
       if (cached) {
-        console.log(`✅ Cache HIT: feed metadata for user ${userId}`);
+        console.log(`Cache HIT: feed metadata for user ${userId}`);
         return cached;
       }
 
-      console.log(`❌ Cache MISS: feed metadata for user ${userId}`);
+      console.log(`Cache MISS: feed metadata for user ${userId}`);
       return null;
     } catch (error) {
       console.error(`Error getting feed metadata:`, error);
@@ -126,7 +126,7 @@ class FeedCacheService {
       await this.redis.connect();
       const key = this.getFeedMetaKey(userId);
       await this.redis.setCache(key, metadata, ttl);
-      console.log(`💾 Cached feed metadata for user ${userId} (${metadata.postIds.length} posts)`);
+      console.log(` Cached feed metadata for user ${userId} (${metadata.postIds.length} posts)`);
     } catch (error) {
       console.error(`Error caching feed metadata:`, error);
     }
@@ -147,7 +147,7 @@ class FeedCacheService {
       const metaKey = this.getFeedMetaKey(userId);
       await this.redis.delCache(metaKey);
 
-      console.log(`🗑️  Invalidated user ${userId} feed (${deletedPages} pages + metadata)`);
+      console.log(`Invalidated user ${userId} feed (${deletedPages} pages + metadata)`);
     } catch (error) {
       console.error(`Error invalidating user feed:`, error);
     }
@@ -165,7 +165,7 @@ class FeedCacheService {
       await this.redis.connect();
       const key = this.getFeedPageKey(userId, page, itemsPerPage);
       await this.redis.delCache(key);
-      console.log(`🗑️  Invalidated feed page ${page} for user ${userId}`);
+      console.log(`Invalidated feed page ${page} for user ${userId}`);
     } catch (error) {
       console.error(`Error invalidating feed page:`, error);
     }
@@ -188,7 +188,7 @@ class FeedCacheService {
       ]);
 
       console.log(
-        `🗑️  Invalidated ALL feeds (${deletedPages} pages + ${deletedMeta} metadata)`
+        `Invalidated ALL feeds (${deletedPages} pages + ${deletedMeta} metadata)`
       );
     } catch (error) {
       console.error(`Error invalidating all feeds:`, error);

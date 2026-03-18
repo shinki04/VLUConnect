@@ -65,7 +65,7 @@ export async function submitReport(input: SubmitReportInput) {
       }
 
       await rabbitMQ.publishReportCheck(payload);
-      console.log("📤 Report queued for analysis:", report.id);
+      // console.log("Report queued for analysis:", report.id);
     } catch (queueError) {
       console.error("Failed to queue report:", queueError);
       // Don't throw - report is saved, just not queued

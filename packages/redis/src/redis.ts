@@ -10,6 +10,7 @@ interface RedisConfig {
 class RedisClient {
   private redis: RedisInstance;
   private isConnected: boolean = false;
+  private connectPromise: Promise<void> | null = null;
 
   constructor(config: RedisConfig = {}) {
     const redisUrl =
@@ -24,25 +25,54 @@ class RedisClient {
 
     // Connection event handlers
     this.redis.on("connect", () => {
-      console.log("✅ Connected to Redis", redisUrl);
+      console.log("Connected to Redis", redisUrl);
       this.isConnected = true;
     });
 
     this.redis.on("error", (err) => {
-      console.error("❌ Redis connection error:", err);
+      console.error("Redis connection error:", err);
       this.isConnected = false;
+      this.connectPromise = null;
     });
 
     this.redis.on("close", () => {
-      console.log("⚠️  Redis connection closed");
+      console.log(" Redis connection closed");
       this.isConnected = false;
+      this.connectPromise = null;
     });
   }
 
   async connect(): Promise<void> {
-    if (!this.isConnected) {
-      await this.redis.connect();
+    const status = this.redis.status;
+    // Already connected or ready — nothing to do
+    if (status === "ready" || status === "connect") {
+      return;
     }
+    // A connection attempt is already in flight — wait for it
+    if (this.connectPromise) {
+      return this.connectPromise;
+    }
+    // Only call connect() when the client is in a connectable state
+    if (status === "wait" || status === "end" || status === "close") {
+      this.connectPromise = this.redis.connect().then(() => {
+        this.connectPromise = null;
+      }).catch((err) => {
+        this.connectPromise = null;
+        throw err;
+      });
+      return this.connectPromise;
+    }
+    // status === "connecting" or "reconnecting" — wait until ready
+    return new Promise<void>((resolve, reject) => {
+      const onReady = () => { cleanup(); resolve(); };
+      const onError = (err: Error) => { cleanup(); reject(err); };
+      const cleanup = () => {
+        this.redis.removeListener("ready", onReady);
+        this.redis.removeListener("error", onError);
+      };
+      this.redis.once("ready", onReady);
+      this.redis.once("error", onError);
+    });
   }
 
   async disconnect(): Promise<void> {
@@ -63,14 +93,14 @@ class RedisClient {
       await this.redis.set(key, data);
     }
 
-    console.log(`⏱️  Set cache '${key}' in ${Date.now() - start}ms`);
+    console.log(` Set cache '${key}' in ${Date.now() - start}ms`);
   }
 
   async getCache<T>(key: string): Promise<T | null> {
     const start = Date.now();
 
     const data = await this.redis.get(key);
-    console.log(`⏱️  Get cache '${key}' in ${Date.now() - start}ms`);
+    console.log(` Get cache '${key}' in ${Date.now() - start}ms`);
 
     if (!data) return null;
 
@@ -87,7 +117,7 @@ class RedisClient {
 
   async flushAll(): Promise<void> {
     await this.redis.flushall();
-    console.log("🗑️  Redis cache cleared");
+    console.log("Redis cache cleared");
   }
 
   async keys(pattern: string): Promise<string[]> {
@@ -113,7 +143,7 @@ class RedisClient {
     
     const start = Date.now();
     const values = await this.redis.mget(...keys);
-    console.log(`⏱️  Multi-get ${keys.length} keys in ${Date.now() - start}ms`);
+    console.log(` Multi-get ${keys.length} keys in ${Date.now() - start}ms`);
 
     return values.map((data) => {
       if (!data) return null;
@@ -136,7 +166,7 @@ class RedisClient {
 
     if (pairs.length > 0) {
       await this.redis.mset(...pairs);
-      console.log(`⏱️  Multi-set ${Object.keys(keyValuePairs).length} keys in ${Date.now() - start}ms`);
+      console.log(` Multi-set ${Object.keys(keyValuePairs).length} keys in ${Date.now() - start}ms`);
     }
   }
 
@@ -145,12 +175,12 @@ class RedisClient {
     const keys = await this.redis.keys(pattern);
     
     if (keys.length === 0) {
-      console.log(`🗑️  No keys found for pattern '${pattern}'`);
+      console.log(`No keys found for pattern '${pattern}'`);
       return 0;
     }
 
     const result = await this.redis.del(...keys);
-    console.log(`🗑️  Deleted ${result} keys matching '${pattern}' in ${Date.now() - start}ms`);
+    console.log(`Deleted ${result} keys matching '${pattern}' in ${Date.now() - start}ms`);
     return result;
   }
 

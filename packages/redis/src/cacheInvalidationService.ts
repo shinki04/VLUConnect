@@ -26,7 +26,7 @@ class CacheInvalidationService {
    */
   async invalidatePostAndFeeds(postId: string, authorId: string): Promise<void> {
     try {
-      console.log(`🔄 Invalidating post ${postId} and feeds for user ${authorId}`);
+      console.log(`Invalidating post ${postId} and feeds for user ${authorId}`);
 
       await Promise.all([
         // Invalidate the specific post
@@ -36,7 +36,7 @@ class CacheInvalidationService {
         this.feedCache.invalidateUserFeed(authorId),
       ]);
 
-      console.log(`✅ Invalidated post ${postId} and related feeds`);
+      console.log(`Invalidated post ${postId} and related feeds`);
     } catch (error) {
       console.error("Error invalidating post and feeds:", error);
     }
@@ -53,7 +53,7 @@ class CacheInvalidationService {
       const uniqueUserIds = [...new Set(posts.map((p) => p.authorId))];
 
       console.log(
-        `🔄 Batch invalidating ${postIds.length} posts and feeds for ${uniqueUserIds.length} users`
+        `Batch invalidating ${postIds.length} posts and feeds for ${uniqueUserIds.length} users`
       );
 
       await Promise.all([
@@ -64,7 +64,7 @@ class CacheInvalidationService {
         ...uniqueUserIds.map((userId) => this.feedCache.invalidateUserFeed(userId)),
       ]);
 
-      console.log(`✅ Batch invalidation complete`);
+      console.log(`Batch invalidation complete`);
     } catch (error) {
       console.error("Error batch invalidating:", error);
     }
@@ -75,9 +75,9 @@ class CacheInvalidationService {
    */
   async invalidateUserFeed(userId: string): Promise<void> {
     try {
-      console.log(`🔄 Invalidating all feeds for user ${userId}`);
+      console.log(`Invalidating all feeds for user ${userId}`);
       await this.feedCache.invalidateUserFeed(userId);
-      console.log(`✅ Invalidated user ${userId} feeds`);
+      console.log(`Invalidated user ${userId} feeds`);
     } catch (error) {
       console.error(`Error invalidating user feed:`, error);
     }
@@ -88,7 +88,7 @@ class CacheInvalidationService {
    * Invalidates author's feed so they see their new post
    */
   async onPostCreated(postId: string, authorId: string): Promise<void> {
-    console.log(`📝 Post created: ${postId} by ${authorId}`);
+    console.log(`Post created: ${postId} by ${authorId}`);
     
     // Only invalidate author's feed (new post should appear)
     // Don't invalidate the post itself (it doesn't exist in cache yet)
@@ -100,7 +100,7 @@ class CacheInvalidationService {
    * Invalidates the post cache and author's feed
    */
   async onPostUpdated(postId: string, authorId: string): Promise<void> {
-    console.log(`✏️  Post updated: ${postId} by ${authorId}`);
+    console.log(` Post updated: ${postId} by ${authorId}`);
     
     await this.invalidatePostAndFeeds(postId, authorId);
   }
@@ -110,7 +110,7 @@ class CacheInvalidationService {
    * Invalidates the post cache and author's feed
    */
   async onPostDeleted(postId: string, authorId: string): Promise<void> {
-    console.log(`🗑️  Post deleted: ${postId} by ${authorId}`);
+    console.log(`Post deleted: ${postId} by ${authorId}`);
     
     await this.invalidatePostAndFeeds(postId, authorId);
   }
@@ -137,7 +137,7 @@ class CacheInvalidationService {
    * Useful for multi-instance cache synchronization
    */
   async handleInvalidationEvent(event: CacheInvalidationEvent): Promise<void> {
-    console.log(`📥 Received cache invalidation event:`, event);
+    console.log(`Received cache invalidation event:`, event);
 
     try {
       switch (event.type) {
@@ -177,7 +177,7 @@ class CacheInvalidationService {
    * Clear all caches (use with caution!)
    */
   async clearAllCaches(): Promise<void> {
-    console.warn(`⚠️  Clearing ALL caches - this is a destructive operation!`);
+    console.warn(` Clearing ALL caches - this is a destructive operation!`);
     
     try {
       await Promise.all([
@@ -186,7 +186,7 @@ class CacheInvalidationService {
         // If needed, add it to PostCacheService
       ]);
 
-      console.log(`✅ All caches cleared`);
+      console.log(`All caches cleared`);
     } catch (error) {
       console.error("Error clearing all caches:", error);
     }

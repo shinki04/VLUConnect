@@ -220,20 +220,20 @@ function base64ToFile(base64: string, name: string, mimeType: string): File {
  */
 
 export async function queuePostCreation(payload: PostJobPayload) {
-  console.log("📨 queuePostCreation called with payload:", payload);
+  console.log("queuePostCreation called with payload:", payload);
   
   const rabbitMQ = getPostRabbitMQClient();
 
   if (!rabbitMQ.isReady()) {
-    console.log("🔌 RabbitMQ not ready, connecting...");
+    console.log("RabbitMQ not ready, connecting...");
     await rabbitMQ.connect();
   }
 
   if (!payload) throw new Error("Payload is null or undefined");
 
-  console.log("📤 Publishing to RabbitMQ...");
+  console.log("Publishing to RabbitMQ...");
   const result = await rabbitMQ.publishPostCreate(payload as PostJobPayload);
-  console.log("✅ Published to RabbitMQ, result:", result);
+  console.log("Published to RabbitMQ, result:", result);
   
   return result;
 }

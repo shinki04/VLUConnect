@@ -1,23 +1,22 @@
 "use server";
 
+import { getFriendCacheService } from "@repo/redis/friendCacheService";
 import { Tables } from "@repo/shared/types/database.types";
+import {
+  Friendship,
+  FriendshipResult,
+  FriendshipStatus,
+  FriendshipWithUser,
+} from "@repo/shared/types/friendship";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// Types
-export type Friendship = Tables<"friendships">;
-export type FriendshipStatus = Friendship["status"];
-
-export interface FriendshipWithUser extends Friendship {
-  requester?: Tables<"profiles">;
-  addressee?: Tables<"profiles">;
-}
-
-export interface FriendshipResult {
-  status: FriendshipStatus | null;
-  direction: "sent" | "received" | null;
-  friendship: Friendship | null;
-}
+export type {
+  Friendship,
+  FriendshipResult,
+  FriendshipStatus,
+  FriendshipWithUser,
+};
 
 // ============================================================
 // GET Functions
@@ -49,6 +48,10 @@ export async function getFriendshipStatus(
     return { status: null, direction: null, friendship: null };
   }
 
+  const friendCache = getFriendCacheService();
+  const cached = await friendCache.getFriendshipStatus(currentUserId, targetUserId);
+  if (cached) return cached;
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -65,20 +68,29 @@ export async function getFriendshipStatus(
   }
 
   if (!data) {
-    return { status: null, direction: null, friendship: null };
+    const result: FriendshipResult = { status: null, direction: null, friendship: null };
+    await friendCache.setFriendshipStatus(currentUserId, targetUserId, result);
+    return result;
   }
 
-  return {
+  const result: FriendshipResult = {
     status: data.status,
     direction: data.requester_id === currentUserId ? "sent" : "received",
     friendship: data,
   };
+
+  await friendCache.setFriendshipStatus(currentUserId, targetUserId, result);
+  return result;
 }
 
 /**
  * Get list of friends for a user
  */
 export async function getFriends(userId: string): Promise<Tables<"profiles">[]> {
+  const friendCache = getFriendCacheService();
+  const cached = await friendCache.getFriends(userId);
+  if (cached) return cached;
+
   const supabase = await createClient();
 
   // Get all friendships where status is 'friends'
@@ -100,15 +112,21 @@ export async function getFriends(userId: string): Promise<Tables<"profiles">[]> 
     throw new Error("Failed to get friends");
   }
 
-  if (!friendships) return [];
+  if (!friendships) {
+    await friendCache.setFriends(userId, []);
+    return [];
+  }
 
   // Extract friend profiles
-  return friendships.map((f) => {
+  const friends = friendships.map((f) => {
     if (f.requester_id === userId) {
       return f.addressee as Tables<"profiles">;
     }
     return f.requester as Tables<"profiles">;
   });
+
+  await friendCache.setFriends(userId, friends);
+  return friends;
 }
 
 /**
@@ -116,6 +134,10 @@ export async function getFriends(userId: string): Promise<Tables<"profiles">[]> 
  */
 export async function getPendingRequests(): Promise<FriendshipWithUser[]> {
   const currentUserId = await getCurrentUserId();
+  const friendCache = getFriendCacheService();
+  const cached = await friendCache.getPendingRequests(currentUserId);
+  if (cached) return cached;
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -135,7 +157,9 @@ export async function getPendingRequests(): Promise<FriendshipWithUser[]> {
     throw new Error("Failed to get pending requests");
   }
 
-  return (data as FriendshipWithUser[]) || [];
+  const result = (data as FriendshipWithUser[]) || [];
+  await friendCache.setPendingRequests(currentUserId, result);
+  return result;
 }
 
 /**
@@ -143,6 +167,10 @@ export async function getPendingRequests(): Promise<FriendshipWithUser[]> {
  */
 export async function getSentRequests(): Promise<FriendshipWithUser[]> {
   const currentUserId = await getCurrentUserId();
+  const friendCache = getFriendCacheService();
+  const cached = await friendCache.getSentRequests(currentUserId);
+  if (cached) return cached;
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -162,7 +190,9 @@ export async function getSentRequests(): Promise<FriendshipWithUser[]> {
     throw new Error("Failed to get sent requests");
   }
 
-  return (data as FriendshipWithUser[]) || [];
+  const result = (data as FriendshipWithUser[]) || [];
+  await friendCache.setSentRequests(currentUserId, result);
+  return result;
 }
 
 // ============================================================
@@ -213,6 +243,9 @@ export async function sendFriendRequest(
     throw new Error("Failed to send friend request");
   }
 
+  // Invalidate cache
+  await getFriendCacheService().invalidateFriendship(currentUserId, targetUserId);
+
   revalidatePath(`/profile/${targetUserId}`);
   return data;
 }
@@ -257,6 +290,9 @@ export async function respondToFriendRequest(
       throw new Error("Failed to accept friend request");
     }
 
+    // Invalidate cache
+    await getFriendCacheService().invalidateFriendship(existing.requester_id, existing.addressee_id);
+
     revalidatePath(`/profile/${existing.requester_id}`);
     revalidatePath(`/profile/${currentUserId}`);
     return data;
@@ -271,6 +307,9 @@ export async function respondToFriendRequest(
       console.error("Error rejecting friend request:", error);
       throw new Error("Failed to reject friend request");
     }
+
+    // Invalidate cache
+    await getFriendCacheService().invalidateFriendship(existing.requester_id, existing.addressee_id);
 
     revalidatePath(`/profile/${existing.requester_id}`);
     return null;
@@ -308,6 +347,9 @@ export async function cancelFriendRequest(
     throw new Error("Failed to cancel friend request");
   }
 
+  // Invalidate cache
+  await getFriendCacheService().invalidateFriendship(existing.requester_id, existing.addressee_id);
+
   revalidatePath(`/profile/${existing.addressee_id}`);
 }
 
@@ -330,6 +372,9 @@ export async function unfriend(targetUserId: string): Promise<void> {
     console.error("Error unfriending:", error);
     throw new Error("Failed to unfriend");
   }
+
+  // Invalidate cache
+  await getFriendCacheService().invalidateFriendship(currentUserId, targetUserId);
 
   revalidatePath(`/profile/${targetUserId}`);
   revalidatePath(`/profile/${currentUserId}`);
@@ -362,6 +407,9 @@ export async function blockUser(targetUserId: string): Promise<Friendship> {
       throw new Error("Failed to block user");
     }
 
+    // Invalidate cache
+    await getFriendCacheService().invalidateFriendship(currentUserId, targetUserId);
+
     revalidatePath(`/profile/${targetUserId}`);
     return data;
   } else {
@@ -380,6 +428,9 @@ export async function blockUser(targetUserId: string): Promise<Friendship> {
       console.error("Error blocking user:", error);
       throw new Error("Failed to block user");
     }
+
+    // Invalidate cache
+    await getFriendCacheService().invalidateFriendship(currentUserId, targetUserId);
 
     revalidatePath(`/profile/${targetUserId}`);
     return data;
@@ -405,6 +456,9 @@ export async function unblockUser(targetUserId: string): Promise<void> {
     console.error("Error unblocking user:", error);
     throw new Error("Failed to unblock user");
   }
+
+  // Invalidate cache
+  await getFriendCacheService().invalidateFriendship(currentUserId, targetUserId);
 
   revalidatePath(`/profile/${targetUserId}`);
 }
