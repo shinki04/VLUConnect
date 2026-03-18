@@ -1,67 +1,46 @@
 "use client";
 
 import { Tables } from "@repo/shared/types/database.types";
-import { ConversationWithDetails } from "@repo/shared/types/messaging";
 import { MessageCircle } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { MobileNav } from "@/components/dashboard/MobileNav";
 import { ChatNavSidebar } from "@/components/messaging/ChatNavSidebar";
-// import { ChatRightSidebar } from "@/components/messaging/ChatRightSidebar";
-import { ChatWindow } from "@/components/messaging/ChatWindow";
 import { ConversationList } from "@/components/messaging/ConversationList";
 import { CreateConversationDialog } from "@/components/messaging/CreateConversationDialog";
-import { useConversation, useConversations } from "@/hooks/useConversations";
+import { useConversations } from "@/hooks/useConversations";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { cn } from "@/lib/utils";
 
-// ...
-
-interface MessagesClientProps {
+interface MessagesLayoutClientProps {
   currentUser: Tables<"profiles">;
   initialFriends: Tables<"profiles">[];
-  initialConversation?: ConversationWithDetails | null;
+  children?: React.ReactNode;
 }
 
 /**
- * Main client component for the messages page
- * Split view: conversation list on left, active chat on right
+ * Main layout client component for the messages page
+ * Renders the conversation list on the left and generic children on the right
  */
-export function MessagesClient({
+export function MessagesLayoutClient({
   currentUser,
   initialFriends,
-  initialConversation,
-}: MessagesClientProps) {
+  children,
+}: MessagesLayoutClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Local state for active conversation ID (for shallow routing)
-  // Initialize from URL param or initial prop
-  const [activeConversationId, setActiveConversationId] = useState<
-    string | null
-  >(() => {
-    const paramId = searchParams.get("conversationId");
-    return paramId || initialConversation?.id || null;
-  });
+  const params = useParams<{ id: string }>();
+  const activeConversationId = params.id; // From /messages/[id]
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
-  // Sync with browser back/forward navigation (popstate)
+  // Listen to custom event from EmptyState page
   useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const convId = params.get("conversationId");
-      setActiveConversationId(convId || null);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    const handleOpenDialog = () => setIsCreateDialogOpen(true);
+    window.addEventListener("open-create-conversation", handleOpenDialog);
+    return () => window.removeEventListener("open-create-conversation", handleOpenDialog);
   }, []);
-
-  // Display active ID is just the local state now (no need for optimistic layer)
 
   // Fetch conversations
   const {
@@ -84,43 +63,12 @@ export function MessagesClient({
     0,
   );
 
-  // Fetch active conversation details (Client Side)
-  const {
-    conversation: activeConversation,
-    leave,
-    isLoading: isLoadingConversation,
-    isFetching: isFetchingConversation,
-    error: conversationError,
-    refetch: refetchConversation,
-  } = useConversation(activeConversationId || "");
 
-  // Debug logging
-  // console.log("[MessagesClient] activeConversationId:", activeConversationId);
-  // console.log("[MessagesClient] activeConversation:", activeConversation);
-  // console.log("[MessagesClient] isLoadingConversation:", isLoadingConversation);
-  // console.log(
-  //   "[MessagesClient] isFetchingConversation:",
-  //   isFetchingConversation,
-  // );
-  // console.log("[MessagesClient] conversationError:", conversationError);
 
-  // Fallback to initial conversation if hook hasn't loaded yet
-  const displayConversation =
-    activeConversation ||
-    (activeConversationId === initialConversation?.id
-      ? initialConversation
-      : null);
-
-  // Handle selecting a conversation - shallow routing for instant switch
+  // Handle selecting a conversation - full route switch
   const handleSelectConversation = useCallback((id: string) => {
-    // Update local state IMMEDIATELY for instant UI switch
-    setActiveConversationId(id);
-
-    // Use shallow routing to avoid server-side re-render
-    // This prevents Next.js from re-running page.tsx data fetching
-    const url = `/messages?conversationId=${id}`;
-    window.history.pushState({}, "", url);
-  }, []);
+    router.push(`/messages/${id}`);
+  }, [router]);
 
   // Handle creating direct conversation
   const handleCreateDirect = useCallback(
@@ -156,29 +104,7 @@ export function MessagesClient({
     [createGroup, handleSelectConversation],
   );
 
-  // ... rest of handlers ...
-  // Handle leaving conversation
-  const handleLeave = useCallback(async () => {
-    if (!activeConversationId) return;
 
-    try {
-      await leave();
-      // Clear active conversation and URL using shallow routing
-      setActiveConversationId(null);
-      window.history.pushState({}, "", "/messages");
-      toast.success("Đã rời khỏi nhóm");
-    } catch (error) {
-      toast.error("Không thể rời nhóm");
-    }
-  }, [activeConversationId, leave]);
-
-  // Handle adding friend from chat banner
-  const handleAddFriend = useCallback(
-    (userId: string) => {
-      router.push(`/profile/${userId}`);
-    },
-    [router],
-  );
 
   return (
     <div className="flex flex-col h-screen pb-[72px] md:pb-0">
@@ -212,30 +138,7 @@ export function MessagesClient({
           )}
         >
           {activeConversationId ? (
-            // Show loading only when there's no conversation data at all
-            !displayConversation ? (
-              <ChatWindowLoading />
-            ) : (
-              <div className="flex flex-1 overflow-hidden relative">
-                <ChatWindow
-                  key={activeConversationId} // Force remount on change
-                  conversation={displayConversation}
-                  currentUserId={currentUser.id}
-                  currentUser={currentUser}
-                  isInitialLoading={false}
-                  onLeave={handleLeave}
-                  onAddFriend={handleAddFriend}
-                  onBack={() => {
-                    setActiveConversationId(null);
-                    window.history.pushState({}, "", "/messages");
-                  }}
-                  className="flex-1 min-w-0"
-                  onToggleRightSidebar={() =>
-                    setIsRightSidebarOpen(!isRightSidebarOpen)
-                  }
-                />
-              </div>
-            )
+            children
           ) : (
             <EmptyState onNewConversation={() => setIsCreateDialogOpen(true)} />
           )}

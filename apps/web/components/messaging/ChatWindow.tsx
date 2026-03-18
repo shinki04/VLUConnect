@@ -500,7 +500,7 @@ function ChatWindowEmpty({ isGroup }: { isGroup: boolean }) {
 /**
  * Loading skeleton for chat window
  */
-function ChatWindowSkeleton() {
+export function ChatWindowSkeleton() {
   return (
     <div className="space-y-4 py-4">
       {[...Array(5)].map((_, i) => (
@@ -508,14 +508,14 @@ function ChatWindowSkeleton() {
           key={i}
           className={cn(
             "flex items-end gap-2",
-            i % 2 === 0 ? "" : "flex-row-reverse"
+            i % 2 === 0 ? "" : "flex-row-reverse",
           )}
         >
           {i % 2 === 0 && <Skeleton className="h-8 w-8 rounded-full" />}
           <Skeleton
             className={cn(
               "h-12 rounded-2xl",
-              i % 2 === 0 ? "w-48 rounded-bl-md" : "w-64 rounded-br-md"
+              i % 2 === 0 ? "w-48 rounded-bl-md" : "w-64 rounded-br-md",
             )}
           />
         </div>

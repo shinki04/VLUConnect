@@ -145,6 +145,10 @@ export function useMessages({
       setError(null);
 
       const data = await getMessages(conversationId, MESSAGES_PER_PAGE);
+      
+      // Prevent race conditions: if the conversation changed while fetching, ignore results
+      if (conversationId !== conversationIdRef.current) return;
+
       setServerMessages(data);
       setHasMore(data.length === MESSAGES_PER_PAGE);
 
@@ -154,13 +158,16 @@ export function useMessages({
 
       // Note: markAsRead is handled by useRealtimeNotifications when activeConversationId changes
     } catch (err) {
+      if (conversationId !== conversationIdRef.current) return; // ignore errors from stale fetches
       setError(
         err instanceof Error ? err : new Error("Failed to fetch messages")
       );
       console.error("Error fetching messages:", err);
     } finally {
-      setIsLoading(false);
-      setHasFetchedOnce(true);
+      if (conversationId === conversationIdRef.current) {
+        setIsLoading(false);
+        setHasFetchedOnce(true);
+      }
     }
   }, [conversationId, enabled]);
 
@@ -175,6 +182,9 @@ export function useMessages({
         MESSAGES_PER_PAGE,
         cursorRef.current
       );
+      
+      // Prevent race conditions: if conversation changed, ignore results
+      if (conversationId !== conversationIdRef.current) return;
 
       setServerMessages((prev) => [...data, ...prev]);
       setHasMore(data.length === MESSAGES_PER_PAGE);
@@ -183,9 +193,12 @@ export function useMessages({
         cursorRef.current = data[0]?.created_at || undefined;
       }
     } catch (err) {
+      if (conversationId !== conversationIdRef.current) return;
       console.error("Error loading more messages:", err);
     } finally {
-      setIsLoadingMore(false);
+      if (conversationId === conversationIdRef.current) {
+        setIsLoadingMore(false);
+      }
     }
   }, [conversationId, hasMore, isLoadingMore]);
 
