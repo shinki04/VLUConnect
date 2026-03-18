@@ -93,7 +93,7 @@ export async function saveHashtagsFromContent(
         savedHashtags.push(updatedTag as HashtagWithCount);
       }
 
-      console.log(`✅ Hashtag '${tagName}' saved and linked to post`);
+      console.log(`Hashtag '${tagName}' saved and linked to post`);
     } catch (error) {
       console.error(`Error processing hashtag '${tagName}':`, error);
     }
@@ -103,7 +103,7 @@ export async function saveHashtagsFromContent(
   const redis = getRedisClient();
   if (redis.isReady()) {
     await redis.delCache("trending:hashtags");
-    console.log("🗑️  Cleared hashtag cache");
+    console.log("Cleared hashtag cache");
   }
 
   return savedHashtags;
@@ -147,7 +147,7 @@ export async function syncHashtagsForPost(
     (tag) => !newHashtagNames.includes(tag)
   );
   
-  console.log(`📊 Hashtag sync for post ${postId}:
+  console.log(`Hashtag sync for post ${postId}:
     - Adding: ${hashtagsToAdd.join(", ") || "none"}
     - Removing: ${hashtagsToRemove.join(", ") || "none"}
     - Keeping: ${newHashtagNames.filter(tag => existingHashtagNames.includes(tag)).join(", ") || "none"}`);
@@ -185,7 +185,7 @@ export async function syncHashtagsForPost(
           decrementError
         );
       } else {
-        console.log(`✅ Removed hashtag '${tagName}' from post`);
+        console.log(`Removed hashtag '${tagName}' from post`);
       }
     } catch (error) {
       console.error(`Error removing hashtag '${tagName}':`, error);
@@ -261,7 +261,7 @@ export async function syncHashtagsForPost(
         savedHashtags.push(updatedTag as HashtagWithCount);
       }
       
-      console.log(`✅ Added hashtag '${tagName}' to post`);
+      console.log(`Added hashtag '${tagName}' to post`);
     } catch (error) {
       console.error(`Error adding hashtag '${tagName}':`, error);
     }
@@ -271,7 +271,7 @@ export async function syncHashtagsForPost(
   const redis = getRedisClient();
   if (redis.isReady()) {
     await redis.delCache("trending:hashtags");
-    console.log("🗑️  Cleared hashtag cache");
+    console.log("Cleared hashtag cache");
   }
   
   return savedHashtags;
@@ -300,7 +300,7 @@ export async function removeHashtagsForPost(postId: string): Promise<void> {
       return;
     }
     
-    console.log(`🗑️  Removing ${postHashtags.length} hashtags for post ${postId}`);
+    console.log(`Removing ${postHashtags.length} hashtags for post ${postId}`);
     
     // Decrement count for each hashtag
     for (const ph of postHashtags) {
@@ -332,13 +332,13 @@ export async function removeHashtagsForPost(postId: string): Promise<void> {
       return;
     }
     
-    console.log(`✅ Removed all hashtags for post ${postId}`);
+    console.log(`Removed all hashtags for post ${postId}`);
     
     // Invalidate cache
     const redis = getRedisClient();
     if (redis.isReady()) {
       await redis.delCache("trending:hashtags");
-      console.log("🗑️  Cleared hashtag cache");
+      console.log("Cleared hashtag cache");
     }
   } catch (error) {
     console.error("Error removing hashtags for post:", error);
@@ -360,7 +360,7 @@ export async function getTrendingHashtags(
       "trending:hashtags"
     );
     if (cached) {
-      console.log("📦 Hashtags from cache");
+      console.log("Hashtags from cache");
       return cached.slice(0, limit);
     }
   }
@@ -381,7 +381,7 @@ export async function getTrendingHashtags(
   // Cache for 5 minutes
   if (redis.isReady()) {
     await redis.setCache("trending:hashtags", hashtags || [], 300);
-    console.log("💾 Cached trending hashtags");
+    console.log(" Cached trending hashtags");
   }
 
   return (hashtags || []) as HashtagWithCount[];
@@ -501,6 +501,6 @@ export async function deleteHashtag(hashtagId: string): Promise<boolean> {
     await redis.delCache("trending:hashtags");
   }
 
-  console.log("✅ Hashtag deleted");
+  console.log("Hashtag deleted");
   return true;
 }

@@ -18,17 +18,16 @@ import {
   UserPlus,
   X,
 } from "lucide-react";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { UserCard as UserCardComponent } from "@/components/user-card";
 
 import { createOrGetDirectConversation } from "@/app/actions/messaging";
 import {
   acceptRequestFromUser,
   cancelSentRequestToUser,
 } from "@/app/actions/user_search";
+import { UserCard as UserCardComponent } from "@/components/user-card";
 import { useFriendship } from "@/hooks/useFriendship";
 import { userSearchKeys } from "@/hooks/useUserSearch";
 

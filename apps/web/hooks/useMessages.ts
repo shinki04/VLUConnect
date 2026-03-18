@@ -552,7 +552,7 @@ export function useMessages({
   // Handle broadcast events from other users - using stable ref pattern
   const handleBroadcastEvent = useCallback(
     (payload: BroadcastMessage) => {
-      console.log("[Broadcast] Received:", payload.type, payload);
+      // console.log("[Broadcast] Received:", payload.type, payload);
 
       // Skip own messages (already handled locally)
       if (payload.senderId === currentUserIdRef.current) {
@@ -674,9 +674,9 @@ export function useMessages({
       // Save to database
       try {
         await editMessageAction(messageId, newContent);
-        console.log("✅ Message edited:", messageId);
+        // console.log("Message edited:", messageId);
       } catch (err) {
-        console.error("❌ Error editing message:", err);
+        console.error("Error editing message:", err);
         // Revert optimistic update could be added here
         throw err;
       }
@@ -713,9 +713,9 @@ export function useMessages({
       // Save to database
       try {
         await recallMessageAction(messageId);
-        console.log("✅ Message recalled:", messageId);
+        // console.log("Message recalled:", messageId);
       } catch (err) {
-        console.error("❌ Error recalling message:", err);
+        console.error("Error recalling message:", err);
         throw err;
       }
     },
@@ -761,7 +761,7 @@ export function useMessages({
         handleBroadcastEvent(payload as BroadcastMessage);
       })
       .subscribe((status) => {
-        console.log("[Broadcast] Channel status:", status);
+        // console.log("[Broadcast] Channel status:", status);
       });
 
     // Channel 2: Postgres changes for new messages and updates
@@ -776,7 +776,7 @@ export function useMessages({
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log("[DB Insert] New message:", payload.new.id);
+          // console.log("[DB Insert] New message:", payload.new.id);
 
           // Check if this is a message we uploaded (from background upload)
           const newMessage = payload.new as MessageWithSender;
@@ -823,7 +823,7 @@ export function useMessages({
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          console.log("[DB Update] Message changed:", payload.new.id);
+          // console.log("[DB Update] Message changed:", payload.new.id);
 
           // Update message in serverMessages (e.g., AI/admin recalled it)
           // Skip if sender is current user (already handled by broadcast)
@@ -839,13 +839,13 @@ export function useMessages({
         }
       )
       .subscribe((status) => {
-        console.log("[DB Channel] Status:", status);
+        // console.log("[DB Channel] Status:", status);
       });
 
     channelRef.current = broadcastChannel;
 
     return () => {
-      console.log("[Realtime] Unsubscribing from channels");
+      // console.log("[Realtime] Unsubscribing from channels");
       supabase.removeChannel(broadcastChannel);
       supabase.removeChannel(dbChannel);
     };

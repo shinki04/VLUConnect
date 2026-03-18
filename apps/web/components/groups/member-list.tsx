@@ -12,9 +12,9 @@ import {
 } from "@repo/ui/components/dropdown-menu";
 import { Input } from "@repo/ui/components/input";
 import { Crown, MoreHorizontal, Search,Shield, ShieldCheck, User } from "lucide-react";
-import { UserCard } from "@/components/user-card";
 import { useState } from "react";
 
+import { UserCard } from "@/components/user-card";
 import {
   useGroupMemberActions,
   useGroupMembers,

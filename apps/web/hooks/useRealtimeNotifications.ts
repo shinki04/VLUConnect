@@ -111,9 +111,9 @@ export function useRealtimeNotifications({
       (async () => {
         try {
           await markAsRead(activeConversationId);
-          console.log("[RealtimeNotifications] Successfully marked as read on server:", activeConversationId);
+          // console.log("[RealtimeNotifications] Successfully marked as read on server:", activeConversationId);
         } catch (error) {
-          console.error("[RealtimeNotifications] Error marking conversation as read:", error);
+          // console.error("[RealtimeNotifications] Error marking conversation as read:", error);
         } finally {
           // Remove from in-progress set after server call completes
           markAsReadInProgressRef.current.delete(activeConversationId);
@@ -125,7 +125,7 @@ export function useRealtimeNotifications({
   useEffect(() => {
     if (!enabled || !currentUserId) return;
 
-    console.log("[RealtimeNotifications] Setting up listener for user:", currentUserId);
+    // console.log("[RealtimeNotifications] Setting up listener for user:", currentUserId);
 
     const channel = supabase.channel(`notifications:${currentUserId}`)
       // Listen for new messages
@@ -139,7 +139,7 @@ export function useRealtimeNotifications({
         (payload: RealtimePostgresInsertPayload<MessageInsertPayload>) => {
           const newMessage = payload.new;
           
-          console.log("[RealtimeNotifications] New message:", newMessage);
+          // console.log("[RealtimeNotifications] New message:", newMessage);
 
           const isOwnMessage = newMessage.sender_id === currentUserId;
           const isViewingConversation = activeConversationIdRef.current === newMessage.conversation_id;
@@ -189,7 +189,7 @@ export function useRealtimeNotifications({
             }
           );
 
-          console.log("[RealtimeNotifications] Updated conversation:", newMessage.conversation_id, isOwnMessage ? "(own message)" : "(from other)");
+          //console.log("[RealtimeNotifications] Updated conversation:", newMessage.conversation_id, isOwnMessage ? "(own message)" : "(from other)");
         }
       )
       // Future: Listen for friend requests
@@ -199,11 +199,11 @@ export function useRealtimeNotifications({
       //   handleFriendRequest
       // )
       .subscribe((status) => {
-        console.log("[RealtimeNotifications] Channel status:", status);
+        //console.log("[RealtimeNotifications] Channel status:", status);
       });
 
     return () => {
-      console.log("[RealtimeNotifications] Unsubscribing from channel");
+      //console.log("[RealtimeNotifications] Unsubscribing from channel");
       supabase.removeChannel(channel);
     };
   }, [currentUserId, enabled, queryClient, supabase]);
@@ -215,9 +215,9 @@ export function useRealtimeNotifications({
       clearUnreadCount(conversationId);
       // Then persist to server
       await markAsRead(conversationId);
-      console.log("[RealtimeNotifications] Successfully marked as read:", conversationId);
+      //console.log("[RealtimeNotifications] Successfully marked as read:", conversationId);
     } catch (error) {
-      console.error("[RealtimeNotifications] Error marking as read:", error);
+      //console.error("[RealtimeNotifications] Error marking as read:", error);
       // Refetch conversations to revert optimistic update on failure
       queryClient.invalidateQueries({ queryKey: conversationKeys.list() });
     }

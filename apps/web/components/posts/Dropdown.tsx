@@ -7,11 +7,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
+import { Separator } from "@repo/ui/components/separator";
 import { Flag, MoreHorizontalIcon, Pencil, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { ReportDialog } from "@/components/reports/ReportDialog";
-import { Separator } from "@repo/ui/components/separator";
 
 interface PostOwnerDropdownProps {
   onDelete: () => void;

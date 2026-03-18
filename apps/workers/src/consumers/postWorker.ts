@@ -17,32 +17,32 @@ import {
  * Worker process that consumes messages from RabbitMQ queue
  */
 export async function startPostWorker() {
-  console.log("🚀 Starting Post Worker...");
+  console.log("Starting Post Worker...");
   try {
     const rabbitMQ = getPostRabbitMQClient();
 
     if (!rabbitMQ.isReady()) {
-      console.log("📡 Connecting to RabbitMQ...");
+      console.log("Connecting to RabbitMQ...");
       await rabbitMQ.connect();
     }
     // Start consuming jobs
     await rabbitMQ.consumePostCreate(async (payload: PostJobPayload) => {
-      console.log("🔄 Processing job for user:", payload.userId);
+      console.log("Processing job for user:", payload.userId);
       try {
         const post = await processPostCreation(payload);
-        console.log("✅ Job completed. Post ID:", post.id);
+        console.log("Job completed. Post ID:", post.id);
       } catch (error) {
-        console.error("❌ Job failed:", error);
+        console.error("Job failed:", error);
         throw error;
       }
     });
     await rabbitMQ.consumePostUpdate(async (payload: UpdatePostJobPayload) => {
-      console.log("🔄 Processing update job for user:", payload.userId);
+      console.log("Processing update job for user:", payload.userId);
       try {
         const post = await processPostUpdate(payload);
-        console.log("✅ Update job completed. Post ID:", post.id);
+        console.log("Update job completed. Post ID:", post.id);
       } catch (error) {
-        console.error("❌ Update job failed:", error);
+        console.error("Update job failed:", error);
         throw error;
       }
     });
@@ -51,20 +51,20 @@ export async function startPostWorker() {
       async (payload: PostQueueDeletePayload) => {
         await deletePostMedia(payload);
 
-        console.log("🔄 Processing delete job for user:", payload.queueId);
+        console.log("Processing delete job for user:", payload.queueId);
         // TODO: Implement delete logic
       }
     );
 
-    console.log("✅ Post Worker ready and listening for jobs...");
+    console.log("Post Worker ready and listening for jobs...");
     // Graceful shutdown
     process.on("SIGINT", async () => {
-      console.log("\n🛑 Shutting down worker...");
+      console.log("\nShutting down worker...");
       await rabbitMQ.close();
       process.exit(0);
     });
   } catch (error) {
-    console.error("❌ Failed to start worker:", error);
+    console.error("Failed to start worker:", error);
     process.exit(1);
   }
 }

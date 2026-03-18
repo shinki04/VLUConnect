@@ -26,7 +26,7 @@ export async function deletePost(postId: string): Promise<void> {
   try {
     await removeHashtagsForPost(postId);
   } catch (hashtagError) {
-    console.error("⚠️  Error removing hashtags:", hashtagError);
+    console.error(" Error removing hashtags:", hashtagError);
     // Continue with delete even if hashtag cleanup fails
   }
 
@@ -71,7 +71,7 @@ export async function processPostCreation(payload: PostJobPayload) {
 
   try {
     // console.log(
-    //   `🔄 Processing post creation for user: ${payload.userId}, media: ${payload.media.length} files`
+    //   `Processing post creation for user: ${payload.userId}, media: ${payload.media.length} files`
     // );
 
     // Update status to 'processing'
@@ -91,7 +91,7 @@ export async function processPostCreation(payload: PostJobPayload) {
     const matchedKeyword = await checkBlockedKeywords(payload.content, payload.groupId || undefined);
 
     if (matchedKeyword) {
-      console.log(`🚫 Keyword matched in post: "${matchedKeyword}"`);
+      console.log(`Keyword matched in post: "${matchedKeyword}"`);
       moderationStatus = "rejected";
       moderationReason = `Bài viết chứa từ khóa bị chặn: "${matchedKeyword}"`;
       keywordMatch = matchedKeyword;
@@ -114,15 +114,15 @@ export async function processPostCreation(payload: PostJobPayload) {
       if (negScore >= 0.9) {
         moderationStatus = "rejected";
         moderationReason = `AI đã phát hiện nội dung tiêu cực với độ tin cậy ${(negScore * 100).toFixed(1)}%`;
-        console.log(`🚫 Post rejected: NEG score ${negScore}`);
+        console.log(`Post rejected: NEG score ${negScore}`);
       } else if (negScore > 0.7) {
         moderationStatus = "flagged";
-        console.log(`⚠️ Post flagged: NEG score ${negScore}`);
+        console.log(`Post flagged: NEG score ${negScore}`);
       }
     }
 
     // Step 2: Create post in database
-    console.log("📝 Creating post in database...");
+    console.log("Creating post in database...");
     const { data: post, error } = await supabase
       .from("posts")
       .insert({
@@ -151,7 +151,7 @@ export async function processPostCreation(payload: PostJobPayload) {
       throw new Error(`Failed to create post: ${error?.message || "Unknown error"}`);
     }
 
-    console.log("✅ Post created successfully:", post.id);
+    console.log("Post created successfully:", post.id);
 
     // Step 2.1: Log Moderation Actions
     if (keywordMatch) {
@@ -189,9 +189,9 @@ export async function processPostCreation(payload: PostJobPayload) {
           matched_keyword: matchedKeyword
         },
       });
-      console.log("📊 Analysis logged for post:", post.id);
+      console.log("Analysis logged for post:", post.id);
     } catch (logError) {
-      console.error("⚠️ Failed to log AI analysis:", logError);
+      console.error("Failed to log AI analysis:", logError);
       // Don't fail post creation if logging fails
     }
 
@@ -208,7 +208,7 @@ export async function processPostCreation(payload: PostJobPayload) {
         type: "system" as NotificationType,
       });
       if (notificationError) {
-        console.error("⚠️ Failed to save rejection notification:", notificationError);
+        console.error("Failed to save rejection notification:", notificationError);
       }
     } else {
       const { error: notificationError } = await supabase.from("notifications").insert({
@@ -225,15 +225,15 @@ export async function processPostCreation(payload: PostJobPayload) {
     try {
       const hashtags = await saveHashtagsFromContent(payload.content, post.id);
       if (hashtags.length > 0) {
-        console.log(`✅ Saved ${hashtags.length} hashtags for post`);
+        console.log(`Saved ${hashtags.length} hashtags for post`);
       }
     } catch (hashtagError) {
-      console.error("⚠️  Error saving hashtags:", hashtagError);
+      console.error(" Error saving hashtags:", hashtagError);
       // Don't fail the post creation if hashtags fail
     }
 
       if (notificationError) {
-        console.error("⚠️ Failed to save success notification:", notificationError);
+        console.error("Failed to save success notification:", notificationError);
       }
     }
 
@@ -244,11 +244,11 @@ export async function processPostCreation(payload: PostJobPayload) {
 
 
 
-    console.log("🎉 Post processing completed successfully");
+    console.log("Post processing completed successfully");
     // await deleteQueueStatus(payload.queueId!);
     return post;
   } catch (error) {
-    console.error("❌ Error processing post creation:", error);
+    console.error("Error processing post creation:", error);
     throw error;
   }
 }
@@ -262,7 +262,7 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
 
   try {
     // console.log(
-    //   `🔄 Processing post update for user: ${payload.userId}, media: ${payload.media.length} files`
+    //   `Processing post update for user: ${payload.userId}, media: ${payload.media.length} files`
     // );
 
     // Update status to 'processing'
@@ -273,7 +273,7 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
     // Step 1: Using AI for check
 
     // Step 2: Create post in database
-    console.log("📝 Creating post in database...");
+    console.log("Creating post in database...");
     const { data: post, error } = await supabase
       .from("posts")
       .update({
@@ -299,16 +299,16 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
       throw new Error(`Failed to update post: ${error.message}`);
     }
 
-    console.log("✅ Post updated successfully:", post.id);
+    console.log("Post updated successfully:", post.id);
 
     // Step 3: Sync hashtags (remove old, add new)
     try {
       const hashtags = await syncHashtagsForPost(payload.content, post.id);
       if (hashtags.length > 0) {
-        console.log(`✅ Synced ${hashtags.length} new hashtags for post`);
+        console.log(`Synced ${hashtags.length} new hashtags for post`);
       }
     } catch (hashtagError) {
-      console.error("⚠️  Error syncing hashtags:", hashtagError);
+      console.error(" Error syncing hashtags:", hashtagError);
       // Don't fail the post update if hashtags fail
     }
 
@@ -317,11 +317,11 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
       await updateQueueStatus(payload.queueId, "completed", post.id);
     }
 
-    console.log("🎉 Post updated processing completed successfully");
+    console.log("Post updated processing completed successfully");
     await deleteQueueStatus(payload.queueId!);
     return post;
   } catch (error) {
-    console.error("❌ Error processing post update:", error);
+    console.error("Error processing post update:", error);
     throw error;
   }
 }

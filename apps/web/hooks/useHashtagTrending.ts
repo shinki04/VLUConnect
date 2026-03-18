@@ -48,7 +48,7 @@ export function useHashtagTrending({
       setError(
         err instanceof Error ? err : new Error("Failed to fetch hashtags")
       );
-      console.error("❌ Error fetching trending hashtags:", err);
+      console.error("Error fetching trending hashtags:", err);
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export function useHashtagTrending({
           (payload) => {
             if (!mounted) return;
 
-            console.log("🔔 Hashtag update received:", payload);
+            // console.log("🔔 Hashtag update received:", payload);
 
             // Handle INSERT
             if (payload.eventType === "INSERT") {
@@ -180,7 +180,7 @@ export function useSearchHashtags() {
         setResults((data || []) as HashtagWithCount[]);
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Search failed"));
-        console.error("❌ Error searching hashtags:", err);
+        console.error("Error searching hashtags:", err);
       } finally {
         setSearching(false);
       }
@@ -219,7 +219,7 @@ export function usePostHashtags(postId: string) {
         setError(
           err instanceof Error ? err : new Error("Failed to fetch hashtags")
         );
-        console.error("❌ Error fetching post hashtags:", err);
+        console.error("Error fetching post hashtags:", err);
       } finally {
         setLoading(false);
       }

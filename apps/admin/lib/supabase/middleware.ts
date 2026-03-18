@@ -83,7 +83,6 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.sub)
       .single();
     const role = profile.data?.global_role; // custom claims
-    console.log("Role:", role);
     if (role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/login"; // redirect nếu không phải admin

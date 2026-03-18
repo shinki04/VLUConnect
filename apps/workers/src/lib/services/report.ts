@@ -10,14 +10,14 @@ import { checkBlockedKeywords } from "./keyword";
  */
 export async function processReportCheck(payload: ReportJobPayload) {
   const supabase = createServiceClient();
-  console.log(`🔍 Processing report check for ${payload.reportedType}:${payload.reportedId}`);
+  console.log(`Processing report check for ${payload.reportedType}:${payload.reportedId}`);
 
   try {
     // Step 1: Check blocked keywords FIRST
     const matchedKeyword = await checkBlockedKeywords(payload.content, payload.groupId);
 
     if (matchedKeyword) {
-      console.log(`🚫 Keyword matched: "${matchedKeyword}"`);
+      console.log(`Keyword matched: "${matchedKeyword}"`);
 
       // Update report status to reviewed (auto-flagged)
       await supabase
@@ -56,7 +56,7 @@ export async function processReportCheck(payload: ReportJobPayload) {
     }
 
     // Step 2: Run AI sentiment analysis
-    console.log("🤖 Running AI sentiment analysis...");
+    console.log("Running AI sentiment analysis...");
     const sentiment = await sentimentModel(payload.content);
 
     if (sentiment.length === 0) {
@@ -85,13 +85,13 @@ export async function processReportCheck(payload: ReportJobPayload) {
 
     if (negScore >= 0.8) {
       newStatus = "reviewed"; // Auto-mark as reviewed if highly negative
-      console.log(`🚫 High negative sentiment: ${(negScore * 100).toFixed(1)}%`);
+      console.log(`High negative sentiment: ${(negScore * 100).toFixed(1)}%`);
       deleteReportTarget = true;
     } else if (negScore > 0.7) {
       // Keep as pending but log warning
-      console.log(`⚠️ Moderate negative sentiment: ${(negScore * 100).toFixed(1)}%`);
+      console.log(`Moderate negative sentiment: ${(negScore * 100).toFixed(1)}%`);
     } else {
-      console.log(`✅ Low negative sentiment: ${(negScore * 100).toFixed(1)}%`);
+      console.log(`Low negative sentiment: ${(negScore * 100).toFixed(1)}%`);
     }
 
     // Update report with analysis results
@@ -103,7 +103,7 @@ export async function processReportCheck(payload: ReportJobPayload) {
       })
       .eq("id", payload.reportId);
 
-    console.log(`✅ Report ${payload.reportId} processed. Status: ${newStatus}`);
+    console.log(`Report ${payload.reportId} processed. Status: ${newStatus}`);
 
     const table = REPORT_TYPE_TABLE[payload.reportedType];
 
@@ -153,12 +153,12 @@ export async function processReportCheck(payload: ReportJobPayload) {
           if (commentError) {
             console.error("Failed to delete comment:", commentError);
           } else {
-            console.log(`✅ Comment ${payload.reportedId} soft deleted by AI`);
+            console.log(`Comment ${payload.reportedId} soft deleted by AI`);
           }
           break;
         case "users":
           // For users, we don't auto-delete, just escalate to admin
-          console.log(`⚠️ User ${payload.reportedId} flagged for admin review`);
+          console.log(`User ${payload.reportedId} flagged for admin review`);
           break;
         case "messages":
           const { error: errorMessageTarget } = await supabase
@@ -171,12 +171,12 @@ export async function processReportCheck(payload: ReportJobPayload) {
           if (errorMessageTarget) {
             console.error("Failed to delete message:", errorMessageTarget);
           } else {
-            console.log(`✅ Message ${payload.reportedId} deleted by AI`);
+            console.log(`Message ${payload.reportedId} deleted by AI`);
           }
           break;
         case "groups":
           // For groups, we don't auto-delete, just escalate to admin
-          console.log(`⚠️ Group ${payload.reportedId} flagged for admin review`);
+          console.log(`Group ${payload.reportedId} flagged for admin review`);
           break;
 
       }
@@ -185,7 +185,7 @@ export async function processReportCheck(payload: ReportJobPayload) {
 
     return { status: newStatus, negScore };
   } catch (error) {
-    console.error("❌ Error processing report:", error);
+    console.error("Error processing report:", error);
     throw error;
   }
 }

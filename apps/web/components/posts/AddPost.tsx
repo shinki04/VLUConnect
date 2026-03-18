@@ -115,14 +115,6 @@ function AddPost({
           });
         }
 
-        // Tạo post với danh sách URL
-        console.log("📝 [add.tsx] Calling createPostMutation with:", {
-          queueId: res?.id,
-          userId: currentUser.id,
-          groupId: groupId || null,
-          mediaUrlsCount: mediaUrls.length,
-        });
-
         await createPostMutation.mutateAsync({
           queueId: res?.id,
           userId: currentUser.id,

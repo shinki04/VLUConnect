@@ -95,14 +95,14 @@ export function MessagesClient({
   } = useConversation(activeConversationId || "");
 
   // Debug logging
-  console.log("[MessagesClient] activeConversationId:", activeConversationId);
-  console.log("[MessagesClient] activeConversation:", activeConversation);
-  console.log("[MessagesClient] isLoadingConversation:", isLoadingConversation);
-  console.log(
-    "[MessagesClient] isFetchingConversation:",
-    isFetchingConversation,
-  );
-  console.log("[MessagesClient] conversationError:", conversationError);
+  // console.log("[MessagesClient] activeConversationId:", activeConversationId);
+  // console.log("[MessagesClient] activeConversation:", activeConversation);
+  // console.log("[MessagesClient] isLoadingConversation:", isLoadingConversation);
+  // console.log(
+  //   "[MessagesClient] isFetchingConversation:",
+  //   isFetchingConversation,
+  // );
+  // console.log("[MessagesClient] conversationError:", conversationError);
 
   // Fallback to initial conversation if hook hasn't loaded yet
   const displayConversation =
