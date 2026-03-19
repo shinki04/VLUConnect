@@ -593,6 +593,7 @@ export async function getGroupPosts(groupId: string, page = 1, pageSize = 10) {
       privacy_level,
       is_anonymous,
       group_id,
+      moderation_status,
       group:groups!group_id(
         id,
         name,
@@ -602,6 +603,7 @@ export async function getGroupPosts(groupId: string, page = 1, pageSize = 10) {
       { count: "exact" }
     )
     .eq("group_id", groupId)
+    .in("moderation_status", ["approved", "flagged"])
     .is("is_deleted", false)
     .order("created_at", { ascending: false })
     .range(start, end);
