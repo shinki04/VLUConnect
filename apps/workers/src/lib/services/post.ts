@@ -111,11 +111,11 @@ export async function processPostCreation(payload: PostJobPayload) {
       aiLabel = sentiment[0]?.label || "UNKNOWN";
 
       // Determine moderation status based on NEG score
-      if (negScore >= 0.9) {
+      if (negScore >= 0.96) {
         moderationStatus = "rejected";
         moderationReason = `AI đã phát hiện nội dung tiêu cực với độ tin cậy ${(negScore * 100).toFixed(1)}%`;
         console.log(`Post rejected: NEG score ${negScore}`);
-      } else if (negScore > 0.7) {
+      } else if (negScore > 0.8) {
         moderationStatus = "flagged";
         console.log(`Post flagged: NEG score ${negScore}`);
       }
