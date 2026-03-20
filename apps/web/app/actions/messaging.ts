@@ -97,7 +97,7 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
     throw new Error("Failed to fetch conversations");
   }
 
-  const result = (data as unknown) as ConversationWithDetails[];
+  const result = data as ConversationWithDetails[];
   await messageCache.setConversations(currentUserId, result);
   return result;
 }

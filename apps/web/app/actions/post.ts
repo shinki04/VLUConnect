@@ -70,10 +70,10 @@ export async function fetchPosts(
   if (!user) throw new Error("Unauthorized");
 
   // Try cache first
-  const cachedFeed = await feedCache.getCachedFeedPage(user.id, page, itemsPerPage);
+  const cachedFeed = await feedCache.getCachedFeedPage(user.id, page, itemsPerPage, filter);
   if (cachedFeed) {
     return {
-      posts: cachedFeed.posts as unknown as PostResponse[],
+      posts: cachedFeed.posts as PostResponse[],
       hasMore: cachedFeed.hasMore,
       total: cachedFeed.total,
       currentPage: cachedFeed.page,
@@ -100,7 +100,7 @@ export async function fetchPosts(
     throw new Error(`Failed to fetch posts: ${error.message}`);
   }
 
-  const typedData = (data as unknown as PostResponse[]) || [];
+  const typedData = (data as PostResponse[]) || [];
   const total = count || 0;
 
   let postsWithLikeStatus = typedData;

@@ -100,9 +100,8 @@ export async function GET(
 
     // Extract posts from the join result
     const posts = (postHashtags || [])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((ph: any) => ph.posts)
-      .filter(Boolean) as unknown as PostResponse[];
+      .map((ph) => ph.posts)
+      .filter(Boolean) as PostResponse[];
 
     // Check like status for current user
     let postsWithLikeStatus = posts;
