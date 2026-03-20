@@ -1,24 +1,7 @@
 import { getRedisClient } from "./redis";
-import { GlobalRole } from "@repo/shared/types/post";
+import { PostResponse } from "@repo/shared/types/post";
 
-export interface CachedPost {
-  id: string;
-  created_at: string | null;
-  author: {
-    id: string;
-    username: string | null;
-    display_name?: string | null;
-    avatar_url?: string | null;
-    global_role?: GlobalRole | null;
-  };
-  content: string;
-  media_urls?: string[] | null;
-  updated_at?: string | null;
-  like_count: number | null;
-  comment_count: number | null;
-  share_count: number | null;
-  privacy_level: "public" | "friends" | "private";
-}
+export type CachedPost = PostResponse;
 
 /**
  * PostCacheService - Manages individual post caching with stampede protection
