@@ -1,8 +1,46 @@
 "use server";
 import { getPostRabbitMQClient } from "@repo/rabbitmq/PostRabbitMQ";
+import { getFeedCacheService } from "@repo/redis/feedCacheService";
+import { getPostCacheService } from "@repo/redis/postCacheService";
+import { getRedisClient } from "@repo/redis/redis";
 import { FeedFilter, Post, PostResponse, privacyPost } from "@repo/shared/types/post";
 import { PostQueueDeletePayload } from "@repo/shared/types/postQueue";
 import { createClient } from "@repo/supabase/server";
+
+async function removeHashtagsForPost(postId: string) {
+  const supabase = await createClient();
+  try {
+    const { data: postHashtags } = await supabase
+      .from("post_hashtags")
+      .select("hashtag_id")
+      .eq("post_id", postId);
+
+    if (postHashtags && postHashtags.length > 0) {
+      for (const ph of postHashtags) {
+        if (ph.hashtag_id) {
+          await supabase.rpc("decrement_hashtag_count", {
+            hashtag_id: ph.hashtag_id,
+          });
+        }
+      }
+
+      await supabase
+        .from("post_hashtags")
+        .delete()
+        .eq("post_id", postId);
+        
+      const redis = getRedisClient();
+      if (redis.isReady()) {
+        await redis.delCache("trending:hashtags");
+      }
+    }
+  } catch (error) {
+    console.error("Error removing hashtags for post:", error);
+  }
+}
+
+const feedCache = getFeedCacheService();
+const postCache = getPostCacheService();
 
 export interface CreatePostInput {
   content: string;
@@ -27,18 +65,20 @@ export async function fetchPosts(
   itemsPerPage: number,
   filter: FeedFilter = "all"
 ) {
-  // Try cache first
-  // const cachedFeed = await feedCache.getCachedFeedPage(userId, page, itemsPerPage);
-  // if (cachedFeed) {
-  //   return {
-  //     posts: cachedFeed.posts as PostResponse[],
-  //     hasMore: cachedFeed.hasMore,
-  //     total: cachedFeed.total,
-  //     currentPage: cachedFeed.page,
-  //   };
-  // }
-
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Try cache first
+  const cachedFeed = await feedCache.getCachedFeedPage(user.id, page, itemsPerPage);
+  if (cachedFeed) {
+    return {
+      posts: cachedFeed.posts as unknown as PostResponse[],
+      hasMore: cachedFeed.hasMore,
+      total: cachedFeed.total,
+      currentPage: cachedFeed.page,
+    };
+  }
 
   // Validate page number
   if (page < 1) {
@@ -62,10 +102,6 @@ export async function fetchPosts(
 
   const typedData = (data as unknown as PostResponse[]) || [];
   const total = count || 0;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   let postsWithLikeStatus = typedData;
 
@@ -101,13 +137,14 @@ export async function fetchPosts(
   };
 
   // Cache the feed page
-  // await feedCache.setCachedFeedPage(userId, page, itemsPerPage, {
-  //   posts: data || [],
-  //   page,
-  //   hasMore,
-  //   total,
-  //   itemsPerPage,
-  // });
+
+  await feedCache.setCachedFeedPage(user.id, page, itemsPerPage, {
+    posts: postsWithLikeStatus,
+    page,
+    hasMore,
+    total,
+    itemsPerPage,
+  });
 
   return result;
 }
@@ -133,44 +170,11 @@ export async function fetchPosts(
 
 export async function fetchPostById(postId: string) {
   try {
-    // Use cache service with stampede protection
-    // const post = await postCache.getCachedOrFetch(postId, async () => {
-    //   const supabase = await createClient();
-    //   const { data, error } = await supabase
-    //     .from("posts")
-    //     .select(
-    //       `
-    //       id,
-    //       created_at,
-    //       author: author_id(
-    //         id,
-    //         username,
-    //         display_name,
-    //         avatar_url,
-    //         global_role
-    //       ),
-    //       content,
-    //       media_urls,
-    //       updated_at,
-    //       like_count,
-    //       comment_count,
-    //       share_count,
-    //       privacy_level
-    //       `
-    //     )
-    //     .eq("id", postId)
-    //     .single();
-
-    //   if (error) {
-    //     throw new Error(`Failed to fetch post: ${error.message}`);
-    //   }
-    //   return data;
-    // });
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("posts")
-      .select(
-        `
+    const rawPost = await postCache.getCachedOrFetch(postId, async () => {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("posts")
+        .select(`
           id,
           created_at, 
           author: profiles!posts_author_id_fkey(
@@ -189,22 +193,29 @@ export async function fetchPostById(postId: string) {
           privacy_level,
           is_anonymous,
           group_id
-          `
-      )
-      .eq("id", postId)
-      .single();
+        `)
+        .eq("id", postId)
+        .single();
+      
+      if (error) {
+        throw new Error(`Failed to fetch post: ${error.message}`);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return data as any;
+    });
 
-    if (error) {
-      throw new Error(`Failed to fetch post: ${error.message}`);
+    if (!rawPost) {
+       throw new Error("Post not found");
     }
 
+    const supabaseAuth = await createClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await supabaseAuth.auth.getUser();
 
     let isLikedByViewer = false;
-    if (user && data) {
-      const { data: like } = await supabase
+    if (user && rawPost) {
+      const { data: like } = await supabaseAuth
         .from("post_likes")
         .select("id")
         .eq("post_id", postId)
@@ -214,7 +225,7 @@ export async function fetchPostById(postId: string) {
     }
 
     return {
-      ...data,
+      ...rawPost,
       is_liked_by_viewer: isLikedByViewer,
     };
   } catch (error: unknown) {
@@ -369,6 +380,9 @@ export async function deletePost(
 
   // Determine if user is author
   if (isOwner) {
+    // Clean up hashtags before soft or hard delete
+    await removeHashtagsForPost(postId);
+
     // Hard delete for author
     const { error } = await supabase
       .from("posts")
@@ -379,6 +393,9 @@ export async function deletePost(
       throw new Error(`Failed to delete post: ${error.message}`);
     }
     
+    await postCache.invalidatePost(postId);
+    await feedCache.invalidateAllFeeds();
+    
     if (postRecord.media_urls && postRecord.media_urls.length > 0) {
         const payload: PostQueueDeletePayload = {
           media_urls: postRecord.media_urls,
@@ -387,6 +404,9 @@ export async function deletePost(
         await postRabbitMQClient.publishPostDelete(payload);
     }
   } else {
+    // Clean up hashtags before soft or hard delete
+    await removeHashtagsForPost(postId);
+
     // Soft delete for group admin
     const { error } = await supabase
       .from("posts")
@@ -396,6 +416,9 @@ export async function deletePost(
     if (error) {
       throw new Error(`Failed to soft delete post: ${error.message}`);
     }
+
+    await postCache.invalidatePost(postId);
+    await feedCache.invalidateAllFeeds();
 
     // Attempt to notify the author
     try {
@@ -448,6 +471,9 @@ export async function updatePost(
   if (error) {
     throw new Error(`Failed to update post: ${error.message}`);
   }
+
+  await postCache.invalidatePost(postId);
+  await feedCache.invalidateAllFeeds();
 
   return data;
 }

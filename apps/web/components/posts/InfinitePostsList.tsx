@@ -2,8 +2,10 @@
 
 import { PostResponse } from "@repo/shared/types/post";
 import { FeedFilter } from "@repo/shared/types/post";
+import { createClient } from "@repo/supabase/client";
 import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React from "react";
@@ -41,10 +43,28 @@ export function InfinitePostsList({
   const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   const [mounted, setMounted] = React.useState(false);
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     setMounted(true);
-  }, []);
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel("public:posts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
+        () => {
+          // Invalidate posts to trigger refetch when a new post is inserted
+          queryClient.invalidateQueries({ queryKey: ["posts"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Handle reaching end of list for infinite scroll
   const handleEndReached = React.useCallback(() => {

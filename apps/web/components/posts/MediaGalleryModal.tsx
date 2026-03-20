@@ -1,12 +1,15 @@
 "use client";
 
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/components/dialog";
+import {
   ChevronLeft,
   ChevronRight,
   Download,
-  FileSpreadsheet,
-  FileText,
-  FileType,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -18,6 +21,8 @@ import {
   isImageType,
   isVideoType,
 } from "@/lib/mediaUtils";
+
+import { FileIcon } from "../ui/file-icon";
 
 interface MediaGalleryModalProps {
   mediaUrls: string[];
@@ -31,16 +36,16 @@ export default function MediaGalleryModal({
   onClose,
 }: MediaGalleryModalProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  
+
   // Categorize media by type
   const images = mediaUrls
     .map((url, index) => ({ url, index, type: getFileInfo(url).type }))
     .filter((item) => isImageType(item.type));
-  
+
   const videos = mediaUrls
     .map((url, index) => ({ url, index, type: getFileInfo(url).type }))
     .filter((item) => isVideoType(item.type));
-  
+
   const documents = mediaUrls
     .map((url, index) => ({ url, index, type: getFileInfo(url).type }))
     .filter((item) => isDocumentType(item.type));
@@ -56,33 +61,17 @@ export default function MediaGalleryModal({
     document.body.removeChild(link);
   };
 
-  const getFileIconComponent = (url: string) => {
-    const fileInfo = getFileInfo(url);
-    const iconClass = "w-8 h-8";
-    switch (fileInfo.type) {
-      case "pdf":
-      case "document":
-        return <FileText className={iconClass} />;
-      case "word":
-        return <FileType className={iconClass} />;
-      case "excel":
-        return <FileSpreadsheet className={iconClass} />;
-      default:
-        return <FileText className={iconClass} />;
-    }
-  };
-
   const handlePrevious = () => {
     if (images.length === 0) return;
     setSelectedIndex((prev) =>
-      prev === null || prev === 0 ? images.length - 1 : prev - 1
+      prev === null || prev === 0 ? images.length - 1 : prev - 1,
     );
   };
 
   const handleNext = () => {
     if (images.length === 0) return;
     setSelectedIndex((prev) =>
-      prev === null || prev === images.length - 1 ? 0 : prev + 1
+      prev === null || prev === images.length - 1 ? 0 : prev + 1,
     );
   };
 
@@ -100,7 +89,7 @@ export default function MediaGalleryModal({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 transition-colors"
+            className="absolute top-4 right-4 z-10 /20 hover:bg-white/40 text-white rounded-full p-2 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -145,31 +134,28 @@ export default function MediaGalleryModal({
 
   // Gallery grid mode
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-4xl w-full max-h-[90vh] p-0 flex flex-col gap-0 overflow-hidden "
+        showCloseButton={false}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Bài viết</h2>
+        <DialogHeader className="flex flex-row items-center justify-between p-4 border-b space-y-0">
+          <DialogTitle className="text-lg font-semibold">Bài viết</DialogTitle>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100"
+            className=" rounded-full p-1 focus:outline-none hover:bg-mainred-hover/60"
           >
             <X className="w-6 h-6" />
           </button>
-        </div>
+        </DialogHeader>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-4">
             {/* Post content */}
             <div>
-              <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">
                 {postContent}
               </p>
             </div>
@@ -185,10 +171,10 @@ export default function MediaGalleryModal({
                     images.length === 1
                       ? "grid-cols-1"
                       : images.length === 2
-                      ? "grid-cols-2"
-                      : images.length === 3
-                      ? "grid-cols-3"
-                      : "grid-cols-4"
+                        ? "grid-cols-2"
+                        : images.length === 3
+                          ? "grid-cols-3"
+                          : "grid-cols-4"
                   }`}
                 >
                   {images.map((item, index) => (
@@ -222,8 +208,8 @@ export default function MediaGalleryModal({
                     videos.length === 1
                       ? "grid-cols-1"
                       : videos.length === 2
-                      ? "grid-cols-2"
-                      : "grid-cols-3"
+                        ? "grid-cols-2"
+                        : "grid-cols-3"
                   }`}
                 >
                   {videos.map((item, index) => (
@@ -261,7 +247,7 @@ export default function MediaGalleryModal({
                         <div className="flex flex-col items-center text-center gap-2">
                           {/* Icon */}
                           <div className="text-blue-600">
-                            {getFileIconComponent(item.url)}
+                            <FileIcon type={fileInfo.type} className="w-8 h-8" />
                           </div>
 
                           {/* Extension Badge */}
@@ -291,7 +277,7 @@ export default function MediaGalleryModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,4 +1,5 @@
 import { getRedisClient } from "./redis";
+import { GlobalRole } from "@repo/shared/types/post";
 
 export interface CachedPost {
   id: string;
@@ -8,7 +9,7 @@ export interface CachedPost {
     username: string | null;
     display_name?: string | null;
     avatar_url?: string | null;
-    global_role?: "admin" | "moderator" | "student" | "lecturer" | null;
+    global_role?: GlobalRole | null;
   };
   content: string;
   media_urls?: string[] | null;

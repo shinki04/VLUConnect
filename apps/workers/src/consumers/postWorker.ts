@@ -6,6 +6,7 @@ import {
 } from "@repo/shared/types/postQueue";
 
 import {
+  deletePost,
   deletePostMedia,
   processPostCreation,
   processPostUpdate,
@@ -51,8 +52,11 @@ export async function startPostWorker() {
       async (payload: PostQueueDeletePayload) => {
         await deletePostMedia(payload);
 
-        console.log("Processing delete job for user:", payload.queueId);
-        // TODO: Implement delete logic
+        console.log("Processing delete job for post:", payload.queueId);
+        if (payload.queueId) {
+          await deletePost(payload.queueId);
+          console.log("Database deletion completed for post:", payload.queueId);
+        }
       }
     );
 

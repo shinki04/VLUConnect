@@ -1,6 +1,5 @@
 "use client";
 
-import { FileSpreadsheet, FileText, FileType } from "lucide-react";
 import Image from "next/image";
 
 import {
@@ -9,22 +8,11 @@ import {
   isVideoType,
   type MediaType,
 } from "@/lib/mediaUtils";
+
+import { FileIcon } from "../ui/file-icon";
 interface PostMediaGalleryProps {
   mediaUrls?: string[] | null;
   onMediaClick: (url: string, index: number, isMoreMedia: boolean) => void;
-}
-
-const FILE_ICON_MAP = {
-  pdf: FileText,
-  document: FileText,
-  word: FileType,
-  excel: FileSpreadsheet,
-} as const;
-
-function getFileIconComponent(type: MediaType) {
-  const IconComponent =
-    FILE_ICON_MAP[type as keyof typeof FILE_ICON_MAP] || FileText;
-  return <IconComponent className="w-8 h-8" />;
 }
 
 function getGridCols(count: number): string {
@@ -40,7 +28,9 @@ export default function PostMediaGallery({
   if (!mediaUrls || mediaUrls.length === 0) return null;
 
   return (
-    <div className={`grid gap-2 mb-3 ${getGridCols(mediaUrls.length)}`}>
+    <div
+      className={`grid gap-2 mb-3 ${getGridCols(mediaUrls.length)}`}
+    >
       {mediaUrls.slice(0, 4).map((url, index) => (
         <MediaItem
           key={index}
@@ -48,6 +38,7 @@ export default function PostMediaGallery({
           index={index}
           isMoreMedia={mediaUrls.length > 4 && index === 3}
           remainingCount={mediaUrls.length - 4}
+          totalCount={mediaUrls.length}
           onClick={onMediaClick}
         />
       ))}
@@ -60,6 +51,7 @@ interface MediaItemProps {
   index: number;
   isMoreMedia: boolean;
   remainingCount: number;
+  totalCount: number;
   onClick: (url: string, index: number, isMoreMedia: boolean) => void;
 }
 
@@ -68,15 +60,17 @@ function MediaItem({
   index,
   isMoreMedia,
   remainingCount,
+  totalCount,
   onClick,
 }: MediaItemProps) {
   const fileInfo = getFileInfo(url);
   const isImage = isImageType(fileInfo.type);
   const isVideo = isVideoType(fileInfo.type);
+  const isSingle = totalCount === 1;
 
   return (
     <div
-      className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden group cursor-pointer"
+      className={`relative ${isSingle ? "max-w-md w-full mx-auto aspect-video" : "aspect-square"} bg-gray-200 rounded-lg overflow-hidden group cursor-pointer`}
       onClick={() => onClick(url, index, isMoreMedia)}
     >
       {isImage ? (
@@ -84,40 +78,12 @@ function MediaItem({
           src={url}
           alt={`Post media ${index + 1}`}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-200"
+          className="object-cover group-hover:opacity-80 transition-opacity duration-200"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       ) : isVideo ? (
         <>
           <video src={url} className="w-full h-full object-cover" controls />
-          {/* <MediaPlayer.Root
-            className="w-full h-full object-cover"
-            onFullscreenChange={(isFullscreen: Boolean) => {
-              console.log(isFullscreen);
-            }}
-          >
-            <MediaPlayer.Video>
-              <source src={url} type="video/mp4" />
-            </MediaPlayer.Video>
-            <MediaPlayer.Controls className="flex-col items-start">
-              <MediaPlayer.ControlsOverlay />
-              <MediaPlayer.Seek />
-              <div className="flex w-full items-center ">
-                <div className="flex flex-1 items-center ">
-                  <MediaPlayer.Play /> */}
-          {/* <MediaPlayer.SeekBackward />
-                  <MediaPlayer.SeekForward /> */}
-          {/* <MediaPlayer.Volume expandable />
-                  <MediaPlayer.Time />
-                </div>
-                <div className="flex items-center "> */}
-          {/* <MediaPlayer.PlaybackSpeed /> */}
-          {/* <MediaPlayer.PiP /> */}
-          {/* <MediaPlayer.Fullscreen />
-                </div> */}
-          {/* </div>
-            </MediaPlayer.Controls>
-          </MediaPlayer.Root> */}
         </>
       ) : (
         <FilePreview url={url} fileInfo={fileInfo} />
@@ -144,8 +110,8 @@ function FilePreview({ url, fileInfo }: FilePreviewProps) {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 group-hover:from-blue-100 group-hover:to-indigo-200 transition-all duration-200">
-      <div className="text-blue-600 mb-2 group-hover:scale-110 transition-transform duration-200">
-        {getFileIconComponent(fileInfo.type)}
+      <div className="text-blue-600 mb-2 transition-transform duration-200">
+        <FileIcon type={fileInfo.type} className="w-8 h-8" />
       </div>
 
       <span className="inline-block bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-2 uppercase">

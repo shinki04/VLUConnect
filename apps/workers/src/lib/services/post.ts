@@ -1,3 +1,4 @@
+import { getFeedCacheService } from "@repo/redis/feedCacheService";
 import { NotificationType } from "@repo/shared/types/notification";
 import {  ModerationStatus, Post } from "@repo/shared/types/post";
 import {
@@ -242,10 +243,19 @@ export async function processPostCreation(payload: PostJobPayload) {
       await updateQueueStatus(payload.queueId, "completed", post.id);
     }
 
-
+    // Invalidate Redis cache so that frontend pulls fresh data
+    try {
+      const feedCache = getFeedCacheService();
+      await feedCache.invalidateAllFeeds();
+      console.log("Redis feed cache invalidated");
+    } catch (cacheError) {
+      console.error("Failed to invalidate feed cache:", cacheError);
+    }
 
     console.log("Post processing completed successfully");
-    // await deleteQueueStatus(payload.queueId!);
+    if (payload.queueId) {
+      await deleteQueueStatus(payload.queueId);
+    }
     return post;
   } catch (error) {
     console.error("Error processing post creation:", error);
@@ -270,16 +280,56 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
       await updateQueueStatus(payload.queueId, "processing");
     }
 
-    // Step 1: Using AI for check
+    let moderationStatus: ModerationStatus = "approved";
+    let moderationReason: string | null = null;
+    let keywordMatch: string | null = null;
+    let aiScore = 0;
+    let aiLabel = "NEU";
+    let sentimentResults: SentimentResult[] = [];
+
+    // Step 0: Check blocked keywords
+    const matchedKeyword = await checkBlockedKeywords(payload.content);
+
+    if (matchedKeyword) {
+      console.log(`Keyword matched in post update: "${matchedKeyword}"`);
+      moderationStatus = "rejected";
+      moderationReason = `Bài viết chữa từ khóa bị chặn: "${matchedKeyword}"`;
+      keywordMatch = matchedKeyword;
+    } else {
+      // Step 1: Using AI for sentiment check ONLY if no keyword block
+      const sentiment = await sentimentModel(payload.content);
+      if (sentiment.length === 0) {
+        throw new Error("Failed to get sentiment");
+      }
+      sentimentResults = sentiment;
+
+      // Find NEG sentiment score
+      const negSentiment = sentiment.find((s) => s.label === "NEG");
+      const negScore = negSentiment?.score ?? 0;
+      aiScore = negScore;
+      aiLabel = sentiment[0]?.label || "UNKNOWN";
+
+      // Determine moderation status based on NEG score
+      if (negScore >= 0.96) {
+        moderationStatus = "rejected";
+        moderationReason = `AI đã phát hiện nội dung cập nhật tiêu cực với độ tin cậy ${(negScore * 100).toFixed(1)}%`;
+        console.log(`Post update rejected: NEG score ${negScore}`);
+      } else if (negScore > 0.8) {
+        moderationStatus = "flagged";
+        console.log(`Post update flagged: NEG score ${negScore}`);
+      }
+    }
 
     // Step 2: Create post in database
-    console.log("Creating post in database...");
+    console.log("Updating post in database...");
     const { data: post, error } = await supabase
       .from("posts")
       .update({
         content: payload.content,
         privacy_level: payload.privacyLevel,
         media_urls: payload.media_urls || [],
+        moderation_status: moderationStatus,
+        ...(moderationReason ? { moderation_reason: moderationReason } : { moderation_reason: null }),
       })
       .eq("id", payload.postId)
       .eq("author_id", payload.userId)
@@ -301,6 +351,59 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
 
     console.log("Post updated successfully:", post.id);
 
+    // Step 2.1: Log Moderation Actions
+    if (keywordMatch) {
+      await supabase.from("moderation_actions").insert({
+        target_type: "post",
+        target_id: post.id,
+        action_type: "keyword_blocked",
+        reason: moderationReason!,
+        matched_keyword: keywordMatch,
+        created_by: null,
+      });
+    } else if (moderationStatus === "rejected" || moderationStatus === "flagged") {
+      await supabase.from("moderation_actions").insert({
+        target_type: "post",
+        target_id: post.id,
+        action_type: "ai_flagged",
+        reason: moderationReason || (moderationStatus === "flagged" ? "AI flagged potential issue" : "AI rejected content"),
+        ai_score: aiScore,
+        created_by: null,
+      });
+    }
+
+    try {
+      await supabase.from("ai_analysis_logs").insert({
+        target_type: "post",
+        target_id: post.id,
+        model_name: matchedKeyword ? "keyword_filter" : "5CD-AI/Vietnamese-Sentiment-visobert",
+        analysis_type: matchedKeyword ? "keyword_match" : "sentiment",
+        label: matchedKeyword ? "BLOCKED" : aiLabel,
+        score: matchedKeyword ? 1.0 : (sentimentResults[0]?.score || 0),
+        metadata: {
+          all_labels: sentimentResults,
+          matched_keyword: matchedKeyword
+        },
+      });
+      console.log("Analysis logged for post update:", post.id);
+    } catch (logError) {
+      console.error("Failed to log AI analysis:", logError);
+    }
+
+    // save notification
+    if (moderationStatus === "rejected") {
+      const { error: notificationError } = await supabase.from("notifications").insert({
+        recipient_id: payload.userId,
+        sender_id: null,
+        entity_type: "post_updated" as NotificationType,
+        entity_id: post.id,
+        title: "Cập nhật bài viết vi phạm tiêu chuẩn",
+        message: moderationReason || "Bài cập nhật của bạn đã bị từ chối do vi phạm quy định cộng đồng.",
+        type: "system" as NotificationType,
+      });
+      if (notificationError) console.error("Failed to save upate rejection noti:", notificationError);
+    }
+
     // Step 3: Sync hashtags (remove old, add new)
     try {
       const hashtags = await syncHashtagsForPost(payload.content, post.id);
@@ -315,6 +418,18 @@ export async function processPostUpdate(payload: UpdatePostJobPayload) {
     // Update status to 'completed' with post ID
     if (payload.queueId) {
       await updateQueueStatus(payload.queueId, "completed", post.id);
+    }
+
+    // Invalidate Redis cache so that frontend pulls fresh data
+    try {
+      const feedCache = getFeedCacheService();
+      await feedCache.invalidateAllFeeds();
+      const { getPostCacheService } = await import("@repo/redis/postCacheService");
+      const postCache = getPostCacheService();
+      await postCache.invalidatePost(post.id);
+      console.log("Redis post and feed cache invalidated");
+    } catch (cacheError) {
+      console.error("Failed to invalidate post cache:", cacheError);
     }
 
     console.log("Post updated processing completed successfully");
