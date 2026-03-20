@@ -6,10 +6,10 @@ import {
 } from "@repo/shared/types/postQueue";
 
 import {
+  deletePost,
   deletePostMedia,
   processPostCreation,
   processPostUpdate,
-  deletePost,
 } from "@/lib/services/post";
 
 // config({ path: resolve(process.cwd(), ".env.local") });

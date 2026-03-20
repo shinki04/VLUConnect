@@ -1,6 +1,12 @@
 "use client";
 
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/components/dialog";
+import {
   ChevronLeft,
   ChevronRight,
   Download,
@@ -10,18 +16,12 @@ import Image from "next/image";
 import React, { useState } from "react";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/ui/components/dialog";
-
-import {
   getFileInfo,
   isDocumentType,
   isImageType,
   isVideoType,
 } from "@/lib/mediaUtils";
+
 import { FileIcon } from "../ui/file-icon";
 
 interface MediaGalleryModalProps {

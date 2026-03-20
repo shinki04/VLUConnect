@@ -410,12 +410,54 @@ function AnnouncementFormDialog({
 }) {
   const [loading, setLoading] = React.useState(false);
 
-  const isExpired = initialData?.end_time
-    ? new Date(initialData.end_time) < new Date()
-    : false;
+  const [startTime, setStartTime] = React.useState<Date | undefined>(undefined);
+  const [endTime, setEndTime] = React.useState<Date | undefined>(undefined);
+  const [isActive, setIsActive] = React.useState<string>("true");
+
+  React.useEffect(() => {
+    if (open) {
+      setStartTime(
+        initialData?.start_time ? new Date(initialData.start_time) : new Date(),
+      );
+      setEndTime(
+        initialData?.end_time ? new Date(initialData.end_time) : undefined,
+      );
+      setIsActive(String(initialData?.is_active ?? true));
+    }
+  }, [open, initialData]);
+
+  const now = new Date();
+  const isExpired = endTime ? endTime < now : false;
+
+  // Logic: Allow toggle if start_time >= now. We allow 1 minute buffer for 'now'.
+  // But if it's already active from before, we should still allow toggling it off.
+  const isStartTimeInPast = startTime ? startTime < new Date(now.getTime() - 60000) : false;
+  const disableActiveToggle = isExpired || (isStartTimeInPast && !initialData?.is_active);
+
+  // Form Validations purely for UI (disabling the save button and showing error)
+  let errorMessage: string | null = null;
+  if (!startTime) {
+    errorMessage = "Vui lòng chọn thời gian bắt đầu.";
+  } else if (!initialData && isStartTimeInPast) {
+    errorMessage = "Thời gian bắt đầu không được nằm trong quá khứ.";
+  } else if (endTime && endTime <= startTime) {
+    errorMessage = "Thời gian kết thúc phải diễn ra sau thời gian bắt đầu.";
+  }
+
+  React.useEffect(() => {
+    // If start time is in the past and it isn't an already active announcement, force it to off
+    if (disableActiveToggle && !initialData?.is_active && isActive !== "false") {
+      setIsActive("false");
+    }
+  }, [disableActiveToggle, initialData?.is_active, isActive]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (errorMessage) {
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData(e.currentTarget);
@@ -423,13 +465,9 @@ function AnnouncementFormDialog({
         title: formData.get("title") as string,
         message: formData.get("message") as string,
         type: formData.get("type") as string,
-        start_time: new Date(
-          formData.get("start_time") as string,
-        ).toISOString(),
-        end_time: formData.get("end_time")
-          ? new Date(formData.get("end_time") as string).toISOString()
-          : null,
-        is_active: isExpired ? false : formData.get("is_active") === "true",
+        start_time: startTime!.toISOString(),
+        end_time: endTime ? endTime.toISOString() : null,
+        is_active: isExpired ? false : isActive === "true",
       };
 
       if (initialData) {
@@ -440,7 +478,6 @@ function AnnouncementFormDialog({
       onSuccess();
     } catch (error) {
       console.error("Failed to save announcement", error);
-      alert("Đã có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -500,12 +537,11 @@ function AnnouncementFormDialog({
                 <Label htmlFor="is_active">Trạng thái (Bật/Tắt)</Label>
                 <Select
                   name="is_active"
-                  defaultValue={
-                    isExpired ? "false" : String(initialData?.is_active ?? true)
-                  }
-                  disabled={isExpired}
+                  value={isExpired ? "false" : isActive}
+                  onValueChange={setIsActive}
+                  disabled={disableActiveToggle}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={disableActiveToggle ? "opacity-50" : ""}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -518,6 +554,11 @@ function AnnouncementFormDialog({
                     Đã hết hạn — trạng thái tự động tắt
                   </p>
                 )}
+                {isStartTimeInPast && !isExpired && !initialData && (
+                  <p className="text-xs text-destructive">
+                    Thời gian bắt đầu ở quá khứ, không thể bật.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -526,7 +567,8 @@ function AnnouncementFormDialog({
                 <Label htmlFor="start_time">Thời gian bắt đầu</Label>
                 <DateTimePicker
                   name="start_time"
-                  defaultValue={initialData?.start_time}
+                  value={startTime}
+                  onDateChange={setStartTime}
                   required
                 />
               </div>
@@ -534,10 +576,17 @@ function AnnouncementFormDialog({
                 <Label htmlFor="end_time">Thời gian kết thúc (Tùy chọn)</Label>
                 <DateTimePicker
                   name="end_time"
-                  defaultValue={initialData?.end_time || ""}
+                  value={endTime}
+                  onDateChange={setEndTime}
                 />
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
+                {errorMessage}
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button
@@ -547,7 +596,7 @@ function AnnouncementFormDialog({
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || !!errorMessage}>
                 {loading ? "Đang lưu..." : "Lưu lại"}
               </Button>
             </div>
@@ -562,16 +611,29 @@ function DateTimePicker({
   name,
   defaultValue,
   required,
+  value,
+  onDateChange,
 }: {
   name: string;
   defaultValue?: string;
   required?: boolean;
+  value?: Date;
+  onDateChange?: (date: Date | undefined) => void;
 }) {
+  const defaultParsedDate = defaultValue ? new Date(defaultValue) : undefined;
+
   const [date, setDate] = React.useState<Date | undefined>(
-    defaultValue ? new Date(defaultValue) : required ? new Date() : undefined,
+    value !== undefined
+      ? value
+      : defaultParsedDate || (required ? new Date() : undefined),
   );
+
   const [time, setTime] = React.useState<string>(
-    defaultValue ? format(new Date(defaultValue), "HH:mm") : "12:00",
+    defaultValue
+      ? format(new Date(defaultValue), "HH:mm")
+      : value
+        ? format(value, "HH:mm")
+        : format(new Date(), "HH:mm"),
   );
 
   const fullDate = React.useMemo(() => {
@@ -581,6 +643,29 @@ function DateTimePicker({
     newDate.setHours(hours || 0, minutes || 0, 0, 0);
     return newDate;
   }, [date, time]);
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      // Avoid infinite loop: only sync state if the incoming value is actually different
+      // from the current calculated date constraint.
+      if (!fullDate || value.getTime() !== fullDate.getTime()) {
+        setDate(value);
+        setTime(format(value, "HH:mm"));
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value?.getTime()]);
+
+  React.useEffect(() => {
+    if (onDateChange) {
+      // Prevent child from broadcasting an identical date to the parent,
+      // which would cause the parent to pass down a new object reference!
+      if (!value && !fullDate) return;
+      if (value && fullDate && value.getTime() === fullDate.getTime()) return;
+      onDateChange(fullDate);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullDate?.getTime()]);
 
   return (
     <div>
@@ -610,8 +695,14 @@ function DateTimePicker({
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
-            selected={date}
-            onSelect={setDate}
+            selected={fullDate || date}
+            onSelect={(newDate) => {
+              if (newDate) {
+                setDate(newDate);
+              } else {
+                setDate(undefined);
+              }
+            }}
             initialFocus
           />
           <div className="p-3 border-t border-border">
@@ -620,7 +711,10 @@ function DateTimePicker({
               <Input
                 type="time"
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
+                onChange={(e) => {
+                  setTime(e.target.value);
+                  if (!date) setDate(new Date());
+                }}
                 className="w-full text-sm"
               />
             </div>

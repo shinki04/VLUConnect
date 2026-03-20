@@ -1,5 +1,6 @@
 "use server";
 
+import { getRedisClient } from "@repo/redis/redis";
 import { ModerationStatus } from "@repo/shared/types/post";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -144,6 +145,36 @@ export async function deletePostAdmin(postId: string) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Clean up hashtags before soft delete
+  try {
+    const { data: postHashtags } = await supabase
+      .from("post_hashtags")
+      .select("hashtag_id")
+      .eq("post_id", postId);
+
+    if (postHashtags && postHashtags.length > 0) {
+      for (const ph of postHashtags) {
+        if (ph.hashtag_id) {
+          await supabase.rpc("decrement_hashtag_count", {
+            hashtag_id: ph.hashtag_id,
+          });
+        }
+      }
+
+      await supabase
+        .from("post_hashtags")
+        .delete()
+        .eq("post_id", postId);
+
+      const redis = getRedisClient();
+      if (redis.isReady()) {
+        await redis.delCache("trending:hashtags");
+      }
+    }
+  } catch (error) {
+    console.error("Error removing hashtags for post:", error);
+  }
 
   const { error } = await supabase
     .from("posts")

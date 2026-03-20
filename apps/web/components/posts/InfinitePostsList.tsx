@@ -2,8 +2,10 @@
 
 import { PostResponse } from "@repo/shared/types/post";
 import { FeedFilter } from "@repo/shared/types/post";
+import { createClient } from "@repo/supabase/client";
 import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React from "react";
@@ -11,8 +13,6 @@ import { Virtuoso } from "react-virtuoso";
 
 import PostCard from "@/components/posts/PostCard";
 import { useInfinitePostsQuery } from "@/hooks/useInfinitePosts";
-import { createClient } from "@repo/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 
 import PendingPost from "./PendingPost";
 

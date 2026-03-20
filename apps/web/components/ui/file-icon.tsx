@@ -1,4 +1,4 @@
-import { FileSpreadsheet, FileText, FileType, File } from "lucide-react";
+import { File,FileSpreadsheet, FileText, FileType } from "lucide-react";
 import React from "react";
 
 import { getFileInfo, type MediaType } from "@/lib/mediaUtils";

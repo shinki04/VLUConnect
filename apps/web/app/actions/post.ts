@@ -1,10 +1,43 @@
 "use server";
 import { getPostRabbitMQClient } from "@repo/rabbitmq/PostRabbitMQ";
+import { getFeedCacheService } from "@repo/redis/feedCacheService";
+import { getPostCacheService } from "@repo/redis/postCacheService";
+import { getRedisClient } from "@repo/redis/redis";
 import { FeedFilter, Post, PostResponse, privacyPost } from "@repo/shared/types/post";
 import { PostQueueDeletePayload } from "@repo/shared/types/postQueue";
 import { createClient } from "@repo/supabase/server";
-import { getFeedCacheService } from "@repo/redis/feedCacheService";
-import { getPostCacheService } from "@repo/redis/postCacheService";
+
+async function removeHashtagsForPost(postId: string) {
+  const supabase = await createClient();
+  try {
+    const { data: postHashtags } = await supabase
+      .from("post_hashtags")
+      .select("hashtag_id")
+      .eq("post_id", postId);
+
+    if (postHashtags && postHashtags.length > 0) {
+      for (const ph of postHashtags) {
+        if (ph.hashtag_id) {
+          await supabase.rpc("decrement_hashtag_count", {
+            hashtag_id: ph.hashtag_id,
+          });
+        }
+      }
+
+      await supabase
+        .from("post_hashtags")
+        .delete()
+        .eq("post_id", postId);
+        
+      const redis = getRedisClient();
+      if (redis.isReady()) {
+        await redis.delCache("trending:hashtags");
+      }
+    }
+  } catch (error) {
+    console.error("Error removing hashtags for post:", error);
+  }
+}
 
 const feedCache = getFeedCacheService();
 const postCache = getPostCacheService();
@@ -347,6 +380,9 @@ export async function deletePost(
 
   // Determine if user is author
   if (isOwner) {
+    // Clean up hashtags before soft or hard delete
+    await removeHashtagsForPost(postId);
+
     // Hard delete for author
     const { error } = await supabase
       .from("posts")
@@ -368,6 +404,9 @@ export async function deletePost(
         await postRabbitMQClient.publishPostDelete(payload);
     }
   } else {
+    // Clean up hashtags before soft or hard delete
+    await removeHashtagsForPost(postId);
+
     // Soft delete for group admin
     const { error } = await supabase
       .from("posts")

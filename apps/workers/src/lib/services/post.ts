@@ -1,3 +1,4 @@
+import { getFeedCacheService } from "@repo/redis/feedCacheService";
 import { NotificationType } from "@repo/shared/types/notification";
 import {  ModerationStatus, Post } from "@repo/shared/types/post";
 import {
@@ -10,7 +11,6 @@ import {
 } from "@repo/shared/types/postQueue";
 import { createServiceClient } from "@repo/supabase/service";
 import { urlToPath } from "@repo/utils/getPathSupabase";
-import { getFeedCacheService } from "@repo/redis/feedCacheService";
 
 import { sentimentModel } from "../models/sentimentModel";
 import {

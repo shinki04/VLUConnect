@@ -8,6 +8,7 @@ import {
   isVideoType,
   type MediaType,
 } from "@/lib/mediaUtils";
+
 import { FileIcon } from "../ui/file-icon";
 interface PostMediaGalleryProps {
   mediaUrls?: string[] | null;
