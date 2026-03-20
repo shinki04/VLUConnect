@@ -28,7 +28,7 @@ async function removeHashtagsForPost(postId: string) {
         .from("post_hashtags")
         .delete()
         .eq("post_id", postId);
-        
+
       const redis = getRedisClient();
       if (redis.isReady()) {
         await redis.delCache("trending:hashtags");
@@ -137,8 +137,15 @@ export async function fetchPosts(
   };
 
   // Cache the feed page
+  // await feedCache.setCachedFeedPage(userId, page, itemsPerPage, filter, {
+  //   posts: data || [],
+  //   page,
+  //   hasMore,
+  //   total,
+  //   itemsPerPage,
+  // });
 
-  await feedCache.setCachedFeedPage(user.id, page, itemsPerPage, {
+  await feedCache.setCachedFeedPage(user.id, page, itemsPerPage, filter, {
     posts: postsWithLikeStatus,
     page,
     hasMore,
@@ -196,7 +203,7 @@ export async function fetchPostById(postId: string) {
         `)
         .eq("id", postId)
         .single();
-      
+
       if (error) {
         throw new Error(`Failed to fetch post: ${error.message}`);
       }
@@ -204,7 +211,7 @@ export async function fetchPostById(postId: string) {
     });
 
     if (!rawPost) {
-       throw new Error("Post not found");
+      throw new Error("Post not found");
     }
 
     const supabaseAuth = await createClient();
@@ -305,8 +312,8 @@ export async function fetchPostByAuthor(
   }
 
   const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   let postsWithLikeStatus = data || [];
 
@@ -325,7 +332,7 @@ export async function fetchPostByAuthor(
       is_liked_by_viewer: likedPostIds.has(post.id),
     }));
   } else {
-      postsWithLikeStatus = (data || []).map((post) => ({
+    postsWithLikeStatus = (data || []).map((post) => ({
       ...post,
       is_liked_by_viewer: false,
     }));
@@ -346,12 +353,12 @@ export async function fetchPostByAuthor(
 export async function deletePost(
   postId: string,
   // We keep this to not break the signature, but we ignore it and use DB true author
-  _clientAuthorId?: string 
+  _clientAuthorId?: string
 ): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
-  
+
   const postRabbitMQClient = getPostRabbitMQClient();
   if (!postRabbitMQClient.isReady()) {
     await postRabbitMQClient.connect();
@@ -391,16 +398,16 @@ export async function deletePost(
     if (error) {
       throw new Error(`Failed to delete post: ${error.message}`);
     }
-    
+
     await postCache.invalidatePost(postId);
     await feedCache.invalidateAllFeeds();
-    
+
     if (postRecord.media_urls && postRecord.media_urls.length > 0) {
-        const payload: PostQueueDeletePayload = {
-          media_urls: postRecord.media_urls,
-          queueId: postId,
-        };
-        await postRabbitMQClient.publishPostDelete(payload);
+      const payload: PostQueueDeletePayload = {
+        media_urls: postRecord.media_urls,
+        queueId: postId,
+      };
+      await postRabbitMQClient.publishPostDelete(payload);
     }
   } else {
     // Clean up hashtags before soft or hard delete
@@ -423,8 +430,8 @@ export async function deletePost(
     try {
       // Supabase 1-to-1 returns an object, not an array
       const groupData = postRecord.groups as { name: string } | null | undefined | { name: string }[];
-      const groupName = Array.isArray(groupData) 
-        ? groupData[0]?.name 
+      const groupName = Array.isArray(groupData)
+        ? groupData[0]?.name
         : groupData?.name || "nhóm";
 
       const notifParams = {

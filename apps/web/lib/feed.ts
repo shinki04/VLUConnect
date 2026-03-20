@@ -1,12 +1,13 @@
 import { getFeedCacheService } from "@repo/redis/feedCacheService";
+import { FeedFilter } from "@repo/shared/types/post";
 
 import { fetchPosts } from "@/app/actions/post";
 
-export async function getFeedPosts(page = 1, limit = 10, userId: string = "public") {
+export async function getFeedPosts(page = 1, limit = 10, userId: string = "public", filter: FeedFilter = "all") {
   const feedCache = getFeedCacheService();
   
   // Try cache first
-  const cachedFeed = await feedCache.getCachedFeedPage(userId, page, limit);
+  const cachedFeed = await feedCache.getCachedFeedPage(userId, page, limit, filter);
   
   if (cachedFeed) {
     return {
@@ -17,12 +18,12 @@ export async function getFeedPosts(page = 1, limit = 10, userId: string = "publi
            page: cachedFeed.page
        },
        cacheStatus: "HIT",
-       cacheKey: `feed:${userId}:${page}:${limit}`
+       cacheKey: `feed:${userId}:${filter}:${page}:${limit}`
     };
   }
   
   // Fetch from DB
-  const result = await fetchPosts(page, limit);
+  const result = await fetchPosts(page, limit, filter);
   
   return {
       data: result.posts,
@@ -32,6 +33,6 @@ export async function getFeedPosts(page = 1, limit = 10, userId: string = "publi
           page: result.currentPage
       },
       cacheStatus: "MISS",
-      cacheKey: `feed:${userId}:${page}:${limit}`
+      cacheKey: `feed:${userId}:${filter}:${page}:${limit}`
   };
 }

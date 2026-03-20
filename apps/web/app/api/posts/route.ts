@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       const cachedFeed = await feedCache.getCachedFeedPage(
         userId!,
         page,
-        itemsPerPage
+        itemsPerPage,
+        filter
       );
       if (cachedFeed) {
         cacheStatus = "HIT";
