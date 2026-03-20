@@ -63,6 +63,8 @@ export type PostResponse = {
     id: string;
     name: string;
     slug: string;
+    allow_anonymous_comments?: boolean | null;
+    allow_anonymous_posts?: boolean | null;
   } | null;
 };
 

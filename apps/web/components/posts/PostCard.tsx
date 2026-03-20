@@ -36,6 +36,7 @@ export default function PostCard({
 }: PostCardProps) {
   const { mutate: mutateDelete } = useDeletePost();
   const currentUser = useGetCurrentUser();
+  const effectiveAllowAnonymousComments = allowAnonymousComments || (post.group?.allow_anonymous_comments ?? false);
 
   const [showGalleryModal, setShowGalleryModal] = React.useState(false);
   const [showDetailDialog, setShowDetailDialog] = React.useState(false);
@@ -161,7 +162,7 @@ export default function PostCard({
         open={showDetailDialog}
         onOpenChange={setShowDetailDialog}
         currentUser={currentUser.data}
-        allowAnonymousComments={allowAnonymousComments}
+        allowAnonymousComments={effectiveAllowAnonymousComments}
         isGlobalAdmin={currentUser.data?.global_role === "admin" || currentUser.data?.global_role === "lecturer"}
       />
 

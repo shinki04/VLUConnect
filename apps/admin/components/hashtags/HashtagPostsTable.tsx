@@ -56,9 +56,10 @@ export function HashtagPostsTable({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>
-          Posts {selectedHashtagName ? `using #${selectedHashtagName}` : ""}
+          Bài viết{" "}
+          {selectedHashtagName ? `sử dụng #${selectedHashtagName}` : ""}
           <span className="ml-2 text-sm font-normal text-muted-foreground">
-            ({total} total)
+            ({total} tổng)
           </span>
         </CardTitle>
       </CardHeader>
@@ -67,9 +68,9 @@ export function HashtagPostsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Author</TableHead>
-                <TableHead>Content</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>Tác giả</TableHead>
+                <TableHead>Nội dung</TableHead>
+                <TableHead>Ngày tạo</TableHead>
                 <TableHead className="w-[70px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -83,15 +84,24 @@ export function HashtagPostsTable({
                         <Skeleton className="h-4 w-24" />
                       </div>
                     </TableCell>
-                    <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-48" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-8 w-8" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : posts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                    No posts found
+                  <TableCell
+                    colSpan={4}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    Không tìm thấy bài viết
                   </TableCell>
                 </TableRow>
               ) : (
@@ -100,13 +110,19 @@ export function HashtagPostsTable({
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={post.author?.avatar_url ?? undefined} />
+                          <AvatarImage
+                            src={post.author?.avatar_url ?? undefined}
+                          />
                           <AvatarFallback>
-                            {post.author?.display_name?.[0] || post.author?.username?.[0] || "?"}
+                            {post.author?.display_name?.[0] ||
+                              post.author?.username?.[0] ||
+                              "?"}
                           </AvatarFallback>
                         </Avatar>
                         <span className="text-sm font-medium">
-                          {post.author?.display_name || post.author?.username || "Unknown"}
+                          {post.author?.display_name ||
+                            post.author?.username ||
+                            "Không xác định"}
                         </span>
                       </div>
                     </TableCell>
@@ -122,7 +138,10 @@ export function HashtagPostsTable({
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/dashboard/posts/all?postId=${post.id}`} target="_blank">
+                        <Link
+                          href={`/dashboard/posts/all?search=${post.id}`}
+                          target="_blank"
+                        >
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                       </Button>

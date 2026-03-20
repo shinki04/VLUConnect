@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     );
     const userId = request.nextUrl.searchParams.get("userId");
     const noCache = request.nextUrl.searchParams.get("noCache") === "true";
-    const filter = (request.nextUrl.searchParams.get("filter") as unknown as FeedFilter) || "all";
+    const filter = (request.nextUrl.searchParams.get("filter") as FeedFilter) || "all";
 
     // Check if cache bypass is requested
     let cacheStatus = "MISS";
@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       const cachedFeed = await feedCache.getCachedFeedPage(
         userId!,
         page,
-        itemsPerPage
+        itemsPerPage,
+        filter
       );
       if (cachedFeed) {
         cacheStatus = "HIT";

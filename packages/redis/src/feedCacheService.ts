@@ -35,8 +35,8 @@ class FeedCacheService {
   /**
    * Generate cache key for user feed page
    */
-  private getFeedPageKey(userId: string, page: number, itemsPerPage: number): string {
-    return `${this.FEED_PAGE_PREFIX}${userId}:${page}:${itemsPerPage}`;
+  private getFeedPageKey(userId: string, page: number, itemsPerPage: number, filter: string = "all"): string {
+    return `${this.FEED_PAGE_PREFIX}${userId}:${filter}:${page}:${itemsPerPage}`;
   }
 
   /**
@@ -52,19 +52,20 @@ class FeedCacheService {
   async getCachedFeedPage(
     userId: string,
     page: number,
-    itemsPerPage: number
+    itemsPerPage: number,
+    filter: string = "all"
   ): Promise<FeedPage | null> {
     try {
       await this.redis.connect();
-      const key = this.getFeedPageKey(userId, page, itemsPerPage);
+      const key = this.getFeedPageKey(userId, page, itemsPerPage, filter);
       const cached = await this.redis.getCache<FeedPage>(key);
 
       if (cached) {
-        console.log(`Cache HIT: feed page ${page} for user ${userId}`);
+        console.log(`Cache HIT: feed page ${page} for user ${userId} and filter ${filter}`);
         return cached;
       }
 
-      console.log(`Cache MISS: feed page ${page} for user ${userId}`);
+      console.log(`Cache MISS: feed page ${page} for user ${userId} and filter ${filter}`);
       return null;
     } catch (error) {
       console.error(`Error getting cached feed page:`, error);
@@ -79,14 +80,15 @@ class FeedCacheService {
     userId: string,
     page: number,
     itemsPerPage: number,
+    filter: string = "all",
     feedPage: FeedPage,
     ttl: number = this.FEED_TTL
   ): Promise<void> {
     try {
       await this.redis.connect();
-      const key = this.getFeedPageKey(userId, page, itemsPerPage);
+      const key = this.getFeedPageKey(userId, page, itemsPerPage, filter);
       await this.redis.setCache(key, feedPage, ttl);
-      console.log(` Cached feed page ${page} for user ${userId} (TTL: ${ttl}s)`);
+      console.log(` Cached feed page ${page} for user ${userId} and filter ${filter} (TTL: ${ttl}s)`);
     } catch (error) {
       console.error(`Error caching feed page:`, error);
     }
@@ -159,13 +161,14 @@ class FeedCacheService {
   async invalidateFeedPage(
     userId: string,
     page: number,
-    itemsPerPage: number
+    itemsPerPage: number,
+    filter: string = "all"
   ): Promise<void> {
     try {
       await this.redis.connect();
-      const key = this.getFeedPageKey(userId, page, itemsPerPage);
+      const key = this.getFeedPageKey(userId, page, itemsPerPage, filter);
       await this.redis.delCache(key);
-      console.log(`Invalidated feed page ${page} for user ${userId}`);
+      console.log(`Invalidated feed page ${page} for user ${userId} with filter ${filter}`);
     } catch (error) {
       console.error(`Error invalidating feed page:`, error);
     }
@@ -240,7 +243,7 @@ class FeedCacheService {
     try {
       console.log(`🔥 Warming cache for user ${userId}`);
       const firstPage = await fetchFn(1, 10);
-      await this.setCachedFeedPage(userId, 1, 10, firstPage);
+      await this.setCachedFeedPage(userId, 1, 10, "all", firstPage);
       
       // Also cache metadata if we have post IDs
       if (firstPage.posts.length > 0) {

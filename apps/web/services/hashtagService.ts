@@ -3,6 +3,8 @@
  */
 import { createClient } from "@repo/supabase/server";
 
+import { PostResponse } from "@repo/shared/types/post";
+
 interface HashtagWithCount {
   id: string;
   name: string;
@@ -11,7 +13,7 @@ interface HashtagWithCount {
 }
 
 interface PostsByHashtagResult {
-  posts: unknown[];
+  posts: PostResponse[];
   total: number;
 }
 

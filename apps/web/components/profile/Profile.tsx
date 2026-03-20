@@ -1,5 +1,5 @@
 "use client";
-import { Avatar, BLANK_AVATAR, User } from "@repo/shared/types/user";
+import { BLANK_AVATAR, User } from "@repo/shared/types/user";
 import { Button } from "@repo/ui/components/button";
 import {
   Dialog,
@@ -21,14 +21,14 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { getUserAvatars } from "@/app/actions/user";
+import { getUserMedia } from "@/app/actions/user";
 import { useGetCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { useFriends } from "@/hooks/useFriendship";
 import { updateProfileSchema } from "@/lib/validations/updateProfile-schema";
 
 import { FieldErrors } from "../FieldErrors";
 import { FriendButton } from "../friendship/FriendButton";
-import OldAvatars from "./OldAvatars";
+import PhotoGallery from "./PhotoGallery";
 
 interface ProfileProps {
   user: User;
@@ -47,7 +47,7 @@ function Profile({ user, children }: ProfileProps) {
     user?.background_url || null
   );
 
-  const [avatars, setAvatars] = useState<Avatar[]>([]);
+  const [avatars, setAvatars] = useState<{ url: string; postId: string }[]>([]);
   const [activeTab, setActiveTab] = useState<
     "posts" | "about" | "friends" | "photos"
   >("posts");
@@ -56,13 +56,16 @@ function Profile({ user, children }: ProfileProps) {
   const { data: friends } = useFriends(user.id);
   const totalFriends = friends?.length || 0;
 
-  // TODO , sửa logic để lấy all avatars
   useEffect(() => {
-    const fetchAvatars = async () => {
-      const data = await getUserAvatars(user.id);
-      setAvatars(data);
+    const fetchPhotos = async () => {
+      try {
+        const data = await getUserMedia(user.id);
+        setAvatars(data);
+      } catch (e) {
+        console.error("Failed to fetch user photos", e);
+      }
     };
-    fetchAvatars();
+    fetchPhotos();
   }, [user.id]);
 
   const form = useForm({
@@ -601,7 +604,7 @@ function Profile({ user, children }: ProfileProps) {
               Ảnh
             </h2>
             {avatars && avatars.length > 0 ? (
-              <OldAvatars avatars={avatars} />
+              <PhotoGallery photos={avatars} />
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 {/* <span className="material-symbols-outlined text-4xl mb-2">
