@@ -200,8 +200,7 @@ export async function fetchPostById(postId: string) {
       if (error) {
         throw new Error(`Failed to fetch post: ${error.message}`);
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return data as any;
+      return data;
     });
 
     if (!rawPost) {
