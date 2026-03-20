@@ -752,8 +752,7 @@ ALTER FUNCTION "public"."get_conversations_with_details"("p_user_id" "uuid") OWN
 CREATE OR REPLACE FUNCTION "public"."get_dashboard_posts"("p_filter" "text" DEFAULT 'all'::"text") RETURNS TABLE("id" "uuid", "created_at" timestamp with time zone, "author" "jsonb", "content" "text", "media_urls" "text"[], "updated_at" timestamp with time zone, "like_count" integer, "comment_count" integer, "share_count" integer, "privacy_level" "text", "is_anonymous" boolean, "group_id" "uuid", "group" "jsonb")
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
-    AS $$
-DECLARE
+    AS $$DECLARE
     v_user_id uuid := auth.uid();
     v_is_admin boolean := func_is_admin();
     v_is_lecture boolean := func_is_lecture();
@@ -798,7 +797,9 @@ BEGIN
                 jsonb_build_object(
                     'id', g.id,
                     'name', g.name,
-                    'slug', g.slug
+                    'slug', g.slug,
+                    'allow_anonymous_comments', COALESCE(g.allow_anonymous_comments, false),
+                    'allow_anonymous_posts', COALESCE(g.allow_anonymous_posts, false)
                 )
             ELSE NULL::jsonb
         END
@@ -867,8 +868,7 @@ BEGIN
 
     ORDER BY p.created_at DESC;
 
-END;
-$$;
+END;$$;
 
 
 ALTER FUNCTION "public"."get_dashboard_posts"("p_filter" "text") OWNER TO "postgres";
@@ -2550,8 +2550,7 @@ CREATE TABLE IF NOT EXISTS "public"."system_announcements" (
     "end_time" timestamp with time zone,
     "is_active" boolean DEFAULT true,
     "created_by" "uuid",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    CONSTRAINT "system_announcements_type_check" CHECK (("type" = ANY (ARRAY['info'::"text", 'warning'::"text", 'success'::"text", 'error'::"text"])))
+    "created_at" timestamp with time zone DEFAULT "now"()
 );
 
 
@@ -3559,6 +3558,10 @@ ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."hashtags";
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."messages";
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."notifications";
 
 
 
