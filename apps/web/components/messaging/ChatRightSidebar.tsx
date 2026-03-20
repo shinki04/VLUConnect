@@ -222,290 +222,459 @@ export function ChatRightSidebar({
     const documentMedia = mediaItems.filter(m => m.fileType === "file");
 
     return (
-        <>
-            <div
-                className={cn(
-                    "flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 shrink-0 transition-all duration-300 ease-in-out z-50 md:z-20",
-                    "absolute top-0 right-0 bottom-0 w-full md:w-[320px]",
-                    isOpen
-                        ? "translate-x-0 opacity-100 md:relative"
-                        : "translate-x-[120%] opacity-0 pointer-events-none"
+      <>
+        <div
+          className={cn(
+            "flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out z-50 md:z-20",
+            "absolute top-0 right-0 bottom-0 w-full md:w-[320px]",
+            isOpen
+              ? "translate-x-0 opacity-100 md:relative"
+              : "translate-x-[120%] opacity-0 pointer-events-none",
+          )}
+        >
+          {/* Header Profile section */}
+          {viewState === "overview" ? (
+            <div className="flex flex-col items-center justify-center pt-8 pb-4 relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="absolute top-4 right-4 h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </Button>
+
+              <Avatar className="h-[72px] w-[72px] mb-3 shadow-sm border border-slate-100">
+                {avatarUrl && (
+                  <AvatarImage
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="object-cover"
+                  />
                 )}
-            >
-                {/* Header Profile section */}
-                {viewState === "overview" ? (
-                    <div className="flex flex-col items-center justify-center pt-8 pb-4 relative">
-                        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                        </Button>
-
-                        <Avatar className="h-[72px] w-[72px] mb-3 shadow-sm border border-slate-100">
-                            {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} className="object-cover" />}
-                            <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
-                                {isGroup ? <Users size={28} /> : displayName.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <h2 className="text-[17px] font-bold text-slate-900 dark:text-slate-100 text-center mb-1">
-                            {displayName}
-                        </h2>
-                        <p className="text-[13px] text-slate-500 font-normal">
-                            {subtitle}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="flex items-center p-4 border-b border-slate-100 dark:border-slate-800">
-                        <Button variant="ghost" size="icon" onClick={() => setViewState("overview")} className="h-8 w-8 mr-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                        </Button>
-                        <h2 className="text-[15px] font-bold text-slate-900 dark:text-slate-100">
-                            {mediaFilter === "file" ? "Tài liệu đã gửi" : "Media"}
-                        </h2>
-                    </div>
-                )}
-
-                {/* Scrollable content areas */}
-                <div className="flex-1 w-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-6 px-5 space-y-6">
-                    {viewState === "overview" ? (
-                        <>
-                            {/* Media & Files Grid */}
-                            <div className="space-y-3 mt-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xs font-semibold text-slate-500 tracking-wider flex items-center gap-2 uppercase">
-                                        <ImageIcon className="h-4 w-4" />
-                                        Media
-                                    </h3>
-                                    {visualMedia.length > 0 && (
-                                        <button
-                                            className="text-[11px] font-bold text-[#C81D31] hover:underline uppercase"
-                                            onClick={() => {
-                                                setMediaFilter("all");
-                                                setViewState("media");
-                                            }}
-                                        >
-                                            XEM TẤT CẢ
-                                        </button>
-                                    )}
-                                </div>
-
-                                {isMediaLoading ? (
-                                    <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>
-                                ) : visualMedia.length > 0 ? (
-                                    <div className="grid grid-cols-3 gap-1.5">
-                                        {visualMedia.slice(0, 6).map((item) => (
-                                            <a
-                                                key={item.id}
-                                                href={item.signedUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="relative aspect-square rounded-md overflow-hidden bg-slate-100 hover:opacity-90 transition-opacity"
-                                            >
-                                                {item.fileType === "image" ? (
-                                                    <Image
-                                                        src={item.signedUrl}
-                                                        alt={item.fileName}
-                                                        fill
-                                                        className="object-cover"
-                                                        sizes="100px"
-                                                    />
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-full">
-                                                        <Video className="h-6 w-6 text-slate-400" />
-                                                    </div>
-                                                )}
-                                            </a>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-[12px] text-slate-500 italic px-1 text-center bg-transparent mt-2">
-                                        Chưa có tài liệu/hình ảnh nào trong cuộc hội thoại
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Documents List */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xs font-semibold text-slate-500 tracking-wider flex items-center gap-2 uppercase">
-                                        <FileIcon className="h-4 w-4" />
-                                        Tài liệu đã gửi
-                                    </h3>
-                                    {documentMedia.length > 0 && (
-                                        <button
-                                            className="text-[11px] font-bold text-[#C81D31] hover:underline uppercase"
-                                            onClick={() => {
-                                                setMediaFilter("file");
-                                                setViewState("media");
-                                            }}
-                                        >
-                                            XEM TẤT CẢ
-                                        </button>
-                                    )}
-                                </div>
-
-                                {documentMedia.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {documentMedia.slice(0, 3).map((item) => (
-                                            <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#fff4f5] dark:bg-red-950/20 border border-transparent hover:border-red-100 transition-colors">
-                                                <div className="h-10 w-10 shrink-0 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-[#C81D31] border border-slate-100 dark:border-slate-800">
-                                                    <FileIcon className="h-5 w-5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-[14px] font-medium text-slate-900 dark:text-slate-100 truncate mb-[2px]">{item.fileName}</h4>
-                                                    <p className="text-[12px] text-slate-500 font-normal">2.4 MB • 12:00</p>
-                                                </div>
-                                                <a href={item.signedUrl} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-[#C81D31]">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-[12px] text-slate-500 italic px-1 text-center bg-transparent mt-2">
-                                        Chưa có tài liệu/hình ảnh nào trong cuộc hội thoại
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Members List */}
-                            {isGroup && (
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-xs font-semibold text-slate-500 tracking-wider flex items-center gap-2 uppercase">
-                                            <Users className="h-4 w-4" />
-                                            Thành viên ({conversation.members?.length || 0})
-                                        </h3>
-                                        <button className="text-[11px] font-bold text-[#C81D31] hover:underline uppercase">
-                                            TẤT CẢ
-                                        </button>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        {sortedMembers.slice(0, 4).map((member) => {
-                                            const profile = member.profile as Tables<"profiles">;
-                                            const isCurrentUser = member.user_id === currentUserId;
-                                            const memberRole = member.role as MemberRole | null;
-                                            const canManageThisMember = canManage && !isCurrentUser && !(currentRole === "sub_admin" && memberRole === "admin");
-
-                                            return (
-                                                <div key={member.id} className="flex items-center justify-between py-2 group">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-9 w-9">
-                                                            {profile?.avatar_url ? (
-                                                                <AvatarImage src={profile.avatar_url} className="object-cover" />
-                                                            ) : null}
-                                                            <AvatarFallback>
-                                                                {(profile?.display_name || profile?.username || "?").substring(0, 2).toUpperCase()}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-semibold text-[14px] text-slate-900 dark:text-slate-100">
-                                                                {profile?.display_name || profile?.username}
-                                                            </span>
-                                                            {memberRole === "admin" && <span className="text-[10px] font-bold text-[#C81D31] uppercase tracking-wider">Admin</span>}
-                                                            {memberRole === "sub_admin" && <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Phó QTV</span>}
-                                                        </div>
-                                                    </div>
-
-                                                    {canManageThisMember && (
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <MoreVertical className="h-4 w-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                {isAdmin && memberRole !== "admin" && (
-                                                                    <DropdownMenuItem onClick={() => setConfirmDialog({ open: true, type: "transfer", member })}>
-                                                                        <Crown className="h-4 w-4 mr-2 text-amber-500" /> Chuyển quyền Admin
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                {isAdmin && memberRole !== "sub_admin" && (
-                                                                    <DropdownMenuItem onClick={() => setConfirmDialog({ open: true, type: "role", member, newRole: "sub_admin" })}>
-                                                                        <Star className="h-4 w-4 mr-2" /> Đặt làm Phó QTV
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                {memberRole !== "moderator" && (
-                                                                    <DropdownMenuItem onClick={() => setConfirmDialog({ open: true, type: "role", member, newRole: "moderator" })}>
-                                                                        <Shield className="h-4 w-4 mr-2" /> Đặt làm Điều hành viên
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                {memberRole !== "member" && memberRole !== "admin" && (
-                                                                    <DropdownMenuItem onClick={() => setConfirmDialog({ open: true, type: "role", member, newRole: "member" })}>
-                                                                        <UserMinus className="h-4 w-4 mr-2" /> Hạ xuống thành viên
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmDialog({ open: true, type: "remove", member })}>
-                                                                    <Trash2 className="h-4 w-4 mr-2" /> Xóa khỏi nhóm
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Actions */}
-                            {isGroup && (
-                                <div className="flex flex-col gap-2 pt-2 pb-6">
-                                    {canManage && onAddMember && (
-                                        <Button
-                                            className="w-full bg-[#C81D31] hover:bg-[#a51526] text-white font-semibold rounded-xl h-11"
-                                            onClick={onAddMember}
-                                        >
-                                            <UserPlus className="h-4 w-4 mr-2" />
-                                            Thêm thành viên
-                                        </Button>
-                                    )}
-                                    <Button
-                                        variant="outline"
-                                        className="w-full text-[#C81D31] hover:text-[#C81D31] hover:bg-red-50 font-semibold rounded-xl h-11 border-slate-200"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
-                                        Rời nhóm
-                                    </Button>
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        <div className="mt-2">
-                            <GroupMediaGallery
-                                conversationId={conversation.id}
-                                initialFilter={mediaFilter}
-                            />
-                        </div>
-                    )}
-                </div>
+                <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
+                  {isGroup ? (
+                    <Users size={28} />
+                  ) : (
+                    displayName.substring(0, 2).toUpperCase()
+                  )}
+                </AvatarFallback>
+              </Avatar>
+              <h2 className="text-[17px] font-bold text-slate-900 dark:text-slate-100 text-center mb-1">
+                {displayName}
+              </h2>
+              <p className="text-[13px] text-slate-500 font-normal">
+                {subtitle}
+              </p>
             </div>
+          ) : (
+            <div className="flex items-center p-4 border-b border-slate-100 dark:border-slate-800">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setViewState("overview")}
+                className="h-8 w-8 mr-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-full"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </Button>
+              <h2 className="text-[15px] font-bold text-slate-900 dark:text-slate-100">
+                {mediaFilter === "file" ? "Tài liệu đã gửi" : "Media"}
+              </h2>
+            </div>
+          )}
 
-            {/* Confirmation Dialog */}
-            <AlertDialog
-                open={confirmDialog.open}
-                onOpenChange={(open: boolean) =>
-                    !open && setConfirmDialog({ open: false, type: "remove", member: null })
-                }
-                title={
-                    confirmDialog.type === "remove"
-                        ? "Xóa thành viên?"
-                        : confirmDialog.type === "transfer"
-                            ? "Chuyển quyền quản trị?"
-                            : "Thay đổi vai trò?"
-                }
-                description={
-                    confirmDialog.type === "remove"
-                        ? `Bạn có chắc muốn xóa ${(confirmDialog.member?.profile as Tables<"profiles">)?.display_name || (confirmDialog.member?.profile as Tables<"profiles">)?.username} khỏi nhóm?`
-                        : confirmDialog.type === "transfer"
-                            ? `Bạn sẽ chuyển quyền quản trị cho ${(confirmDialog.member?.profile as Tables<"profiles">)?.display_name || (confirmDialog.member?.profile as Tables<"profiles">)?.username} và trở thành thành viên thường.`
-                            : `Bạn có chắc muốn thay đổi vai trò của ${(confirmDialog.member?.profile as Tables<"profiles">)?.display_name || (confirmDialog.member?.profile as Tables<"profiles">)?.username}?`
-                }
-                confirmText={isLoading ? "Đang xử lý..." : "Xác nhận"}
-                cancelText="Hủy"
-                onConfirm={handleConfirm}
-            />
-        </>
+          {/* Scrollable content areas */}
+          <div className="flex-1 w-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-6 px-5 space-y-6">
+            {viewState === "overview" ? (
+              <>
+                {/* Media & Files Grid */}
+                <div className="space-y-3 mt-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-slate-500 tracking-wider flex items-center gap-2 uppercase">
+                      <ImageIcon className="h-4 w-4" />
+                      Media
+                    </h3>
+                    {visualMedia.length > 0 && (
+                      <button
+                        className="text-[11px] font-bold text-[#C81D31] hover:underline uppercase"
+                        onClick={() => {
+                          setMediaFilter("all");
+                          setViewState("media");
+                        }}
+                      >
+                        XEM TẤT CẢ
+                      </button>
+                    )}
+                  </div>
+
+                  {isMediaLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                    </div>
+                  ) : visualMedia.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {visualMedia.slice(0, 6).map((item) => (
+                        <a
+                          key={item.id}
+                          href={item.signedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative aspect-square rounded-md overflow-hidden bg-slate-100 hover:opacity-90 transition-opacity"
+                        >
+                          {item.fileType === "image" ? (
+                            <Image
+                              src={item.signedUrl}
+                              alt={item.fileName}
+                              fill
+                              className="object-cover"
+                              sizes="100px"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <Video className="h-6 w-6 text-slate-400" />
+                            </div>
+                          )}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12px] text-slate-500 italic px-1 text-center bg-transparent mt-2">
+                      Chưa có tài liệu/hình ảnh nào trong cuộc hội thoại
+                    </p>
+                  )}
+                </div>
+
+                {/* Documents List */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-slate-500 tracking-wider flex items-center gap-2 uppercase">
+                      <FileIcon className="h-4 w-4" />
+                      Tài liệu đã gửi
+                    </h3>
+                    {documentMedia.length > 0 && (
+                      <button
+                        className="text-[11px] font-bold text-[#C81D31] hover:underline uppercase"
+                        onClick={() => {
+                          setMediaFilter("file");
+                          setViewState("media");
+                        }}
+                      >
+                        XEM TẤT CẢ
+                      </button>
+                    )}
+                  </div>
+
+                  {documentMedia.length > 0 ? (
+                    <div className="space-y-2">
+                      {documentMedia.slice(0, 3).map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-3 p-3 rounded-xl bg-[#fff4f5] dark:bg-red-950/20 border border-transparent hover:border-red-100 transition-colors"
+                        >
+                          <div className="h-10 w-10 shrink-0 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-[#C81D31] border border-slate-100 dark:border-slate-800">
+                            <FileIcon className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-[14px] font-medium text-slate-900 dark:text-slate-100 truncate mb-[2px]">
+                              {item.fileName}
+                            </h4>
+                            <p className="text-[12px] text-slate-500 font-normal">
+                              2.4 MB • 12:00
+                            </p>
+                          </div>
+                          <a
+                            href={item.signedUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-slate-400 hover:text-[#C81D31]"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                              <polyline points="7 10 12 15 17 10" />
+                              <line x1="12" x2="12" y1="15" y2="3" />
+                            </svg>
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 italic px-1 text-center bg-transparent mt-2">
+                      Chưa có tài liệu/hình ảnh nào trong cuộc hội thoại
+                    </p>
+                  )}
+                </div>
+
+                {/* Members List */}
+                {isGroup && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold text-slate-500 tracking-wider flex items-center gap-2 uppercase">
+                        <Users className="h-4 w-4" />
+                        Thành viên ({conversation.members?.length || 0})
+                      </h3>
+                      <button className="text-[11px] font-bold text-[#C81D31] hover:underline uppercase">
+                        TẤT CẢ
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      {sortedMembers.slice(0, 4).map((member) => {
+                        const profile = member.profile as Tables<"profiles">;
+                        const isCurrentUser = member.user_id === currentUserId;
+                        const memberRole = member.role as MemberRole | null;
+                        const canManageThisMember =
+                          canManage &&
+                          !isCurrentUser &&
+                          !(
+                            currentRole === "sub_admin" &&
+                            memberRole === "admin"
+                          );
+
+                        return (
+                          <div
+                            key={member.id}
+                            className="flex items-center justify-between py-2 group"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9">
+                                {profile?.avatar_url ? (
+                                  <AvatarImage
+                                    src={profile.avatar_url}
+                                    className="object-cover"
+                                  />
+                                ) : null}
+                                <AvatarFallback>
+                                  {(
+                                    profile?.display_name ||
+                                    profile?.username ||
+                                    "?"
+                                  )
+                                    .substring(0, 2)
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-[14px] text-slate-900 dark:text-slate-100">
+                                  {profile?.display_name || profile?.username}
+                                </span>
+                                {memberRole === "admin" && (
+                                  <span className="text-[10px] font-bold text-[#C81D31] uppercase tracking-wider">
+                                    Admin
+                                  </span>
+                                )}
+                                {memberRole === "sub_admin" && (
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                    Phó QTV
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {canManageThisMember && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-slate-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity focus:opacity-100"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {isAdmin && memberRole !== "admin" && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        setConfirmDialog({
+                                          open: true,
+                                          type: "transfer",
+                                          member,
+                                        })
+                                      }
+                                    >
+                                      <Crown className="h-4 w-4 mr-2 text-amber-500" />{" "}
+                                      Chuyển quyền Admin
+                                    </DropdownMenuItem>
+                                  )}
+                                  {isAdmin && memberRole !== "sub_admin" && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        setConfirmDialog({
+                                          open: true,
+                                          type: "role",
+                                          member,
+                                          newRole: "sub_admin",
+                                        })
+                                      }
+                                    >
+                                      <Star className="h-4 w-4 mr-2" /> Đặt làm
+                                      Phó QTV
+                                    </DropdownMenuItem>
+                                  )}
+                                  {memberRole !== "moderator" && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        setConfirmDialog({
+                                          open: true,
+                                          type: "role",
+                                          member,
+                                          newRole: "moderator",
+                                        })
+                                      }
+                                    >
+                                      <Shield className="h-4 w-4 mr-2" /> Đặt
+                                      làm Điều hành viên
+                                    </DropdownMenuItem>
+                                  )}
+                                  {memberRole !== "member" &&
+                                    memberRole !== "admin" && (
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          setConfirmDialog({
+                                            open: true,
+                                            type: "role",
+                                            member,
+                                            newRole: "member",
+                                          })
+                                        }
+                                      >
+                                        <UserMinus className="h-4 w-4 mr-2" />{" "}
+                                        Hạ xuống thành viên
+                                      </DropdownMenuItem>
+                                    )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={() =>
+                                      setConfirmDialog({
+                                        open: true,
+                                        type: "remove",
+                                        member,
+                                      })
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" /> Xóa khỏi
+                                    nhóm
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                {isGroup && (
+                  <div className="flex flex-col gap-2 pt-2 pb-6">
+                    {canManage && onAddMember && (
+                      <Button
+                        className="w-full bg-[#C81D31] hover:bg-[#a51526] text-white font-semibold rounded-xl h-11"
+                        onClick={onAddMember}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Thêm thành viên
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full text-[#C81D31] hover:text-[#C81D31] hover:bg-red-50 font-semibold rounded-xl h-11 border-slate-200"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2"
+                      >
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" x2="9" y1="12" y2="12" />
+                      </svg>
+                      Rời nhóm
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="mt-2">
+                <GroupMediaGallery
+                  conversationId={conversation.id}
+                  initialFilter={mediaFilter}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Confirmation Dialog */}
+        <AlertDialog
+          open={confirmDialog.open}
+          onOpenChange={(open: boolean) =>
+            !open &&
+            setConfirmDialog({ open: false, type: "remove", member: null })
+          }
+          title={
+            confirmDialog.type === "remove"
+              ? "Xóa thành viên?"
+              : confirmDialog.type === "transfer"
+                ? "Chuyển quyền quản trị?"
+                : "Thay đổi vai trò?"
+          }
+          description={
+            confirmDialog.type === "remove"
+              ? `Bạn có chắc muốn xóa ${(confirmDialog.member?.profile as Tables<"profiles">)?.display_name || (confirmDialog.member?.profile as Tables<"profiles">)?.username} khỏi nhóm?`
+              : confirmDialog.type === "transfer"
+                ? `Bạn sẽ chuyển quyền quản trị cho ${(confirmDialog.member?.profile as Tables<"profiles">)?.display_name || (confirmDialog.member?.profile as Tables<"profiles">)?.username} và trở thành thành viên thường.`
+                : `Bạn có chắc muốn thay đổi vai trò của ${(confirmDialog.member?.profile as Tables<"profiles">)?.display_name || (confirmDialog.member?.profile as Tables<"profiles">)?.username}?`
+          }
+          confirmText={isLoading ? "Đang xử lý..." : "Xác nhận"}
+          cancelText="Hủy"
+          onConfirm={handleConfirm}
+        />
+      </>
     );
 }
 

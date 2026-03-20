@@ -16,7 +16,7 @@ startReportWorker();
 console.log("WORKER", process.argv[1]);
 
 // Simple HTTP server for health checks
-const port = process.env.PORT || 3001;
+const port = process.env.WORKER_PORT || 3003;
 const server = createServer((req, res) => {
   if (req.url === "/health" || req.url === "/") {
     res.writeHead(200, { "Content-Type": "text/plain" });

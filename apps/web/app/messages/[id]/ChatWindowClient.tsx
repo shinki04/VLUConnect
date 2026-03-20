@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { ChatRightSidebar } from "@/components/messaging/ChatRightSidebar";
 import { ChatWindow } from "@/components/messaging/ChatWindow";
 import { useConversation } from "@/hooks/useConversations";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,15 @@ export function ChatWindowClient({
         onBack={() => router.push("/messages")}
         className="flex-1 min-w-0"
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+      />
+      <ChatRightSidebar
+        conversation={activeConversation}
+        currentUserId={currentUser.id}
+        isOpen={isRightSidebarOpen}
+        onClose={() => setIsRightSidebarOpen(false)}
+        onAddMember={() => {
+          toast.info("Tính năng thêm thành viên đang được cập nhật");
+        }}
       />
     </div>
   );

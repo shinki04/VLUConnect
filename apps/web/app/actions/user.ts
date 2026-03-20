@@ -4,6 +4,7 @@ import { User } from "@repo/shared/types/user";
 import { createClient } from "@repo/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getFileInfo, isImageType } from "@/lib/mediaUtils";
 
 // Constants
 const CACHE_KEYS = {
@@ -138,14 +139,41 @@ export async function getUserAvatars(id: string) {
     throw new Error(`Failed to get user avatars: ${error.message}`);
   }
 
-  if (!data || data.length === 0) {
-    return [];
-  }
-
   return data.map((file) => ({
     name: file.name,
     fullPath: `avatars/${id}/${file.name}`,
   }));
+}
+
+export async function getUserMedia(id: string) {
+  if (!id) {
+    throw new Error("User ID is required");
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, media_urls")
+    .eq("author_id", id)
+    .neq("moderation_status", "rejected")
+    .not("media_urls", "is", null);
+
+  if (error) {
+    throw new Error(`Failed to get user media: ${error.message}`);
+  }
+
+  const mediaList: { url: string; postId: string }[] = [];
+  data?.forEach((post) => {
+    if (Array.isArray(post.media_urls)) {
+      post.media_urls.forEach((url: string) => {
+        if (isImageType(getFileInfo(url).type)) {
+          mediaList.push({ url, postId: post.id });
+        }
+      });
+    }
+  });
+
+  return mediaList;
 }
 
 async function uploadAvatar(userId: string, image: File): Promise<string> {

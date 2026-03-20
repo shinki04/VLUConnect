@@ -11,6 +11,8 @@ import { Virtuoso } from "react-virtuoso";
 
 import PostCard from "@/components/posts/PostCard";
 import { useInfinitePostsQuery } from "@/hooks/useInfinitePosts";
+import { createClient } from "@repo/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 import PendingPost from "./PendingPost";
 
@@ -41,10 +43,28 @@ export function InfinitePostsList({
   const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   const [mounted, setMounted] = React.useState(false);
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     setMounted(true);
-  }, []);
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel("public:posts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
+        () => {
+          // Invalidate posts to trigger refetch when a new post is inserted
+          queryClient.invalidateQueries({ queryKey: ["posts"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Handle reaching end of list for infinite scroll
   const handleEndReached = React.useCallback(() => {
