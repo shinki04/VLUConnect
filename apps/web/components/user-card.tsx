@@ -54,11 +54,11 @@ export function UserCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-lg hover:underline wrap-break-word">
+          <div className="font-semibold text-lg hover:underline line-clamp-1 break-all">
             {name}
           </div>
           {sub && (
-            <div className="text-sm text-muted-foreground wrap-break-word">
+            <div className="text-sm text-muted-foreground line-clamp-2 wrap-break-word">
               {sub}
             </div>
           )}
@@ -101,11 +101,11 @@ export function UserCard({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium sm:text-sm wrap-break-word truncate text-foreground">
+          <p className="font-medium sm:text-sm truncate text-foreground">
             {name}
           </p>
           {sub && (
-            <p className="text-sm text-muted-foreground wrap-break-word truncate">
+            <p className="text-sm text-muted-foreground truncate">
               {sub}
             </p>
           )}

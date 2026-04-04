@@ -109,6 +109,8 @@ export function FriendButton({
   const isAcceptingFriend = isResponding || transitions.accepting;
   const isRejectingFriend = isResponding || transitions.rejecting;
   const isRemovingFriend = isUnfriending || transitions.unfriending;
+  
+  const isProcessing = isAddingFriend || isCancelingFriend || isAcceptingFriend || isRejectingFriend || isRemovingFriend;
 
   const handleSendRequest = () => {
     setTransitions((prev) => ({ ...prev, pending: true }));
@@ -117,21 +119,21 @@ export function FriendButton({
   };
 
   const handleCancelRequest = () => {
-    if (!friendship) return;
+    if (!friendship || !friendship.id) return;
     setTransitions((prev) => ({ ...prev, canceling: true }));
     cancelRequest(friendship.id);
     toast.success("Đã hủy lời mời kết bạn");
   };
 
   const handleAcceptRequest = () => {
-    if (!friendship) return;
+    if (!friendship || !friendship.id) return;
     setTransitions((prev) => ({ ...prev, accepting: true }));
     acceptRequest(friendship.id);
     toast.success("Đã chấp nhận lời mời kết bạn");
   };
 
   const handleRejectRequest = () => {
-    if (!friendship) return;
+    if (!friendship || !friendship.id) return;
     setTransitions((prev) => ({ ...prev, rejecting: true }));
     rejectRequest(friendship.id);
     toast.info("Đã từ chối lời mời kết bạn");
@@ -163,7 +165,7 @@ export function FriendButton({
           <Button
             variant="outline"
             className={className}
-            disabled={isRemovingFriend}
+            disabled={isProcessing}
           >
             {isRemovingFriend ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -176,7 +178,7 @@ export function FriendButton({
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={handleUnfriend}
-            disabled={isRemovingFriend}
+            disabled={isProcessing}
             className="text-destructive focus:text-destructive"
           >
             <UserMinus className="mr-2 h-4 w-4" />
@@ -194,7 +196,7 @@ export function FriendButton({
         variant="secondary"
         className={className}
         onClick={handleCancelRequest}
-        disabled={isCancelingFriend}
+        disabled={isProcessing}
       >
         {isCancelingFriend ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -209,11 +211,11 @@ export function FriendButton({
   // Pending request received from target user
   if (status === "pending" && direction === "received") {
     return (
-      <div className="flex gap-2">
+      <>
         <Button
           variant="default"
           onClick={handleAcceptRequest}
-          disabled={isAcceptingFriend || isRejectingFriend}
+          disabled={isProcessing}
           className={className}
         >
           {isAcceptingFriend ? (
@@ -226,7 +228,8 @@ export function FriendButton({
         <Button
           variant="outline"
           onClick={handleRejectRequest}
-          disabled={isAcceptingFriend || isRejectingFriend}
+          disabled={isProcessing}
+          className={className}
         >
           {isRejectingFriend ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -235,7 +238,7 @@ export function FriendButton({
           )}
           {isRejectingFriend ? "Đang xử lý..." : "Từ chối"}
         </Button>
-      </div>
+      </>
     );
   }
 
@@ -246,7 +249,7 @@ export function FriendButton({
   return (
     <Button
       onClick={handleSendRequest}
-      disabled={isAddingFriend}
+      disabled={isProcessing}
       className={className}
     >
       {isAddingFriend ? (
