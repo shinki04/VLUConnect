@@ -47,13 +47,22 @@ export function useFriendship(targetUserId: string) {
   // Send friend request mutation
   const sendRequestMutation = useMutation({
     mutationFn: () => sendFriendRequest(targetUserId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.status(targetUserId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      const previousStatus = queryClient.getQueryData(friendshipKeys.status(targetUserId));
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), {
+        status: "pending",
+        direction: "sent",
+        friendship: { requester_id: "optimistic", addressee_id: targetUserId, status: "pending" }
       });
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.sentRequests(),
-      });
+      return { previousStatus };
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), context?.previousStatus);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.sentRequests() });
     },
   });
 
@@ -61,42 +70,67 @@ export function useFriendship(targetUserId: string) {
   const respondMutation = useMutation({
     mutationFn: ({ friendshipId, accept }: { friendshipId: string; accept: boolean }) =>
       respondToFriendRequest(friendshipId, accept),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.status(targetUserId),
+    onMutate: async ({ accept }) => {
+      await queryClient.cancelQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      const previousStatus = queryClient.getQueryData(friendshipKeys.status(targetUserId));
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), {
+        status: accept ? "friends" : null,
+        direction: null,
+        friendship: accept ? { requester_id: "optimistic", addressee_id: targetUserId, status: "friends" } : null
       });
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.pendingRequests(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.all,
-      });
+      return { previousStatus };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), context?.previousStatus);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.pendingRequests() });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.all });
     },
   });
 
   // Cancel sent request mutation
   const cancelRequestMutation = useMutation({
     mutationFn: (friendshipId: string) => cancelFriendRequest(friendshipId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.status(targetUserId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      const previousStatus = queryClient.getQueryData(friendshipKeys.status(targetUserId));
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), {
+        status: null,
+        direction: null,
+        friendship: null
       });
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.sentRequests(),
-      });
+      return { previousStatus };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), context?.previousStatus);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.sentRequests() });
     },
   });
 
   // Unfriend mutation
   const unfriendMutation = useMutation({
     mutationFn: () => unfriend(targetUserId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.status(targetUserId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      const previousStatus = queryClient.getQueryData(friendshipKeys.status(targetUserId));
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), {
+        status: null,
+        direction: null,
+        friendship: null
       });
-      queryClient.invalidateQueries({
-        queryKey: friendshipKeys.all,
-      });
+      return { previousStatus };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(friendshipKeys.status(targetUserId), context?.previousStatus);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.status(targetUserId) });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.all });
     },
   });
 

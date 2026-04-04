@@ -215,27 +215,23 @@ export function ChatWindow({
       },
       files?: File[],
     ) => {
-      // Send message first (this adds optimistic message to state)
       const sendPromise = sendMessage(content, replyTo, files);
 
-      // Force scroll to bottom after a small delay to ensure optimistic message is rendered
-      // Use multiple timeouts to handle both immediate add and file upload states
-      setTimeout(() => {
+      // Force scroll to bottom using requestAnimationFrame combined with short timeouts
+      const scroll = () => {
         virtuosoRef.current?.scrollToIndex({
-          index: "LAST",
+          index: 999999,
           behavior: "auto",
           align: "end",
         });
-      }, 100);
+      };
 
-      // Second scroll after 300ms to handle any state updates from file processing
-      setTimeout(() => {
-        virtuosoRef.current?.scrollToIndex({
-          index: "LAST",
-          behavior: "auto",
-          align: "end",
-        });
-      }, 300);
+      requestAnimationFrame(() => {
+        scroll();
+        setTimeout(scroll, 100);
+        setTimeout(scroll, 300);
+        setTimeout(scroll, 500);
+      });
 
       return sendPromise;
     },
@@ -245,20 +241,22 @@ export function ChatWindow({
   // Scroll to bottom helper
   const scrollToBottom = useCallback(() => {
     virtuosoRef.current?.scrollToIndex({
-      index: virtualizedItems.length - 1,
-      behavior: "smooth",
+      index: 999999,
+      behavior: "auto",
+      align: "end",
     });
-  }, [virtualizedItems.length]);
+  }, []);
 
   // Reset scroll position when conversation changes
   useEffect(() => {
     if (hasFetchedOnce && virtualizedItems.length > 0) {
       virtuosoRef.current?.scrollToIndex({
-        index: virtualizedItems.length - 1,
+        index: 999999,
         behavior: "auto",
+        align: "end",
       });
     }
-  }, [conversation.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [conversation.id, hasFetchedOnce, virtualizedItems.length]);  
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -274,18 +272,26 @@ export function ChatWindow({
 
       // Always scroll if user sent the message, or if they're already at bottom
       if (isOwnMessage || atBottom) {
-        // Use setTimeout to ensure DOM has updated with new message
-        setTimeout(() => {
+        const scroll = () => {
           virtuosoRef.current?.scrollToIndex({
-            index: virtualizedItems.length - 1,
-            behavior: isOwnMessage ? "auto" : "smooth",
+            index: 999999,
+            behavior: "auto",
+            align: "end",
           });
-        }, 100);
+        };
+
+        requestAnimationFrame(() => {
+          scroll();
+          // Use multiple timeouts to handle layout shifts (e.g. images loading)
+          setTimeout(scroll, 100);
+          setTimeout(scroll, 300);
+          setTimeout(scroll, 500);
+        });
       }
     }
 
     prevMessagesLengthRef.current = currentLength;
-  }, [messages, currentUserId, atBottom, virtualizedItems.length]);
+  }, [messages, currentUserId, atBottom]);
 
   // Render individual virtualized item
   const itemContent = useCallback(
